@@ -19,13 +19,18 @@
         :root { --primary: #e41e26; --blue: #00529B; --green: #25D366; --dark: #222; }
         body { font-family: sans-serif; margin: 0; background: #f4f4f4; padding-bottom: 320px; -webkit-tap-highlight-color: transparent; }
         
-        #age-gate {
+        /* Unified Entrance Screens */
+        #age-gate, #role-selection {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.98); color: white; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
             z-index: 9999; text-align: center; padding: 20px; box-sizing: border-box;
         }
-        .age-btn { width: 100%; max-width: 250px; padding: 15px; margin: 10px; border-radius: 8px; border: none; font-weight: bold; font-size: 1.1rem; }
+        #role-selection { background: #fff; color: #333; display: none; }
+
+        .gate-btn { width: 100%; max-width: 280px; padding: 18px; margin: 10px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
+        .role-card { background: #f8f8f8; border: 2px solid #eee; color: var(--dark); margin: 10px; width: 100%; max-width: 300px; padding: 20px; border-radius: 15px; cursor: pointer; }
+        .role-card:hover { border-color: var(--primary); background: #fff5f5; }
 
         header { background: var(--primary); color: white; padding: 15px; text-align: center; padding-top: 30px; }
         .nav-tabs { display: flex; background: white; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 100; }
@@ -46,7 +51,7 @@
         .tracking-progress { background: var(--green); height: 100%; width: 5%; transition: width 1s; }
 
         .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
-        .modal-content { background-color: white; margin: 25% auto; padding: 20px; border-radius: 15px; width: 85%; text-align: center; }
+        .modal-content { background-color: white; margin: 15% auto; padding: 20px; border-radius: 15px; width: 85%; text-align: center; max-height: 80vh; overflow-y: auto; }
         .modal-btn { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; margin: 5px; font-weight: bold; width: 100%; }
 
         #admin-page, #driver-page { display: none; }
@@ -57,6 +62,13 @@
         .delivery-card { background: #e3f2fd; padding: 15px; margin-bottom: 15px; border: 2px solid #2196f3; border-radius: 8px; }
         .del-btn { background: #fee; color: #c00; border: 1px solid #fcc; font-size: 11px; padding: 5px; margin-top: 10px; cursor: pointer; border-radius: 4px; width: auto; display: inline-block; }
         
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0px rgba(37, 211, 102, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(37, 211, 102, 0); }
+        }
+        .new-task-highlight { animation: pulse-border 2s infinite; border: 3px solid var(--green) !important; }
+
         .float-chat {
             position: fixed; bottom: 180px; right: 20px; background: var(--green);
             color: white; width: 60px; height: 60px; border-radius: 50%;
@@ -71,7 +83,6 @@
         
         .assign-area { background: #f0f0f0; padding: 10px; border-radius: 5px; margin-top: 10px; }
         
-        /* Installation Banner Style */
         #install-banner {
             display: none; position: fixed; bottom: 20px; left: 10px; right: 10px;
             background: white; padding: 15px; border-radius: 12px;
@@ -80,7 +91,7 @@
         }
     </style>
 </head>
-<body>
+<body onload="checkAutoLogin()">
 
 <div id="install-banner">
     <div style="display:flex; align-items:center; gap:10px;">
@@ -97,8 +108,28 @@
     <h1 style="color:var(--primary);">STOP</h1>
     <h2>AGE VERIFICATION</h2>
     <p>This service is strictly for people aged 18 and older.</p>
-    <button class="age-btn" style="background:var(--green); color:white;" onclick="verifyAge()">YES, I AM 18+</button>
-    <button class="age-btn" style="background:var(--primary); color:white;" onclick="exitSite()">NO, EXIT</button>
+    <button class="gate-btn" style="background:var(--green); color:white;" onclick="verifyAge()">YES, I AM 18+</button>
+    <button class="gate-btn" style="background:var(--primary); color:white;" onclick="exitSite()">NO, EXIT</button>
+</div>
+
+<div id="role-selection">
+    <h2 style="color:var(--primary); margin-bottom:5px;">SA Delivery Portal</h2>
+    <p style="margin-bottom:25px;">Please select your role to continue</p>
+    
+    <div class="role-card" onclick="selectRole('customer')">
+        <h3 style="margin:0; color:var(--primary);">🛍️ Customer</h3>
+        <small>Order pills & track delivery</small>
+    </div>
+
+    <div class="role-card" onclick="selectRole('driver')">
+        <h3 style="margin:0; color:var(--blue);">🚚 Driver</h3>
+        <small>Login or Register as a Driver</small>
+    </div>
+
+    <div class="role-card" onclick="selectRole('admin')">
+        <h3 style="margin:0; color:var(--dark);">⚙️ Admin / Staff</h3>
+        <small>Management & Dispatch</small>
+    </div>
 </div>
 
 <header>
@@ -112,6 +143,7 @@
     <div class="tab active-tab" id="tab-shop-btn" onclick="showPage('shop')">Menu</div>
     <div class="tab" id="tab-check-btn" onclick="showPage('checkout')">My Cart</div>
     <div class="tab" id="tab-track-btn" style="display:none;" onclick="showPage('tracking')">Track Order</div>
+    <div class="tab" onclick="location.reload()">Switch Role</div>
 </div>
 
 <div id="shop-page" class="container">
@@ -119,13 +151,6 @@
     <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>2 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 750.00</div><button class="add-btn" onclick="addToCart('2 Months Pills', 750)">Add to Order</button></div></div>
     <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>3 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 950.00</div><button class="add-btn" onclick="addToCart('3 Months Pills', 950)">Add to Order</button></div></div>
     <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>4 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 1200.00</div><button class="add-btn" onclick="addToCart('4 Months Pills', 1200)">Add to Order</button></div></div>
-    
-    <div style="margin: 40px 0 10px 0; text-align: center;">
-        <button onclick="openRegisterModal()" style="background:none; border:none; color:var(--blue); font-size:14px; font-weight:bold; text-decoration:underline; cursor:pointer;">New Driver? Register Here</button>
-    </div>
-    <div style="margin: 0 0 40px 0; text-align: center;">
-        <button onclick="openLoginModal()" style="background:none; border:none; color:#ccc; font-size:12px; text-decoration:underline; cursor:pointer;">Staff & Driver Login</button>
-    </div>
 </div>
 
 <div id="checkout-page" class="container" style="display:none;">
@@ -160,9 +185,12 @@
         <p id="status-text"><strong>Status:</strong> Processing Order...</p>
         <div class="tracking-bar"><div id="progress-line" class="tracking-progress"></div></div>
         
-        <div id="driver-info" style="margin-top:20px; padding:10px; border:1px dashed #ccc; border-radius:8px; display:none;">
-            <p><strong>Your Driver:</strong> <span id="assigned-driver-name">Searching...</span></p>
-            <p><strong>Contact:</strong> <span id="assigned-driver-phone">---</span></p>
+        <div id="driver-info" style="margin-top:20px; padding:15px; border:2px solid var(--blue); border-radius:8px; display:none; background: #f0f7ff;">
+            <p><strong>🚚 Your Order is being delivered by:</strong></p>
+            <p style="font-size: 1.1rem; margin-bottom: 5px;"><strong id="assigned-driver-name">Searching...</strong></p>
+            <p><strong>📞 Contact:</strong> <a id="assigned-driver-phone-link" href="#" style="color:var(--blue); font-weight:bold;">---</a></p>
+            <p id="driver-received-msg" style="color:var(--green); font-weight:bold; font-size: 13px; display:none;">✅ Driver has acknowledged your order!</p>
+            <hr>
             <button onclick="finishOrder()" style="background:var(--green); color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer;">Order Delivered ✅</button>
         </div>
     </div>
@@ -175,7 +203,7 @@
 </div>
 
 <div id="admin-page" class="container">
-    <button onclick="showPage('shop')" style="background:#444; color:white;">← Back to Shop</button>
+    <button onclick="location.reload()" style="background:#444; color:white;">← Back to Selection</button>
     <h2 style="color:var(--primary);">Admin Dashboard</h2>
     
     <h3 style="color:var(--primary);">1. New Customer Orders</h3>
@@ -205,21 +233,17 @@
 </div>
 
 <div id="driver-page" class="container">
-    <button onclick="showPage('shop')" style="background:#444; color:white;">← Logout</button>
+    <button onclick="driverLogout()" style="background:#444; color:white;">← Logout</button>
     <h2 style="color:var(--blue);">Driver Portal</h2>
     
-    <div id="driver-recovery-section" class="card" style="padding:15px; margin-bottom:20px; border: 1px solid #ddd;">
-        <h4 style="margin-top:0; color:var(--primary);">Lost Connection?</h4>
-        <p style="font-size:12px; color:#666;">Enter your phone number to restore your active task.</p>
-        <input type="tel" id="recoveryPhone" placeholder="e.g. 0712345678">
-        <button onclick="recoverDriverTask()" style="background:var(--primary); color:white;">Restore My Task</button>
-    </div>
-
     <p>Welcome, <span id="portal-driver-name">Driver</span></p>
 
     <div id="assigned-task-card" class="card" style="padding:15px; border-left: 10px solid var(--green); display:none;">
         <h3 style="color:var(--green);">Active Task</h3>
         <div id="task-details"></div>
+        
+        <button id="driver-acknowledge-btn" style="background:var(--primary); color:white; margin-bottom:10px;">📲 Send Message: "I received the order"</button>
+        
         <button id="map-link-btn" style="background:var(--blue); color:white;">📍 Open in Google Maps</button>
         <p style="font-size:12px; color:#666; margin-top:10px;">Contact Customer via WhatsApp:</p>
         <button id="cust-whatsapp-btn" style="background:var(--green); color:white;">💬 Chat with Customer</button>
@@ -231,7 +255,7 @@
     </div>
 </div>
 
-<div id="footer-controls" style="position: fixed; bottom: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); box-sizing: border-box; z-index: 500;">
+<div id="footer-controls" style="position: fixed; bottom: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); box-sizing: border-box; z-index: 500; display: none;">
     <div id="cart-total" style="font-weight: bold; margin-bottom: 10px; font-size: 1.1rem;">Total: R 0.00</div>
     <button class="whatsapp-btn" style="width:100%;" onclick="sendOrder()">Confirm Order via WhatsApp</button>
     <button class="app-btn" style="width:100%;" onclick="orderViaApp()">Order Now</button>
@@ -247,9 +271,13 @@
 
 <div id="loginModal" class="modal">
     <div class="modal-content">
-        <h3>Portal Login</h3>
+        <h3 id="loginTitle">Portal Login</h3>
         <input type="password" id="adminPinInput" placeholder="PIN or Driver Phone">
         <button class="modal-btn" onclick="checkAdminLogin()">Login</button>
+        <div id="regOptions" style="display:none; margin-top:15px;">
+            <p>New Driver?</p>
+            <button class="modal-btn" style="background:var(--blue);" onclick="openRegisterModal()">Register as Driver</button>
+        </div>
         <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeLoginModal()">Cancel</button>
     </div>
 </div>
@@ -277,27 +305,27 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-    // PWA Service Worker Registration
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            const blob = new Blob([`self.addEventListener('fetch', function(e){});`], {type: 'text/javascript'});
-            const url = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(url);
-        });
+    let notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    let soundEnabled = false;
+
+    document.addEventListener('click', () => {
+        if(!soundEnabled) {
+            notificationSound.play().then(() => {
+                notificationSound.pause();
+                soundEnabled = true;
+            }).catch(e => console.log("Sound ready..."));
+        }
+    }, { once: true });
+
+    function triggerAlert() {
+        if (soundEnabled) {
+            notificationSound.currentTime = 0;
+            notificationSound.play();
+        }
+        if ("vibrate" in navigator) {
+            navigator.vibrate([300, 100, 300, 100, 300]);
+        }
     }
-
-    // Install Banner Logic
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('install-banner').style.display = 'block';
-    });
-
-    document.getElementById('install-btn').addEventListener('click', (e) => {
-        document.getElementById('install-banner').style.display = 'none';
-        deferredPrompt.prompt();
-    });
 
     const firebaseConfig = {
       apiKey: "AIzaSyBbmHfC_SvrT4YPkxeaIxF1X-E0JQ_Gl1U",
@@ -316,8 +344,44 @@
     let allDrivers = [];
     let loggedInDriverPhone = null;
 
-    function verifyAge() { document.getElementById('age-gate').style.display = 'none'; }
+    // --- ENTRANCE LOGIC ---
+    function checkAutoLogin() {
+        const savedPhone = localStorage.getItem('driverLoggedInPhone');
+        if(savedPhone) {
+            loggedInDriverPhone = savedPhone;
+            document.getElementById('age-gate').style.display = 'none';
+            document.getElementById('role-selection').style.display = 'none';
+            showPage('driver');
+        }
+    }
+
+    function verifyAge() { 
+        document.getElementById('age-gate').style.display = 'none'; 
+        document.getElementById('role-selection').style.display = 'flex';
+    }
+
+    function selectRole(role) {
+        document.getElementById('role-selection').style.display = 'none';
+        if(role === 'customer') {
+            showPage('shop');
+        } else if(role === 'driver') {
+            document.getElementById('loginTitle').innerText = "Driver Login";
+            document.getElementById('regOptions').style.display = "block";
+            openLoginModal();
+        } else if(role === 'admin') {
+            document.getElementById('loginTitle').innerText = "Admin Pin Required";
+            document.getElementById('regOptions').style.display = "none";
+            openLoginModal();
+        }
+    }
+
     function exitSite() { window.location.href = "https://google.com"; }
+
+    function driverLogout() {
+        localStorage.removeItem('driverLoggedInPhone');
+        loggedInDriverPhone = null;
+        location.reload();
+    }
 
     function showPage(page) {
         document.getElementById('shop-page').style.display = page === 'shop' ? 'block' : 'none';
@@ -325,9 +389,7 @@
         document.getElementById('admin-page').style.display = page === 'admin' ? 'block' : 'none';
         document.getElementById('tracking-page').style.display = page === 'tracking' ? 'block' : 'none';
         document.getElementById('driver-page').style.display = page === 'driver' ? 'block' : 'none';
-        
         document.getElementById('footer-controls').style.display = (page === 'shop' || page === 'checkout') ? 'block' : 'none';
-
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
         if(page === 'shop') document.getElementById('tab-shop-btn').classList.add('active-tab');
         if(page === 'checkout') { document.getElementById('tab-check-btn').classList.add('active-tab'); updateCartUI(); }
@@ -339,6 +401,7 @@
     function addToCart(n, p) { cart.push({name: n, price: p}); updateTotal(); document.getElementById('customModal').style.display = "block"; }
     function removeFromCart(index) { cart.splice(index, 1); updateTotal(); updateCartUI(); }
     function updateTotal() { const total = cart.reduce((s, i) => s + i.price, 0); document.getElementById('cart-total').innerText = `Total Order: R ${total.toFixed(2)}`; }
+    
     function updateCartUI() {
         const list = document.getElementById('cart-list');
         if(cart.length === 0) { list.innerHTML = "Your cart is empty."; return; }
@@ -349,10 +412,14 @@
 
     function closeModal() { document.getElementById('customModal').style.display = "none"; }
     function openLoginModal() { document.getElementById('loginModal').style.display = "block"; }
-    function closeLoginModal() { document.getElementById('loginModal').style.display = "none"; }
-    
-    function openRegisterModal() { document.getElementById('registerModal').style.display = "block"; }
-    function closeRegisterModal() { document.getElementById('registerModal').style.display = "none"; }
+    function closeLoginModal() { 
+        document.getElementById('loginModal').style.display = "none"; 
+        if(document.getElementById('admin-page').style.display !== 'block' && document.getElementById('driver-page').style.display !== 'block' && document.getElementById('shop-page').style.display !== 'block') {
+            document.getElementById('role-selection').style.display = 'flex';
+        }
+    }
+    function openRegisterModal() { closeLoginModal(); document.getElementById('registerModal').style.display = "block"; }
+    function closeRegisterModal() { document.getElementById('registerModal').style.display = "none"; document.getElementById('role-selection').style.display = 'flex'; }
     
     function registerNewDriver() {
         const name = document.getElementById('regDriverName').value;
@@ -360,13 +427,10 @@
         const area = document.getElementById('regVillage').value;
         if(name && phone && area) {
             database.ref('drivers/' + phone).set({ name, phone, village: area, currentStatus: 'available' }).then(() => {
-                alert("Registration Successful! You can now login with your phone number.");
-                closeRegisterModal();
+                document.getElementById('registerModal').style.display = "none";
                 openLoginModal();
                 document.getElementById('adminPinInput').value = phone;
             });
-        } else {
-            alert("Please fill in all details.");
         }
     }
 
@@ -379,50 +443,30 @@
             database.ref('drivers/' + pin).once('value', (snap) => {
                 if(snap.exists()) {
                     loggedInDriverPhone = pin;
+                    localStorage.setItem('driverLoggedInPhone', pin);
                     closeLoginModal();
                     showPage('driver');
                 } else {
-                    alert("Incorrect PIN or Phone Number");
+                    alert("Invalid Credentials");
                 }
             });
         }
-    }
-
-    function recoverDriverTask() {
-        const phone = document.getElementById('recoveryPhone').value.trim();
-        if(!phone) return alert("Enter your phone number");
-        loggedInDriverPhone = phone;
-        loadDriverPortal();
     }
 
     function updateVillages(targetId) {
         let provinceId = 'province';
         if(targetId === 'adminVillage') provinceId = 'adminProvince';
         if(targetId === 'regVillage') provinceId = 'regProvince';
-
         const province = document.getElementById(provinceId).value;
         const select = document.getElementById(targetId);
         select.innerHTML = '<option value="">-- Area --</option>';
-        
         let areas = [];
-        if (province === "Gauteng") {
-            areas = ["Alexandra", "Diepsloot", "Ennerdale", "Johannesburg", "Lenasia (Lenz)", "Midrand", "Modderfontein", "Orange Farm", "Randburg", "Roodepoort", "Sandton", "Soweto", "Alberton", "Bapsfontein", "Bedfordview", "Benoni", "Boksburg", "Brakpan", "Clayville", "Daveyton", "Devon", "Duduza", "Dunnottar", "Edenvale", "Germiston", "Isando", "Katlehong", "Kempton Park", "KwaThema", "Nigel", "Reiger Park", "Springs", "Tembisa", "Thokoza", "Tsakane", "Vosloorus", "Wattville", "Atteridgeville", "Bronberg", "Bronkhorstspruit", "Centurion", "Cullinan", "Ekangala", "Ga-Rankuwa", "Hammanskraal", "Irene", "Mabopane", "Mamelodi", "Pretoria", "Rayton", "Refilwe", "Soshanguve", "Winterveld", "Zithobeni"];
-        } else if (province === "North West") {
-            areas = ["Bloemhof", "Brits", "Christiana", "Coligny", "Delareyville", "Ganyesa", "Groot Marico", "Hartbeespoort", "Jan Kempdorp", "Klerksdorp", "Koster", "Lichtenburg", "Mahikeng", "Mogwase", "Mooinooi", "Orkney", "Ottosdal", "Potchefstroom", "Reivilo", "Rustenburg", "Sannieshof", "Schweizer-Reneke", "Stella", "Stilfontein", "Swartruggens", "Taung", "Ventersdorp", "Vryburg", "Wolmaransstad", "Zeerust"];
-        } else if (province === "Free State") {
-            areas = ["Bloemfontein", "Heidedal", "Langenhovenpark", "Welkom", "Kroonstad", "Bethlehem", "Phuthaditjhaba", "Sasolburg", "Parys", "Winburg", "Jagersfontein", "Virginia"];
-        } else if (province === "Western Cape") {
-            areas = ["Bellville", "Durbanville", "Parow", "Goodwood", "Brackenfell", "Kraaifontein", "Kuils River", "Rondebosch", "Claremont", "Newlands", "Constantia", "Wynberg", "Plumstead", "Kenilworth", "Simon’s Town", "Fish Hoek", "Muizenberg", "Noordhoek", "Kommetjie", "Scarborough", "Somerset West", "Strand", "Gordon’s Bay", "Camps Bay", "Hout Bay", "Sea Point", "Green Point", "Llandudno", "Milnerton", "Table View", "Bloubergstrand", "Melkbosstrand", "Atlantis", "Athlone", "Mitchells Plain", "Khayelitsha", "Gugulethu", "Langa", "Nyanga", "Delft"];
-        } else if (province === "KZN") {
-            areas = ["Durban", "Amanzimtoti", "Chatsworth", "Hillcrest", "Kloof", "Pinetown", "Phoenix", "Umhlanga", "Umlazi", "Verulam", "Westville", "Tongaat", "Kingsburgh", "Port Shepstone", "Margate", "Scottburgh", "Harding", "Hibberdene", "Pennington", "Port Edward", "Southbroom", "Umzinto", "Shelly Beach", "KwaDukuza (Stanger)", "Ballito", "Mandeni", "Salt Rock", "Maphumulo", "Shakaskraal", "Pietermaritzburg", "Howick", "Hilton", "Richmond", "Mooi River", "Wartburg", "Dalton", "Ixopo", "Kokstad", "Underberg", "Himeville", "Bulwer", "Umzimkhulu", "Newcastle", "Dannhauser", "Charlestown", "Madadeni", "Ladysmith", "Estcourt", "Bergville", "Colenso", "Winterton", "Dundee", "Greytown", "Nquthu", "Pomeroy", "Glencoe", "Ulundi", "Vryheid", "Nongoma", "Pongola", "Paulpietersburg", "Richards Bay", "Empangeni", "Eshowe", "Melmoth", "Mtunzini", "Mkuze", "St Lucia", "Hluhluwe", "Mtubatuba", "Jozini"];
-        }
-        
-        areas.sort().forEach(a => { 
-            let o = document.createElement('option'); 
-            o.value = a; 
-            o.innerText = a; 
-            select.appendChild(o); 
-        });
+        if (province === "Gauteng") { areas = ["Alexandra", "Diepsloot", "Ennerdale", "Johannesburg", "Lenasia (Lenz)", "Midrand", "Modderfontein", "Orange Farm", "Randburg", "Roodepoort", "Sandton", "Soweto", "Alberton", "Bapsfontein", "Bedfordview", "Benoni", "Boksburg", "Brakpan", "Clayville", "Daveyton", "Devon", "Duduza", "Dunnottar", "Edenvale", "Germiston", "Isando", "Katlehong", "Kempton Park", "KwaThema", "Nigel", "Reiger Park", "Springs", "Tembisa", "Thokoza", "Tsakane", "Vosloorus", "Wattville", "Atteridgeville", "Bronberg", "Bronkhorstspruit", "Centurion", "Cullinan", "Ekangala", "Ga-Rankuwa", "Hammanskraal", "Irene", "Mabopane", "Mamelodi", "Pretoria", "Rayton", "Refilwe", "Soshanguve", "Winterveld", "Zithobeni"];
+        } else if (province === "North West") { areas = ["Bloemhof", "Brits", "Christiana", "Coligny", "Delareyville", "Ganyesa", "Groot Marico", "Hartbeespoort", "Jan Kempdorp", "Klerksdorp", "Koster", "Lichtenburg", "Mahikeng", "Mogwase", "Mooinooi", "Orkney", "Ottosdal", "Potchefstroom", "Reivilo", "Rustenburg", "Sannieshof", "Schweizer-Reneke", "Stella", "Stilfontein", "Swartruggens", "Taung", "Ventersdorp", "Vryburg", "Wolmaransstad", "Zeerust"];
+        } else if (province === "Free State") { areas = ["Bloemfontein", "Heidedal", "Langenhovenpark", "Welkom", "Kroonstad", "Bethlehem", "Phuthaditjhaba", "Sasolburg", "Parys", "Winburg", "Jagersfontein", "Virginia"];
+        } else if (province === "Western Cape") { areas = ["Bellville", "Durbanville", "Parow", "Goodwood", "Brackenfell", "Kraaifontein", "Kuils River", "Rondebosch", "Claremont", "Newlands", "Constantia", "Wynberg", "Plumstead", "Kenilworth", "Simon’s Town", "Fish Hoek", "Muizenberg", "Noordhoek", "Kommetjie", "Scarborough", "Somerset West", "Strand", "Gordon’s Bay", "Camps Bay", "Hout Bay", "Sea Point", "Green Point", "Llandudno", "Milnerton", "Table View", "Bloubergstrand", "Melkbosstrand", "Atlantis", "Athlone", "Mitchells Plain", "Khayelitsha", "Gugulethu", "Langa", "Nyanga", "Delft"];
+        } else if (province === "KZN") { areas = ["Durban", "Amanzimtoti", "Chatsworth", "Hillcrest", "Kloof", "Pinetown", "Phoenix", "Umhlanga", "Umlazi", "Verulam", "Westville", "Tongaat", "Kingsburgh", "Port Shepstone", "Margate", "Scottburgh", "Harding", "Hibberdene", "Pennington", "Port Edward", "Southbroom", "Umzinto", "Shelly Beach", "KwaDukuza (Stanger)", "Ballito", "Mandeni", "Salt Rock", "Maphumulo", "Shakaskraal", "Pietermaritzburg", "Howick", "Hilton", "Richmond", "Mooi River", "Wartburg", "Dalton", "Ixopo", "Kokstad", "Underberg", "Himeville", "Bulwer", "Umzimkhulu", "Newcastle", "Dannhauser", "Charlestown", "Madadeni", "Ladysmith", "Estcourt", "Bergville", "Colenso", "Winterton", "Dundee", "Greytown", "Nquthu", "Pomeroy", "Glencoe", "Ulundi", "Vryheid", "Nongoma", "Pongola", "Paulpietersburg", "Richards Bay", "Empangeni", "Eshowe", "Melmoth", "Mtunzini", "Mkuze", "St Lucia", "Hluhluwe", "Mtubatuba", "Jozini"]; }
+        areas.sort().forEach(a => { let o = document.createElement('option'); o.value = a; o.innerText = a; select.appendChild(o); });
     }
 
     function saveDriver() {
@@ -431,7 +475,6 @@
         const area = document.getElementById('adminVillage').value;
         if(name && phone && area) {
             database.ref('drivers/' + phone).set({ name, phone, village: area, currentStatus: 'available' }).then(() => {
-                alert("Driver Added!");
                 document.getElementById('driverName').value = "";
                 document.getElementById('driverPhone').value = "";
             });
@@ -446,11 +489,8 @@
             snapshot.forEach(child => {
                 const d = child.val();
                 allDrivers.push(d);
-                let statusColor = "var(--blue)"; 
-                let statusText = "Available";
-                
-                if(d.currentStatus === 'delivering') { statusColor = "var(--green)"; statusText = "Delivering"; }
-
+                let statusColor = d.currentStatus === 'delivering' ? "var(--green)" : "var(--blue)";
+                let statusText = d.currentStatus === 'delivering' ? "Delivering" : "Available";
                 listDiv.innerHTML += `
                 <div class='driver-card' style='border-left: 8px solid ${statusColor};'>
                     <strong>${d.name}</strong> (${d.phone})<br>
@@ -464,73 +504,39 @@
 
     function deleteDriver(phone) { if(confirm("Remove driver?")) database.ref('drivers/' + phone).remove(); }
 
+    let lastOrderCount = 0;
     function fetchLiveOrders() {
         const orderDiv = document.getElementById('live-orders-list');
         const activeDiv = document.getElementById('active-deliveries-list');
-        
         database.ref('orders').on('value', (snapshot) => {
-            orderDiv.innerHTML = "";
-            activeDiv.innerHTML = "";
-            
-            let hasNew = false;
-            let hasActive = false;
-
-            if(!snapshot.exists()) { 
-                orderDiv.innerHTML = "Waiting for new orders..."; 
-                activeDiv.innerHTML = "No orders currently being delivered.";
-                return; 
-            }
-
+            orderDiv.innerHTML = ""; activeDiv.innerHTML = "";
+            let hasNew = false; let hasActive = false; let currentNewOrders = 0;
+            if(!snapshot.exists()) { lastOrderCount = 0; return; }
             snapshot.forEach((child) => {
-                const o = child.val();
-                const orderId = child.key;
-                
+                const o = child.val(); const orderId = child.key;
                 if(o.status === 'dispatched') {
-                    // THIS PART SHOWS WHO IS DELIVERING
                     hasActive = true;
-                    activeDiv.innerHTML += `
-                        <div class="delivery-card">
-                            <strong>📦 Order ID: ${orderId.substring(orderId.length - 6)}</strong><br>
-                            <strong>🚚 Driver: ${o.dName} (${o.dPhone})</strong><br>
-                            <hr>
-                            <small>📍 Destination: ${o.area}</small><br>
-                            <small>👤 Customer: ${o.customer}</small><br>
-                            <button onclick="deleteOrder('${orderId}')" class="del-btn">Cancel/Delete Order</button>
-                        </div>
-                    `;
-                } else {
-                    // NEW ORDERS
-                    hasNew = true;
+                    let ack = o.driverReceived ? "<span style='color:green;'>[RECEIVED BY DRIVER]</span>" : "<span style='color:orange;'>[Waiting for Acknowledgment]</span>";
+                    activeDiv.innerHTML += `<div class="delivery-card"><strong>📦 Order ID: ${orderId.substring(orderId.length - 6)}</strong><br><strong>🚚 Driver: ${o.dName} (${o.dPhone})</strong><br>${ack}<hr><small>📍 Destination: ${o.area}</small><br><small>👤 Customer: ${o.customer}</small><br><button onclick="deleteOrder('${orderId}')" class="del-btn">Cancel/Delete Order</button></div>`;
+                } else if(o.status === 'pending') {
+                    hasNew = true; currentNewOrders++;
                     let driverOptions = `<option value="">-- Select Near Driver --</option>`;
                     allDrivers.forEach(dr => { driverOptions += `<option value="${dr.phone}">${dr.name} (${dr.village})</option>`; });
-
                     let card = document.createElement('div');
                     card.className = "order-card";
-                    card.innerHTML = `
-                        <div style="background:var(--primary); color:white; padding:5px; border-radius:4px; font-size:12px; margin-bottom:10px;">ORDER ID: ${orderId.substring(orderId.length - 6)}</div>
-                        <strong>📍 Area: ${o.area}</strong><br>
-                        <strong>👤 Customer:</strong> ${o.customer}<br>
-                        <strong>📞 Phone:</strong> ${o.phone}<br>
-                        <strong>🏠 Address:</strong> ${o.address}<br>
-                        <strong>📦 Items:</strong> ${o.items}<br>
-                        <strong>💰 Total:</strong> ${o.total}<br>
-                        <div class="assign-area">
-                            <label>Assign to Driver:</label>
-                            <select id="select-${orderId}">${driverOptions}</select>
-                            <button onclick="dispatchSpecificOrder('${orderId}')" style="background:var(--blue); color:white; width:100%; padding:12px; margin-top:5px; font-weight:bold;">Order Sent to Driver Portal</button>
-                        </div>
-                    `;
+                    card.innerHTML = `<div style="background:var(--primary); color:white; padding:5px; border-radius:4px; font-size:12px; margin-bottom:10px;">ORDER ID: ${orderId.substring(orderId.length - 6)}</div><strong>📍 Area: ${o.area}</strong><br><strong>👤 Customer:</strong> ${o.customer}<br><strong>📞 Phone:</strong> ${o.phone}<br><strong>🏠 Address:</strong> ${o.address}<br><strong>📦 Items:</strong> ${o.items}<br><strong>💰 Total:</strong> ${o.total}<br><div class="assign-area"><label>Assign to Driver:</label><select id="select-${orderId}">${driverOptions}</select><button onclick="dispatchSpecificOrder('${orderId}')" style="background:var(--blue); color:white; width:100%; padding:12px; margin-top:5px; font-weight:bold;">Order Sent to Driver Portal</button></div>`;
                     orderDiv.appendChild(card);
                 }
             });
-            
+            if (currentNewOrders > lastOrderCount) { triggerAlert(); }
+            lastOrderCount = currentNewOrders;
             if(!hasNew) orderDiv.innerHTML = "No new orders.";
             if(!hasActive) activeDiv.innerHTML = "No orders currently being delivered.";
         });
     }
 
     function deleteOrder(id) {
-        if(confirm("Are you sure you want to cancel/delete this order?")) {
+        if(confirm("Are you sure?")) {
             database.ref('orders/' + id).once('value', (snap) => {
                 const data = snap.val();
                 if(data.dPhone) database.ref('drivers/' + data.dPhone).update({currentStatus: 'available'});
@@ -541,68 +547,59 @@
 
     function dispatchSpecificOrder(orderId) {
         const driverPhone = document.getElementById('select-' + orderId).value;
-        if(!driverPhone) { alert("Please select a driver first!"); return; }
-        
+        if(!driverPhone) return;
         const driver = allDrivers.find(d => d.phone === driverPhone);
         database.ref('orders/' + orderId).update({ 
             status: 'dispatched', 
             dName: driver.name, 
-            dPhone: driver.phone 
+            dPhone: driver.phone,
+            driverReceived: false 
         });
         database.ref('drivers/' + driverPhone).update({ currentStatus: 'delivering' });
-        alert("Order dispatched to " + driver.name + "'s portal.");
     }
 
+    let lastTaskID = null;
     function loadDriverPortal() {
         if(!loggedInDriverPhone) return;
         database.ref('drivers/' + loggedInDriverPhone).on('value', snap => {
-            if(!snap.exists()) { alert("Driver not registered."); return; }
+            if(!snap.exists()) return;
             const driver = snap.val();
             document.getElementById('portal-driver-name').innerText = driver.name;
-            
             database.ref('orders').orderByChild('dPhone').equalTo(loggedInDriverPhone).on('value', snapOrders => {
                 const taskCard = document.getElementById('assigned-task-card');
                 const noTask = document.getElementById('no-task-msg');
                 const taskDetails = document.getElementById('task-details');
-                
+                const ackBtn = document.getElementById('driver-acknowledge-btn');
                 let foundTask = false;
                 taskDetails.innerHTML = "";
-
                 if(snapOrders.exists()) {
                     snapOrders.forEach(oSnap => {
                         const o = oSnap.val();
                         if(o.status === 'dispatched') {
+                            if (oSnap.key !== lastTaskID) { triggerAlert(); taskCard.classList.add('new-task-highlight'); lastTaskID = oSnap.key; }
                             foundTask = true;
-                            taskDetails.innerHTML += `
-                                <div style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
-                                    <p><strong>Customer:</strong> ${o.customer}</p>
-                                    <p><strong>Phone:</strong> ${o.phone}</p>
-                                    <p><strong>Address:</strong> ${o.address}</p>
-                                    <p><strong>Items:</strong> ${o.items}</p>
-                                    <p><strong>Total Due:</strong> ${o.total}</p>
-                                </div>
-                            `;
-                            document.getElementById('map-link-btn').onclick = () => {
-                                const fullAddr = o.address + " " + o.area + " South Africa";
-                                window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(fullAddr), '_blank');
+                            taskDetails.innerHTML += `<div style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;"><p><strong>Customer:</strong> ${o.customer}</p><p><strong>Phone:</strong> ${o.phone}</p><p><strong>Address:</strong> ${o.address}</p><p><strong>Items:</strong> ${o.items}</p><p><strong>Total Due:</strong> ${o.total}</p></div>`;
+                            
+                            ackBtn.style.display = o.driverReceived ? "none" : "block";
+                            ackBtn.onclick = () => {
+                                database.ref('orders/' + oSnap.key).update({ driverReceived: true });
+                                alert("Admin has been notified that you received the order.");
                             };
-                            document.getElementById('cust-whatsapp-btn').onclick = () => {
-                                let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1);
-                                window.open(`https://wa.me/${cp}?text=Hi ${o.customer}, I am your driver for your order.`, '_blank');
-                            };
+
+                            document.getElementById('map-link-btn').onclick = () => { const fullAddr = o.address + " " + o.area + " South Africa"; window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(fullAddr), '_blank'); };
+                            document.getElementById('cust-whatsapp-btn').onclick = () => { let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1); window.open(`https://wa.me/${cp}?text=Hi ${o.customer}, I am your driver for your order.`, '_blank'); };
                         }
                     });
                 }
-
                 if(foundTask){ taskCard.style.display = 'block'; noTask.style.display = 'none'; } 
-                else { taskCard.style.display = 'none'; noTask.style.display = 'block'; }
+                else { taskCard.style.display = 'none'; noTask.style.display = 'block'; taskCard.classList.remove('new-task-highlight'); lastTaskID = null; }
             });
         });
     }
 
     function sendOrder() {
         const o = collectData();
-        if(!o.customer || !o.area || cart.length === 0) { alert("Fill all details!"); return; }
+        if(!o.customer || !o.area || cart.length === 0) { alert("Please fill details and add items."); return; }
         const newRef = database.ref('orders').push();
         newRef.set({...o, status: 'pending', timestamp: Date.now()});
         localStorage.setItem('myOrderID', newRef.key);
@@ -614,7 +611,7 @@
 
     function orderViaApp() {
         const o = collectData();
-        if(!o.customer || !o.area || cart.length === 0) { alert("Fill all details!"); return; }
+        if(!o.customer || !o.area || cart.length === 0) { alert("Please fill details and add items."); return; }
         const newRef = database.ref('orders').push();
         newRef.set({...o, status: 'pending', timestamp: Date.now()});
         localStorage.setItem('myOrderID', newRef.key);
@@ -623,28 +620,17 @@
         cart = []; updateTotal();
     }
 
-    function collectData() {
-        return {
-            customer: document.getElementById('custName').value || "Guest",
-            phone: document.getElementById('custPhone').value || "N/A",
-            address: document.getElementById('custAddress').value || "N/A",
-            area: document.getElementById('village').value || "N/A",
-            items: cart.map(i => i.name).join(", "),
-            total: document.getElementById('cart-total').innerText,
-            payment: document.getElementById('payMethod').value
-        };
-    }
+    function collectData() { return { customer: document.getElementById('custName').value || "", phone: document.getElementById('custPhone').value || "", address: document.getElementById('custAddress').value || "", area: document.getElementById('village').value || "", items: cart.map(i => i.name).join(", "), total: document.getElementById('cart-total').innerText, payment: document.getElementById('payMethod').value }; }
 
+    let lastStatus = null;
     function updateTrackingUI() {
         const orderId = localStorage.getItem('myOrderID');
         if(!orderId) return;
-        document.getElementById('tracking-content').style.display = 'block';
-        document.getElementById('order-complete-view').style.display = 'none';
-        
         database.ref('orders/' + orderId).on('value', (snapshot) => {
             if(snapshot.exists()) {
                 const d = snapshot.val();
                 document.getElementById('order-items-summary').innerHTML = `<strong>Items:</strong> ${d.items}<br><strong>To:</strong> ${d.address}`;
+                if (d.status !== lastStatus) { triggerAlert(); lastStatus = d.status; }
                 if(d.status === 'pending') {
                     document.getElementById('progress-line').style.width = "30%";
                     document.getElementById('status-text').innerHTML = "<strong>Status:</strong> Waiting for driver...";
@@ -654,7 +640,9 @@
                     document.getElementById('status-text').innerHTML = "<strong>Status:</strong> Driver is coming!";
                     document.getElementById('driver-info').style.display = 'block';
                     document.getElementById('assigned-driver-name').innerText = d.dName;
-                    document.getElementById('assigned-driver-phone').innerText = d.dPhone;
+                    document.getElementById('assigned-driver-phone-link').innerText = d.dPhone;
+                    document.getElementById('assigned-driver-phone-link').href = "tel:" + d.dPhone;
+                    document.getElementById('driver-received-msg').style.display = d.driverReceived ? 'block' : 'none';
                 }
             }
         });
@@ -681,7 +669,6 @@
         document.getElementById('order-complete-view').style.display = 'none';
         showPage('shop');
     }
-
     if(localStorage.getItem('myOrderID')) document.getElementById('tab-track-btn').style.display = 'block';
 </script>
 </body>
