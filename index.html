@@ -108,16 +108,20 @@
     <div style="display:flex; align-items:center; gap:12px;">
         <div id="notifyIcon" style="background:var(--green); color:white; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">!</div>
         <div style="flex:1;">
-            <strong id="notifyHeader" style="font-size:16px;">WhatsApp Verification</strong><br>
-            <small id="notifySub" style="color:#666;">PIN sent to your WhatsApp successfully.</small>
+            <strong id="notifyHeader">Verification Required</strong><br>
+            <small id="notifySub" style="color:#666;">Enter phone to receive support PIN.</small>
         </div>
         <button onclick="closeVerifyNotify()" style="border:none; background:none; font-size:20px; color:#999; cursor:pointer;">×</button>
     </div>
-    <div class="verify-pin-box" id="pinOutput" onclick="copyPin()">
+    <div id="forgotPinInputArea" style="margin-top:10px;">
+        <input type="tel" id="forgotPhoneInput" placeholder="Enter Registered Phone Number">
+        <button onclick="sendForgotVerification()" style="background:var(--blue); color:white; border:none; padding:10px; width:100%; border-radius:8px; font-weight:bold;">GET PIN VIA SUPPORT</button>
+    </div>
+    <div class="verify-pin-box" id="pinOutput" style="display:none;" onclick="copyPin()">
         0000
         <span class="copy-tag">TAP TO COPY</span>
     </div>
-    <button id="notifyActionBtn" onclick="closeVerifyNotify()" style="background:var(--green); color:white; border:none; padding:10px; width:100%; border-radius:8px; font-weight:bold;">ENTER PIN NOW</button>
+    <button id="notifyActionBtn" onclick="closeVerifyNotify()" style="display:none; background:var(--green); color:white; border:none; padding:10px; width:100%; border-radius:8px; font-weight:bold; margin-top:5px;">ENTER PIN NOW</button>
 </div>
 
 <div id="install-banner">
@@ -492,37 +496,79 @@
     function closeRegisterModal() { document.getElementById('registerModal').style.display = "none"; document.getElementById('role-selection').style.display = 'flex'; }
     
     // NOTIFICATION FUNCTIONS
-    function closeVerifyNotify() { document.getElementById('verifyNotify').style.display = "none"; }
+    function closeVerifyNotify() { 
+        document.getElementById('verifyNotify').style.display = "none"; 
+        // Reset Notify State
+        document.getElementById('forgotPinInputArea').style.display = "block";
+        document.getElementById('pinOutput').style.display = "none";
+        document.getElementById('notifyActionBtn').style.display = "none";
+    }
+
     function copyPin() {
         const pin = document.getElementById('pinOutput').innerText.replace('TAP TO COPY', '').trim();
         navigator.clipboard.writeText(pin);
         alert("PIN Copied!");
     }
 
+    function forgotPin() {
+        closeLoginModal();
+        document.getElementById('notifyHeader').innerText = "Forgot PIN Recovery";
+        document.getElementById('notifySub').innerText = "Verify ownership via system support.";
+        document.getElementById('forgotPinInputArea').style.display = "block";
+        document.getElementById('verifyNotify').style.display = "block";
+        triggerAlert();
+    }
+
+    function sendForgotVerification() {
+        const phone = document.getElementById('forgotPhoneInput').value;
+        if(!phone) return alert("Enter your phone number.");
+
+        const dbPath = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
+        database.ref(dbPath + phone).once('value', (snap) => {
+            if(snap.exists()) {
+                const userPin = snap.val().pin;
+                document.getElementById('notifyHeader').innerText = "System SMS/WhatsApp";
+                document.getElementById('notifySub').innerText = "Verification Code found for this owner.";
+                document.getElementById('forgotPinInputArea').style.display = "none";
+                document.getElementById('pinOutput').innerHTML = userPin + '<span class="copy-tag">TAP TO COPY</span>';
+                document.getElementById('pinOutput').style.display = "block";
+                document.getElementById('notifyActionBtn').style.display = "block";
+                document.getElementById('notifyActionBtn').innerText = "BACK TO LOGIN";
+                document.getElementById('notifyActionBtn').onclick = () => { closeVerifyNotify(); openLoginModal(); };
+                triggerAlert();
+            } else {
+                alert("This number is not registered in our system.");
+            }
+        });
+    }
+
     function requestRegistrationPin() {
         const phone = document.getElementById('regDriverPhone').value;
         if(!phone) return alert("Enter Phone Number first");
 
-        // CHECK IF ALREADY REGISTERED
         const dbPath = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
         database.ref(dbPath + phone).once('value', (snapshot) => {
             if (snapshot.exists()) {
-                // PROFESSIONAL NOTIFICATION FOR ALREADY REGISTERED
                 document.getElementById('notifyHeader').innerText = "Account Exists";
                 document.getElementById('notifySub').innerText = "You have already registered with this number. Please login.";
+                document.getElementById('forgotPinInputArea').style.display = "none";
+                document.getElementById('notifyActionBtn').style.display = "block";
                 document.getElementById('notifyActionBtn').innerText = "GO TO LOGIN";
                 document.getElementById('notifyActionBtn').onclick = () => { closeVerifyNotify(); openLoginModal(); };
                 document.getElementById('pinOutput').innerHTML = "EXISTING USER";
+                document.getElementById('pinOutput').style.display = "block";
                 document.getElementById('notifyIcon').style.background = "var(--primary)";
                 document.getElementById('verifyNotify').style.display = "block";
                 triggerAlert();
             } else {
-                // PROCEED TO GENERATE PIN
                 generatedPin = Math.floor(1000 + Math.random() * 9000).toString();
                 document.getElementById('notifyHeader').innerText = "WhatsApp Verification";
                 document.getElementById('notifySub').innerText = "PIN sent to your WhatsApp successfully.";
+                document.getElementById('forgotPinInputArea').style.display = "none";
+                document.getElementById('notifyActionBtn').style.display = "block";
                 document.getElementById('notifyActionBtn').innerText = "ENTER PIN NOW";
                 document.getElementById('pinOutput').innerHTML = generatedPin + '<span class="copy-tag">TAP TO COPY</span>';
+                document.getElementById('pinOutput').style.display = "block";
                 document.getElementById('notifyIcon').style.background = "var(--green)";
                 document.getElementById('verifyNotify').style.display = "block";
 
@@ -543,7 +589,7 @@
         if(enteredPin !== generatedPin) {
              document.getElementById('notifyHeader').innerText = "Verification Failed";
              document.getElementById('notifySub').innerText = "The PIN you entered is incorrect. Try again.";
-             document.getElementById('notifyActionBtn').innerText = "TRY AGAIN";
+             document.getElementById('forgotPinInputArea').style.display = "none";
              document.getElementById('verifyNotify').style.display = "block";
              return;
         }
@@ -587,10 +633,6 @@
                 alert("Invalid Phone or PIN.");
             }
         });
-    }
-
-    function forgotPin() {
-        window.open("https://wa.me/27632010938?text=I forgot my login PIN. My phone is: ", "_blank");
     }
 
     function updateVillages(targetId) {
