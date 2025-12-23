@@ -89,6 +89,7 @@
             box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 10001;
             border-top: 4px solid var(--primary);
         }
+        .forgot-link { font-size: 14px; color: var(--blue); text-decoration: underline; cursor: pointer; display: block; margin-top: 10px; }
     </style>
 </head>
 <body onload="checkAutoLogin()">
@@ -272,21 +273,33 @@
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <h3 id="loginTitle">Portal Login</h3>
-        <input type="password" id="adminPinInput" placeholder="PIN or Driver Phone">
-        <button class="modal-btn" onclick="checkAdminLogin()">Login</button>
-        <div id="regOptions" style="display:none; margin-top:15px;">
-            <p>New Driver?</p>
-            <button class="modal-btn" style="background:var(--blue);" onclick="openRegisterModal()">Register as Driver</button>
+        <input type="tel" id="loginPhoneInput" placeholder="WhatsApp Phone Number">
+        <input type="password" id="adminPinInput" placeholder="Enter Login PIN">
+        <button class="modal-btn" onclick="checkAdminLogin()">Login Securely</button>
+        
+        <div id="customerRegArea" style="display:none; border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
+            <p>Don't have a PIN?</p>
+            <button class="modal-btn" style="background:var(--blue);" onclick="openRegisterModal()">Register for Account</button>
         </div>
+        
+        <span class="forgot-link" onclick="forgotPin()">Forgot PIN / Password?</span>
         <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeLoginModal()">Cancel</button>
     </div>
 </div>
 
 <div id="registerModal" class="modal">
     <div class="modal-content">
-        <h3>Driver Registration</h3>
-        <input type="text" id="regDriverName" placeholder="Your Full Name">
-        <input type="tel" id="regDriverPhone" placeholder="WhatsApp Number">
+        <h3>Account Registration</h3>
+        <p style="font-size:12px; color:gray;">Enter your phone to receive a 4-digit PIN via WhatsApp/SMS</p>
+        <input type="text" id="regDriverName" placeholder="Full Name">
+        <input type="tel" id="regDriverPhone" placeholder="WhatsApp Phone Number">
+        
+        <div id="pinConfirmArea" style="display:none;">
+            <hr>
+            <p style="color:var(--green); font-weight:bold;">PIN Sent! Check your phone.</p>
+            <input type="password" id="receivedPin" placeholder="Enter PIN from WhatsApp">
+        </div>
+
         <select id="regProvince" onchange="updateVillages('regVillage')">
             <option value="">-- Province --</option>
             <option value="Gauteng">Gauteng</option>
@@ -296,7 +309,9 @@
             <option value="KZN">KZN</option>
         </select>
         <select id="regVillage"><option value="">-- Area --</option></select>
-        <button class="modal-btn" style="background:var(--green);" onclick="registerNewDriver()">Create Driver Account</button>
+        
+        <button id="requestPinBtn" class="modal-btn" style="background:var(--blue);" onclick="requestRegistrationPin()">1. Request PIN</button>
+        <button id="finalRegBtn" class="modal-btn" style="background:var(--green); display:none;" onclick="registerWithPin()">2. Confirm & Register</button>
         <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeRegisterModal()">Cancel</button>
     </div>
 </div>
@@ -343,8 +358,9 @@
     let cart = [];
     let allDrivers = [];
     let loggedInDriverPhone = null;
+    let currentRoleType = 'customer';
+    let generatedPin = "";
 
-    // --- ENTRANCE LOGIC ---
     function checkAutoLogin() {
         const savedPhone = localStorage.getItem('driverLoggedInPhone');
         if(savedPhone) {
@@ -361,16 +377,19 @@
     }
 
     function selectRole(role) {
+        currentRoleType = role;
         document.getElementById('role-selection').style.display = 'none';
         if(role === 'customer') {
-            showPage('shop');
+            document.getElementById('loginTitle').innerText = "Customer Login";
+            document.getElementById('customerRegArea').style.display = "block";
+            openLoginModal();
         } else if(role === 'driver') {
             document.getElementById('loginTitle').innerText = "Driver Login";
-            document.getElementById('regOptions').style.display = "block";
+            document.getElementById('customerRegArea').style.display = "block";
             openLoginModal();
         } else if(role === 'admin') {
-            document.getElementById('loginTitle').innerText = "Admin Pin Required";
-            document.getElementById('regOptions').style.display = "none";
+            document.getElementById('loginTitle').innerText = "Admin Portal Login";
+            document.getElementById('customerRegArea').style.display = "none";
             openLoginModal();
         }
     }
@@ -421,36 +440,67 @@
     function openRegisterModal() { closeLoginModal(); document.getElementById('registerModal').style.display = "block"; }
     function closeRegisterModal() { document.getElementById('registerModal').style.display = "none"; document.getElementById('role-selection').style.display = 'flex'; }
     
-    function registerNewDriver() {
+    // REGISTRATION WITH PIN LOGIC
+    function requestRegistrationPin() {
+        const phone = document.getElementById('regDriverPhone').value;
+        if(!phone) return alert("Enter Phone Number first");
+        
+        generatedPin = Math.floor(1000 + Math.random() * 9000).toString();
+        
+        // Open WhatsApp with the code to simulate real sending
+        alert("SIMULATION: Your WhatsApp/SMS code is: " + generatedPin);
+        window.open(`https://wa.me/${phone.startsWith('0') ? '27'+phone.substring(1) : phone}?text=Your SA Pills Registration PIN is: ${generatedPin}`, '_blank');
+        
+        document.getElementById('pinConfirmArea').style.display = "block";
+        document.getElementById('requestPinBtn').style.display = "none";
+        document.getElementById('finalRegBtn').style.display = "block";
+    }
+
+    function registerWithPin() {
         const name = document.getElementById('regDriverName').value;
         const phone = document.getElementById('regDriverPhone').value;
+        const enteredPin = document.getElementById('receivedPin').value;
         const area = document.getElementById('regVillage').value;
+
+        if(enteredPin !== generatedPin) return alert("Invalid PIN. Please check your phone.");
+
         if(name && phone && area) {
-            database.ref('drivers/' + phone).set({ name, phone, village: area, currentStatus: 'available' }).then(() => {
+            const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
+            database.ref(path + phone).set({ name, phone, village: area, pin: enteredPin, currentStatus: 'available' }).then(() => {
+                alert("Registration Successful! Please Login.");
                 document.getElementById('registerModal').style.display = "none";
                 openLoginModal();
-                document.getElementById('adminPinInput').value = phone;
             });
         }
     }
 
     function checkAdminLogin() {
+        const phone = document.getElementById('loginPhoneInput').value;
         const pin = document.getElementById('adminPinInput').value;
-        if(pin === "0774" || pin === "0000") { 
-            closeLoginModal(); 
-            showPage('admin'); 
-        } else {
-            database.ref('drivers/' + pin).once('value', (snap) => {
-                if(snap.exists()) {
-                    loggedInDriverPhone = pin;
-                    localStorage.setItem('driverLoggedInPhone', pin);
-                    closeLoginModal();
-                    showPage('driver');
-                } else {
-                    alert("Invalid Credentials");
-                }
-            });
+
+        if(currentRoleType === 'admin') {
+            if((pin === "0774" || pin === "0000")) { closeLoginModal(); showPage('admin'); }
+            else { alert("Incorrect Admin PIN"); }
+            return;
         }
+
+        const dbPath = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
+        database.ref(dbPath + phone).once('value', (snap) => {
+            if(snap.exists() && snap.val().pin === pin) {
+                loggedInDriverPhone = phone;
+                localStorage.setItem('driverLoggedInPhone', phone);
+                closeLoginModal();
+                if(currentRoleType === 'driver') showPage('driver');
+                else showPage('shop');
+            } else {
+                alert("Invalid Phone or PIN. Please Register if you haven't.");
+            }
+        });
+    }
+
+    function forgotPin() {
+        alert("Redirecting to Support for PIN Reset...");
+        window.open("https://wa.me/27632010938?text=I forgot my login PIN. My phone is: ", "_blank");
     }
 
     function updateVillages(targetId) {
@@ -474,10 +524,9 @@
         const phone = document.getElementById('driverPhone').value;
         const area = document.getElementById('adminVillage').value;
         if(name && phone && area) {
-            database.ref('drivers/' + phone).set({ name, phone, village: area, currentStatus: 'available' }).then(() => {
-                document.getElementById('driverName').value = "";
-                document.getElementById('driverPhone').value = "";
-            });
+            database.ref('drivers/' + phone).update({ name, phone, village: area, currentStatus: 'available' });
+            document.getElementById('driverName').value = "";
+            document.getElementById('driverPhone').value = "";
         }
     }
 
