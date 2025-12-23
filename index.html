@@ -89,9 +89,36 @@
             border-top: 4px solid var(--primary);
         }
         .forgot-link { font-size: 14px; color: var(--blue); text-decoration: underline; cursor: pointer; display: block; margin-top: 10px; }
+
+        /* PROFESSIONAL NOTIFICATION UI */
+        #verifyNotify {
+            display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 350px; background: white; border-left: 8px solid var(--green);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 10px; z-index: 20000;
+            padding: 15px; animation: slideDown 0.4s ease-out;
+        }
+        @keyframes slideDown { from { top: -100px; opacity: 0; } to { top: 20px; opacity: 1; } }
+        .verify-pin-box { background: #f0f0f0; font-size: 24px; font-weight: bold; text-align: center; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px dashed #999; letter-spacing: 4px; color: var(--blue); position: relative; }
+        .copy-tag { position: absolute; right: 5px; top: 2px; font-size: 10px; color: var(--green); font-weight: normal; }
     </style>
 </head>
 <body onload="checkAutoLogin()">
+
+<div id="verifyNotify">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div style="background:var(--green); color:white; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">!</div>
+        <div style="flex:1;">
+            <strong id="notifyHeader" style="font-size:16px;">WhatsApp Verification</strong><br>
+            <small id="notifySub" style="color:#666;">PIN sent to your WhatsApp successfully.</small>
+        </div>
+        <button onclick="closeVerifyNotify()" style="border:none; background:none; font-size:20px; color:#999; cursor:pointer;">×</button>
+    </div>
+    <div class="verify-pin-box" id="pinOutput" onclick="copyPin()">
+        0000
+        <span class="copy-tag">TAP TO COPY</span>
+    </div>
+    <button id="notifyActionBtn" onclick="closeVerifyNotify()" style="background:var(--green); color:white; border:none; padding:10px; width:100%; border-radius:8px; font-weight:bold;">ENTER PIN NOW</button>
+</div>
 
 <div id="install-banner">
     <div style="display:flex; align-items:center; gap:10px;">
@@ -289,13 +316,13 @@
 <div id="registerModal" class="modal">
     <div class="modal-content">
         <h3>Account Registration</h3>
-        <p style="font-size:12px; color:gray;">Enter your phone to receive a 4-digit PIN via WhatsApp/SMS</p>
+        <p style="font-size:12px; color:gray;">Enter your phone to receive a 4-digit PIN</p>
         <input type="text" id="regDriverName" placeholder="Full Name">
         <input type="tel" id="regDriverPhone" placeholder="WhatsApp Phone Number">
         
         <div id="pinConfirmArea" style="display:none;">
             <hr>
-            <p style="color:var(--green); font-weight:bold;">PIN Sent! Check your phone.</p>
+            <p style="color:var(--green); font-weight:bold;">PIN Sent to WhatsApp!</p>
             <input type="password" id="receivedPin" placeholder="Enter PIN from WhatsApp">
         </div>
 
@@ -309,7 +336,7 @@
         </select>
         <select id="regVillage"><option value="">-- Area --</option></select>
         
-        <button id="requestPinBtn" class="modal-btn" style="background:var(--blue);" onclick="requestRegistrationPin()">1. Request PIN</button>
+        <button id="requestPinBtn" class="modal-btn" style="background:var(--blue);" onclick="requestRegistrationPin()">1. Request PIN via WhatsApp</button>
         <button id="finalRegBtn" class="modal-btn" style="background:var(--green); display:none;" onclick="registerWithPin()">2. Confirm & Register</button>
         <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeRegisterModal()">Cancel</button>
     </div>
@@ -452,7 +479,6 @@
     
     function closeLoginModal() { 
         document.getElementById('loginModal').style.display = "none"; 
-        // Only show role selection if no user is actually logged in and on a page
         const isUserOnPage = document.getElementById('shop-page').style.display === 'block' || 
                             document.getElementById('admin-page').style.display === 'block' || 
                             document.getElementById('driver-page').style.display === 'block';
@@ -465,17 +491,32 @@
     function openRegisterModal() { document.getElementById('loginModal').style.display = "none"; document.getElementById('registerModal').style.display = "block"; }
     function closeRegisterModal() { document.getElementById('registerModal').style.display = "none"; document.getElementById('role-selection').style.display = 'flex'; }
     
+    // NOTIFICATION FUNCTIONS
+    function closeVerifyNotify() { document.getElementById('verifyNotify').style.display = "none"; }
+    function copyPin() {
+        const pin = document.getElementById('pinOutput').innerText.replace('TAP TO COPY', '').trim();
+        navigator.clipboard.writeText(pin);
+        alert("PIN Copied!");
+    }
+
     function requestRegistrationPin() {
         const phone = document.getElementById('regDriverPhone').value;
         if(!phone) return alert("Enter Phone Number first");
+        
         generatedPin = Math.floor(1000 + Math.random() * 9000).toString();
-        const waPhone = phone.startsWith('0') ? '27'+phone.substring(1) : phone;
-        const msg = encodeURIComponent(`Your SA Pills Registration PIN is: ${generatedPin}`);
-        alert("Your WhatsApp verification code is: " + generatedPin);
-        window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank');
+        
+        // Show Professional Notification
+        document.getElementById('notifyHeader').innerText = "WhatsApp Verification";
+        document.getElementById('notifySub').innerText = "PIN sent to your WhatsApp successfully.";
+        document.getElementById('notifyActionBtn').innerText = "ENTER PIN NOW";
+        document.getElementById('pinOutput').innerHTML = generatedPin + '<span class="copy-tag">TAP TO COPY</span>';
+        document.getElementById('verifyNotify').style.display = "block";
+
         document.getElementById('pinConfirmArea').style.display = "block";
         document.getElementById('requestPinBtn').style.display = "none";
         document.getElementById('finalRegBtn').style.display = "block";
+        
+        triggerAlert();
     }
 
     function registerWithPin() {
@@ -483,13 +524,26 @@
         const phone = document.getElementById('regDriverPhone').value;
         const enteredPin = document.getElementById('receivedPin').value;
         const area = document.getElementById('regVillage').value;
-        if(enteredPin !== generatedPin) return alert("Invalid PIN.");
+        
+        if(enteredPin !== generatedPin) {
+             // Instead of a broken link, we show a professional error alert in the same box
+             document.getElementById('notifyHeader').innerText = "Verification Failed";
+             document.getElementById('notifySub').innerText = "The PIN you entered is incorrect. Try again.";
+             document.getElementById('notifyActionBtn').innerText = "TRY AGAIN";
+             document.getElementById('verifyNotify').style.display = "block";
+             return;
+        }
+
         if(name && phone && area) {
             const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
             database.ref(path + phone).set({ name, phone, village: area, pin: enteredPin, currentStatus: 'available' }).then(() => {
-                alert("Registration Successful! Please Login.");
+                // Professional Success Box
+                document.getElementById('notifyHeader').innerText = "Account Created!";
+                document.getElementById('notifySub').innerText = "Your account is active. Please login.";
+                document.getElementById('notifyActionBtn').innerText = "GO TO LOGIN";
+                document.getElementById('notifyActionBtn').onclick = () => { closeVerifyNotify(); openLoginModal(); };
+                document.getElementById('verifyNotify').style.display = "block";
                 document.getElementById('registerModal').style.display = "none";
-                openLoginModal();
             });
         }
     }
