@@ -19,7 +19,6 @@
         :root { --primary: #e41e26; --blue: #00529B; --green: #25D366; --dark: #222; }
         body { font-family: sans-serif; margin: 0; background: #f4f4f4; padding-bottom: 320px; -webkit-tap-highlight-color: transparent; }
         
-        /* Unified Entrance Screens */
         #age-gate, #role-selection {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.98); color: white; display: flex;
@@ -144,7 +143,7 @@
     <div class="tab active-tab" id="tab-shop-btn" onclick="showPage('shop')">Menu</div>
     <div class="tab" id="tab-check-btn" onclick="showPage('checkout')">My Cart</div>
     <div class="tab" id="tab-track-btn" style="display:none;" onclick="showPage('tracking')">Track Order</div>
-    <div class="tab" onclick="location.reload()">Switch Role</div>
+    <div class="tab" onclick="resetRoleSelection()">Switch Role</div>
 </div>
 
 <div id="shop-page" class="container">
@@ -204,7 +203,7 @@
 </div>
 
 <div id="admin-page" class="container">
-    <button onclick="location.reload()" style="background:#444; color:white;">← Back to Selection</button>
+    <button onclick="resetRoleSelection()" style="background:#444; color:white;">← Back to Selection</button>
     <h2 style="color:var(--primary);">Admin Dashboard</h2>
     
     <h3 style="color:var(--primary);">1. New Customer Orders</h3>
@@ -362,16 +361,26 @@
     let generatedPin = "";
 
     function checkAutoLogin() {
+        if (sessionStorage.getItem('ageVerified') === 'true') {
+            document.getElementById('age-gate').style.display = 'none';
+            document.getElementById('role-selection').style.display = 'flex';
+        }
+
         const savedPhone = localStorage.getItem('driverLoggedInPhone');
-        if(savedPhone) {
+        const savedRole = localStorage.getItem('userRole');
+        if(savedPhone && savedRole) {
             loggedInDriverPhone = savedPhone;
+            currentRoleType = savedRole;
             document.getElementById('age-gate').style.display = 'none';
             document.getElementById('role-selection').style.display = 'none';
-            showPage('driver');
+            if(currentRoleType === 'driver') showPage('driver');
+            else if(currentRoleType === 'admin') showPage('admin');
+            else showPage('shop');
         }
     }
 
     function verifyAge() { 
+        sessionStorage.setItem('ageVerified', 'true');
         document.getElementById('age-gate').style.display = 'none'; 
         document.getElementById('role-selection').style.display = 'flex';
     }
@@ -394,12 +403,21 @@
         }
     }
 
+    function resetRoleSelection() {
+        const pages = ['shop-page', 'checkout-page', 'admin-page', 'tracking-page', 'driver-page', 'footer-controls'];
+        pages.forEach(p => document.getElementById(p).style.display = 'none');
+        document.getElementById('role-selection').style.display = 'flex';
+        localStorage.removeItem('driverLoggedInPhone');
+        localStorage.removeItem('userRole');
+    }
+
     function exitSite() { window.location.href = "https://google.com"; }
 
     function driverLogout() {
         localStorage.removeItem('driverLoggedInPhone');
+        localStorage.removeItem('userRole');
         loggedInDriverPhone = null;
-        location.reload();
+        resetRoleSelection();
     }
 
     function showPage(page) {
@@ -431,26 +449,30 @@
 
     function closeModal() { document.getElementById('customModal').style.display = "none"; }
     function openLoginModal() { document.getElementById('loginModal').style.display = "block"; }
+    
     function closeLoginModal() { 
         document.getElementById('loginModal').style.display = "none"; 
-        if(document.getElementById('admin-page').style.display !== 'block' && document.getElementById('driver-page').style.display !== 'block' && document.getElementById('shop-page').style.display !== 'block') {
+        // Only show role selection if no user is actually logged in and on a page
+        const isUserOnPage = document.getElementById('shop-page').style.display === 'block' || 
+                            document.getElementById('admin-page').style.display === 'block' || 
+                            document.getElementById('driver-page').style.display === 'block';
+        
+        if(!isUserOnPage) {
             document.getElementById('role-selection').style.display = 'flex';
         }
     }
-    function openRegisterModal() { closeLoginModal(); document.getElementById('registerModal').style.display = "block"; }
+    
+    function openRegisterModal() { document.getElementById('loginModal').style.display = "none"; document.getElementById('registerModal').style.display = "block"; }
     function closeRegisterModal() { document.getElementById('registerModal').style.display = "none"; document.getElementById('role-selection').style.display = 'flex'; }
     
-    // REGISTRATION WITH PIN LOGIC
     function requestRegistrationPin() {
         const phone = document.getElementById('regDriverPhone').value;
         if(!phone) return alert("Enter Phone Number first");
-        
         generatedPin = Math.floor(1000 + Math.random() * 9000).toString();
-        
-        // Open WhatsApp with the code to simulate real sending
-        alert("SIMULATION: Your WhatsApp/SMS code is: " + generatedPin);
-        window.open(`https://wa.me/${phone.startsWith('0') ? '27'+phone.substring(1) : phone}?text=Your SA Pills Registration PIN is: ${generatedPin}`, '_blank');
-        
+        const waPhone = phone.startsWith('0') ? '27'+phone.substring(1) : phone;
+        const msg = encodeURIComponent(`Your SA Pills Registration PIN is: ${generatedPin}`);
+        alert("Your WhatsApp verification code is: " + generatedPin);
+        window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank');
         document.getElementById('pinConfirmArea').style.display = "block";
         document.getElementById('requestPinBtn').style.display = "none";
         document.getElementById('finalRegBtn').style.display = "block";
@@ -461,9 +483,7 @@
         const phone = document.getElementById('regDriverPhone').value;
         const enteredPin = document.getElementById('receivedPin').value;
         const area = document.getElementById('regVillage').value;
-
-        if(enteredPin !== generatedPin) return alert("Invalid PIN. Please check your phone.");
-
+        if(enteredPin !== generatedPin) return alert("Invalid PIN.");
         if(name && phone && area) {
             const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
             database.ref(path + phone).set({ name, phone, village: area, pin: enteredPin, currentStatus: 'available' }).then(() => {
@@ -477,29 +497,32 @@
     function checkAdminLogin() {
         const phone = document.getElementById('loginPhoneInput').value;
         const pin = document.getElementById('adminPinInput').value;
-
         if(currentRoleType === 'admin') {
-            if((pin === "0774" || pin === "0000")) { closeLoginModal(); showPage('admin'); }
+            if((pin === "0774" || pin === "0000")) { 
+                localStorage.setItem('driverLoggedInPhone', 'admin');
+                localStorage.setItem('userRole', 'admin');
+                document.getElementById('loginModal').style.display = "none";
+                showPage('admin'); 
+            }
             else { alert("Incorrect Admin PIN"); }
             return;
         }
-
         const dbPath = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
         database.ref(dbPath + phone).once('value', (snap) => {
             if(snap.exists() && snap.val().pin === pin) {
                 loggedInDriverPhone = phone;
                 localStorage.setItem('driverLoggedInPhone', phone);
-                closeLoginModal();
+                localStorage.setItem('userRole', currentRoleType);
+                document.getElementById('loginModal').style.display = "none";
                 if(currentRoleType === 'driver') showPage('driver');
                 else showPage('shop');
             } else {
-                alert("Invalid Phone or PIN. Please Register if you haven't.");
+                alert("Invalid Phone or PIN.");
             }
         });
     }
 
     function forgotPin() {
-        alert("Redirecting to Support for PIN Reset...");
         window.open("https://wa.me/27632010938?text=I forgot my login PIN. My phone is: ", "_blank");
     }
 
@@ -598,12 +621,7 @@
         const driverPhone = document.getElementById('select-' + orderId).value;
         if(!driverPhone) return;
         const driver = allDrivers.find(d => d.phone === driverPhone);
-        database.ref('orders/' + orderId).update({ 
-            status: 'dispatched', 
-            dName: driver.name, 
-            dPhone: driver.phone,
-            driverReceived: false 
-        });
+        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false });
         database.ref('drivers/' + driverPhone).update({ currentStatus: 'delivering' });
     }
 
@@ -628,15 +646,10 @@
                             if (oSnap.key !== lastTaskID) { triggerAlert(); taskCard.classList.add('new-task-highlight'); lastTaskID = oSnap.key; }
                             foundTask = true;
                             taskDetails.innerHTML += `<div style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;"><p><strong>Customer:</strong> ${o.customer}</p><p><strong>Phone:</strong> ${o.phone}</p><p><strong>Address:</strong> ${o.address}</p><p><strong>Items:</strong> ${o.items}</p><p><strong>Total Due:</strong> ${o.total}</p></div>`;
-                            
                             ackBtn.style.display = o.driverReceived ? "none" : "block";
-                            ackBtn.onclick = () => {
-                                database.ref('orders/' + oSnap.key).update({ driverReceived: true });
-                                alert("Admin has been notified that you received the order.");
-                            };
-
-                            document.getElementById('map-link-btn').onclick = () => { const fullAddr = o.address + " " + o.area + " South Africa"; window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(fullAddr), '_blank'); };
-                            document.getElementById('cust-whatsapp-btn').onclick = () => { let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1); window.open(`https://wa.me/${cp}?text=Hi ${o.customer}, I am your driver for your order.`, '_blank'); };
+                            ackBtn.onclick = () => { database.ref('orders/' + oSnap.key).update({ driverReceived: true }); alert("Admin notified."); };
+                            document.getElementById('map-link-btn').onclick = () => { window.open("https://www.google.com/maps/search/" + encodeURIComponent(o.address + " " + o.area), '_blank'); };
+                            document.getElementById('cust-whatsapp-btn').onclick = () => { let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1); window.open(`https://wa.me/${cp}?text=Hi, I am your driver.`, '_blank'); };
                         }
                     });
                 }
@@ -648,76 +661,52 @@
 
     function sendOrder() {
         const o = collectData();
-        if(!o.customer || !o.area || cart.length === 0) { alert("Please fill details and add items."); return; }
+        if(!o.customer || !o.area || cart.length === 0) { alert("Fill details."); return; }
         const newRef = database.ref('orders').push();
         newRef.set({...o, status: 'pending', timestamp: Date.now()});
         localStorage.setItem('myOrderID', newRef.key);
         document.getElementById('tab-track-btn').style.display = 'block';
-        window.open(`https://wa.me/27632010938?text=New Order ID: ${newRef.key}. Items: ${o.items}. Area: ${o.area}`, '_blank');
-        showPage('tracking');
-        cart = []; updateTotal();
+        window.open(`https://wa.me/27632010938?text=Order: ${o.items}`, '_blank');
+        showPage('tracking'); cart = []; updateTotal();
     }
 
     function orderViaApp() {
         const o = collectData();
-        if(!o.customer || !o.area || cart.length === 0) { alert("Please fill details and add items."); return; }
+        if(!o.customer || !o.area || cart.length === 0) { alert("Fill details."); return; }
         const newRef = database.ref('orders').push();
         newRef.set({...o, status: 'pending', timestamp: Date.now()});
         localStorage.setItem('myOrderID', newRef.key);
         document.getElementById('tab-track-btn').style.display = 'block';
-        showPage('tracking');
-        cart = []; updateTotal();
+        showPage('tracking'); cart = []; updateTotal();
     }
 
-    function collectData() { return { customer: document.getElementById('custName').value || "", phone: document.getElementById('custPhone').value || "", address: document.getElementById('custAddress').value || "", area: document.getElementById('village').value || "", items: cart.map(i => i.name).join(", "), total: document.getElementById('cart-total').innerText, payment: document.getElementById('payMethod').value }; }
+    function collectData() { return { customer: document.getElementById('custName').value, phone: document.getElementById('custPhone').value, address: document.getElementById('custAddress').value, area: document.getElementById('village').value, items: cart.map(i => i.name).join(", "), total: document.getElementById('cart-total').innerText, payment: document.getElementById('payMethod').value }; }
 
-    let lastStatus = null;
     function updateTrackingUI() {
         const orderId = localStorage.getItem('myOrderID');
         if(!orderId) return;
         database.ref('orders/' + orderId).on('value', (snapshot) => {
             if(snapshot.exists()) {
                 const d = snapshot.val();
-                document.getElementById('order-items-summary').innerHTML = `<strong>Items:</strong> ${d.items}<br><strong>To:</strong> ${d.address}`;
-                if (d.status !== lastStatus) { triggerAlert(); lastStatus = d.status; }
-                if(d.status === 'pending') {
-                    document.getElementById('progress-line').style.width = "30%";
-                    document.getElementById('status-text').innerHTML = "<strong>Status:</strong> Waiting for driver...";
-                    document.getElementById('driver-info').style.display = 'none';
-                } else if(d.status === 'dispatched') {
-                    document.getElementById('progress-line').style.width = "90%";
-                    document.getElementById('status-text').innerHTML = "<strong>Status:</strong> Driver is coming!";
-                    document.getElementById('driver-info').style.display = 'block';
-                    document.getElementById('assigned-driver-name').innerText = d.dName;
-                    document.getElementById('assigned-driver-phone-link').innerText = d.dPhone;
-                    document.getElementById('assigned-driver-phone-link').href = "tel:" + d.dPhone;
-                    document.getElementById('driver-received-msg').style.display = d.driverReceived ? 'block' : 'none';
-                }
+                document.getElementById('order-items-summary').innerHTML = `<strong>Items:</strong> ${d.items}`;
+                if(d.status === 'pending') { document.getElementById('progress-line').style.width = "30%"; document.getElementById('status-text').innerHTML = "Status: Waiting..."; }
+                else if(d.status === 'dispatched') { document.getElementById('progress-line').style.width = "90%"; document.getElementById('status-text').innerHTML = "Status: En Route!"; document.getElementById('driver-info').style.display = 'block'; document.getElementById('assigned-driver-name').innerText = d.dName; }
             }
         });
     }
 
     function finishOrder() {
         const id = localStorage.getItem('myOrderID');
-        if(!id) return;
-        database.ref('orders/' + id).once('value', (snapshot) => {
-            if(snapshot.exists()){
-                const orderData = snapshot.val();
-                if(orderData.dPhone) database.ref('drivers/' + orderData.dPhone).update({ currentStatus: 'available' });
-            }
+        database.ref('orders/' + id).once('value', (snap) => {
+            if(snap.exists() && snap.val().dPhone) database.ref('drivers/' + snap.val().dPhone).update({ currentStatus: 'available' });
+            database.ref('orders/' + id).remove();
             localStorage.removeItem('myOrderID');
             document.getElementById('tracking-content').style.display = 'none';
             document.getElementById('order-complete-view').style.display = 'block';
-            document.getElementById('tab-track-btn').style.display = 'none';
-            database.ref('orders/' + id).remove();
         });
     }
 
-    function returnToMenu() {
-        document.getElementById('tracking-content').style.display = 'block';
-        document.getElementById('order-complete-view').style.display = 'none';
-        showPage('shop');
-    }
+    function returnToMenu() { document.getElementById('tracking-content').style.display = 'block'; document.getElementById('order-complete-view').style.display = 'none'; showPage('shop'); }
     if(localStorage.getItem('myOrderID')) document.getElementById('tab-track-btn').style.display = 'block';
 </script>
 </body>
