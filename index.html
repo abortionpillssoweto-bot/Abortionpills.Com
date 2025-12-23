@@ -106,7 +106,7 @@
 
 <div id="verifyNotify">
     <div style="display:flex; align-items:center; gap:12px;">
-        <div style="background:var(--green); color:white; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">!</div>
+        <div id="notifyIcon" style="background:var(--green); color:white; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">!</div>
         <div style="flex:1;">
             <strong id="notifyHeader" style="font-size:16px;">WhatsApp Verification</strong><br>
             <small id="notifySub" style="color:#666;">PIN sent to your WhatsApp successfully.</small>
@@ -502,21 +502,36 @@
     function requestRegistrationPin() {
         const phone = document.getElementById('regDriverPhone').value;
         if(!phone) return alert("Enter Phone Number first");
-        
-        generatedPin = Math.floor(1000 + Math.random() * 9000).toString();
-        
-        // Show Professional Notification
-        document.getElementById('notifyHeader').innerText = "WhatsApp Verification";
-        document.getElementById('notifySub').innerText = "PIN sent to your WhatsApp successfully.";
-        document.getElementById('notifyActionBtn').innerText = "ENTER PIN NOW";
-        document.getElementById('pinOutput').innerHTML = generatedPin + '<span class="copy-tag">TAP TO COPY</span>';
-        document.getElementById('verifyNotify').style.display = "block";
 
-        document.getElementById('pinConfirmArea').style.display = "block";
-        document.getElementById('requestPinBtn').style.display = "none";
-        document.getElementById('finalRegBtn').style.display = "block";
-        
-        triggerAlert();
+        // CHECK IF ALREADY REGISTERED
+        const dbPath = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
+        database.ref(dbPath + phone).once('value', (snapshot) => {
+            if (snapshot.exists()) {
+                // PROFESSIONAL NOTIFICATION FOR ALREADY REGISTERED
+                document.getElementById('notifyHeader').innerText = "Account Exists";
+                document.getElementById('notifySub').innerText = "You have already registered with this number. Please login.";
+                document.getElementById('notifyActionBtn').innerText = "GO TO LOGIN";
+                document.getElementById('notifyActionBtn').onclick = () => { closeVerifyNotify(); openLoginModal(); };
+                document.getElementById('pinOutput').innerHTML = "EXISTING USER";
+                document.getElementById('notifyIcon').style.background = "var(--primary)";
+                document.getElementById('verifyNotify').style.display = "block";
+                triggerAlert();
+            } else {
+                // PROCEED TO GENERATE PIN
+                generatedPin = Math.floor(1000 + Math.random() * 9000).toString();
+                document.getElementById('notifyHeader').innerText = "WhatsApp Verification";
+                document.getElementById('notifySub').innerText = "PIN sent to your WhatsApp successfully.";
+                document.getElementById('notifyActionBtn').innerText = "ENTER PIN NOW";
+                document.getElementById('pinOutput').innerHTML = generatedPin + '<span class="copy-tag">TAP TO COPY</span>';
+                document.getElementById('notifyIcon').style.background = "var(--green)";
+                document.getElementById('verifyNotify').style.display = "block";
+
+                document.getElementById('pinConfirmArea').style.display = "block";
+                document.getElementById('requestPinBtn').style.display = "none";
+                document.getElementById('finalRegBtn').style.display = "block";
+                triggerAlert();
+            }
+        });
     }
 
     function registerWithPin() {
@@ -526,7 +541,6 @@
         const area = document.getElementById('regVillage').value;
         
         if(enteredPin !== generatedPin) {
-             // Instead of a broken link, we show a professional error alert in the same box
              document.getElementById('notifyHeader').innerText = "Verification Failed";
              document.getElementById('notifySub').innerText = "The PIN you entered is incorrect. Try again.";
              document.getElementById('notifyActionBtn').innerText = "TRY AGAIN";
@@ -537,7 +551,6 @@
         if(name && phone && area) {
             const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
             database.ref(path + phone).set({ name, phone, village: area, pin: enteredPin, currentStatus: 'available' }).then(() => {
-                // Professional Success Box
                 document.getElementById('notifyHeader').innerText = "Account Created!";
                 document.getElementById('notifySub').innerText = "Your account is active. Please login.";
                 document.getElementById('notifyActionBtn').innerText = "GO TO LOGIN";
@@ -601,9 +614,15 @@
         const phone = document.getElementById('driverPhone').value;
         const area = document.getElementById('adminVillage').value;
         if(name && phone && area) {
-            database.ref('drivers/' + phone).update({ name, phone, village: area, currentStatus: 'available' });
-            document.getElementById('driverName').value = "";
-            document.getElementById('driverPhone').value = "";
+            database.ref('drivers/' + phone).once('value', (snap) => {
+                if(snap.exists()){
+                    alert("This driver is already registered.");
+                } else {
+                    database.ref('drivers/' + phone).update({ name, phone, village: area, currentStatus: 'available' });
+                    document.getElementById('driverName').value = "";
+                    document.getElementById('driverPhone').value = "";
+                }
+            });
         }
     }
 
