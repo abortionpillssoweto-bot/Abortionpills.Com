@@ -432,11 +432,9 @@
         const notifyEl = document.getElementById('verifyNotify');
         const iconEl = document.getElementById('notifyIcon');
         
-        // Reset recovery-specific views in case they were open
         document.getElementById('forgotPinInputArea').style.display = "none";
         document.getElementById('pinOutput').style.display = "none";
 
-        // Dynamic Icon Logic
         if (color === 'var(--green)') iconEl.innerHTML = '✅';
         else if (color === 'var(--orange)') iconEl.innerHTML = '🚚';
         else iconEl.innerHTML = '🔔';
@@ -452,7 +450,6 @@
         triggerAlert();
     }
 
-    // --- FIX FOR FORGET PIN BUTTON ---
     function forgotPin() {
         closeLoginModal();
         showAppNotify("PIN RECOVERY", "Please enter the phone number associated with your account to recover your security PIN.", "var(--blue)", false);
@@ -462,10 +459,7 @@
     function sendForgotVerification() {
         const phone = document.getElementById('forgotPhoneInput').value;
         if(!phone) return alert("Please enter a phone number.");
-        
-        // Check Drivers or Users based on context
         const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
-        
         database.ref(path + phone).once('value', (snap) => {
             if(snap.exists()) {
                 const pin = snap.val().pin;
@@ -499,31 +493,11 @@
             else showPage('shop');
         }
         
-        // --- INJECTED CUSTOMER NOTIFICATION LISTENER ---
         const myOrderId = localStorage.getItem('myOrderID');
         if(myOrderId){
             database.ref('orders/' + myOrderId + '/arrived').on('value', snap => {
                 if(snap.val() === true){
                     showAppNotify("DRIVER ARRIVED!", "Your delivery driver is currently outside your location. Please proceed to the delivery point.", "var(--orange)");
-                }
-            });
-        }
-
-        // --- INJECTED DRIVER NOTIFICATION LISTENER ---
-        database.ref('orders').on('child_changed', (snapshot) => {
-            const order = snapshot.val();
-            const savedPhone = localStorage.getItem('driverLoggedInPhone');
-            if(order.status === 'dispatched' && order.dPhone === savedPhone && order.driverReceived === false) {
-                 showAppNotify("NEW TASK ASSIGNED", "Admin has assigned a new delivery to you. Please check your portal and accept.", "var(--blue)");
-            }
-        });
-
-        // --- INJECTED ADMIN NOTIFICATION LISTENER ---
-        if(savedRole === 'admin') {
-            database.ref('orders').on('child_changed', (snapshot) => {
-                const order = snapshot.val();
-                if(order.driverReceived === true) {
-                    showAppNotify("ORDER ACCEPTED", `Driver ${order.dName} has accepted Order ${snapshot.key.substring(snapshot.key.length - 6)}.`, "var(--green)");
                 }
             });
         }
@@ -541,7 +515,6 @@
 
     function autoDispatchOrder(orderId, orderData) {
         database.ref('drivers').once('value', (snap) => {
-            let assigned = false;
             snap.forEach(driverSnap => {
                 const driver = driverSnap.val();
                 if (driver.village === orderData.area && driver.currentStatus === 'available') {
@@ -553,7 +526,6 @@
                         managedBy: 'System Auto-Dispatch'
                     });
                     database.ref('drivers/' + driver.phone).update({ currentStatus: 'delivering' });
-                    assigned = true;
                     return true;
                 }
             });
@@ -658,9 +630,7 @@
         const phone = document.getElementById('regDriverPhone').value;
         const pin = document.getElementById('regDriverPin').value;
         const area = document.getElementById('regVillage').value;
-
         if(!name || !phone || !pin || !area) return showAppNotify("Missing Information", "Please ensure all registration fields are completed before submitting.", "var(--primary)");
-        
         database.ref('pendingDrivers/' + phone).set({
             name, phone, pin, village: area, status: 'pending'
         }).then(() => {
@@ -676,14 +646,7 @@
             if(!snap.exists()) { div.innerHTML = "No pending approval requests."; return; }
             snap.forEach(child => {
                 const d = child.val();
-                div.innerHTML += `
-                    <div class="approval-card">
-                        <strong>${d.name}</strong> (${d.phone})<br>
-                        Area: ${d.village}<br>
-                        <button onclick="approveDriver('${d.phone}')" style="background:var(--green); color:white; padding:8px; width:48%;">Accept</button>
-                        <button onclick="declineDriver('${d.phone}')" style="background:var(--primary); color:white; padding:8px; width:48%;">Decline</button>
-                    </div>
-                `;
+                div.innerHTML += `<div class="approval-card"><strong>${d.name}</strong> (${d.phone})<br>Area: ${d.village}<br><button onclick="approveDriver('${d.phone}')" style="background:var(--green); color:white; padding:8px; width:48%;">Accept</button><button onclick="declineDriver('${d.phone}')" style="background:var(--primary); color:white; padding:8px; width:48%;">Decline</button></div>`;
             });
         });
     }
@@ -787,7 +750,7 @@
                 const shortId = orderId.substring(orderId.length - 6);
                 if(o.status === 'dispatched' || o.status === 'delivered' || o.status === 'failed') {
                     hasActive = true;
-                    let ack = o.driverReceived ? "<span style='color:green; font-weight:bold;'>✅ DRIVER ACCEPTED ORDER</span>" : "<span style='color:orange;'>⏳ Waiting for Acknowledgment</span>";
+                    let ack = o.driverReceived ? "<span style='color:green;'>[RECEIVED BY DRIVER]</span>" : "<span style='color:orange;'>[Waiting for Acknowledgment]</span>";
                     let finalStatus = o.status === 'delivered' ? "✅ DELIVERED" : (o.status === 'failed' ? "❌ FAILED" : "🚚 EN ROUTE");
                     activeDiv.innerHTML += `<div class="delivery-card"><strong>📦 Order ID: PILLS-${shortId}</strong><br><strong>Status: ${finalStatus}</strong><br><strong>🚚 Driver: ${o.dName}</strong><br>${ack}<hr><small>📍 Area: ${o.area}</small><br><button onclick="deleteOrder('${orderId}')" class="del-btn">Remove Record</button></div>`;
                 } else if(o.status === 'pending') {
@@ -819,7 +782,7 @@
         const driverPhone = document.getElementById('select-' + orderId).value;
         if(!driverPhone) return;
         const driver = allDrivers.find(d => d.phone === driverPhone);
-        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false, arrived: false });
+        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false });
         database.ref('drivers/' + driverPhone).update({ currentStatus: 'delivering' });
         showAppNotify("Order Dispatched", `Task successfully assigned to ${driver.name}.`, "var(--green)");
     }
@@ -847,7 +810,10 @@
                             ackBtn.style.display = o.driverReceived ? "none" : "block";
                             arriveBtn.style.display = o.driverReceived ? "block" : "none";
                             finalActions.style.display = o.driverReceived ? "grid" : "none";
-                            ackBtn.onclick = () => { database.ref('orders/' + oSnap.key).update({ driverReceived: true }); };
+                            ackBtn.onclick = () => { 
+                                database.ref('orders/' + oSnap.key).update({ driverReceived: true });
+                                showAppNotify("Order Accepted", "You have acknowledged this order. Customer is being updated.", "var(--blue)");
+                            };
                             document.getElementById('map-link-btn').onclick = () => { window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(o.address + " " + o.area), '_blank'); };
                             document.getElementById('cust-whatsapp-btn').onclick = () => { let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1); window.open(`https://wa.me/${cp}?text=Hi, I am your driver for order PILLS-${activeTaskID.substring(activeTaskID.length - 6)}`, '_blank'); };
                         }
