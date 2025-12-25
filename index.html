@@ -432,6 +432,10 @@
         const notifyEl = document.getElementById('verifyNotify');
         const iconEl = document.getElementById('notifyIcon');
         
+        // Reset recovery-specific views in case they were open
+        document.getElementById('forgotPinInputArea').style.display = "none";
+        document.getElementById('pinOutput').style.display = "none";
+
         // Dynamic Icon Logic
         if (color === 'var(--green)') iconEl.innerHTML = '✅';
         else if (color === 'var(--orange)') iconEl.innerHTML = '🚚';
@@ -446,6 +450,34 @@
         
         notifyEl.style.display = "block";
         triggerAlert();
+    }
+
+    // --- FIX FOR FORGET PIN BUTTON ---
+    function forgotPin() {
+        closeLoginModal();
+        showAppNotify("PIN RECOVERY", "Please enter the phone number associated with your account to recover your security PIN.", "var(--blue)", false);
+        document.getElementById('forgotPinInputArea').style.display = "block";
+    }
+
+    function sendForgotVerification() {
+        const phone = document.getElementById('forgotPhoneInput').value;
+        if(!phone) return alert("Please enter a phone number.");
+        
+        // Check Drivers or Users based on context
+        const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
+        
+        database.ref(path + phone).once('value', (snap) => {
+            if(snap.exists()) {
+                const pin = snap.val().pin;
+                document.getElementById('forgotPinInputArea').style.display = "none";
+                document.getElementById('pinOutput').style.display = "block";
+                document.getElementById('pinOutput').innerHTML = `${pin}<span class="copy-tag">TAP TO COPY</span>`;
+                document.getElementById('notifySub').innerText = "Account Found! Your security PIN is displayed below. Tap to copy and use it to login.";
+                document.getElementById('notifyActionBtn').style.display = "block";
+            } else {
+                showAppNotify("Error", "No account was found with that phone number. Please check the number or register.", "var(--primary)");
+            }
+        });
     }
 
     function checkAutoLogin() {
@@ -467,11 +499,31 @@
             else showPage('shop');
         }
         
+        // --- INJECTED CUSTOMER NOTIFICATION LISTENER ---
         const myOrderId = localStorage.getItem('myOrderID');
         if(myOrderId){
             database.ref('orders/' + myOrderId + '/arrived').on('value', snap => {
                 if(snap.val() === true){
                     showAppNotify("DRIVER ARRIVED!", "Your delivery driver is currently outside your location. Please proceed to the delivery point.", "var(--orange)");
+                }
+            });
+        }
+
+        // --- INJECTED DRIVER NOTIFICATION LISTENER ---
+        database.ref('orders').on('child_changed', (snapshot) => {
+            const order = snapshot.val();
+            const savedPhone = localStorage.getItem('driverLoggedInPhone');
+            if(order.status === 'dispatched' && order.dPhone === savedPhone && order.driverReceived === false) {
+                 showAppNotify("NEW TASK ASSIGNED", "Admin has assigned a new delivery to you. Please check your portal and accept.", "var(--blue)");
+            }
+        });
+
+        // --- INJECTED ADMIN NOTIFICATION LISTENER ---
+        if(savedRole === 'admin') {
+            database.ref('orders').on('child_changed', (snapshot) => {
+                const order = snapshot.val();
+                if(order.driverReceived === true) {
+                    showAppNotify("ORDER ACCEPTED", `Driver ${order.dName} has accepted Order ${snapshot.key.substring(snapshot.key.length - 6)}.`, "var(--green)");
                 }
             });
         }
@@ -735,7 +787,7 @@
                 const shortId = orderId.substring(orderId.length - 6);
                 if(o.status === 'dispatched' || o.status === 'delivered' || o.status === 'failed') {
                     hasActive = true;
-                    let ack = o.driverReceived ? "<span style='color:green;'>[RECEIVED BY DRIVER]</span>" : "<span style='color:orange;'>[Waiting for Acknowledgment]</span>";
+                    let ack = o.driverReceived ? "<span style='color:green; font-weight:bold;'>✅ DRIVER ACCEPTED ORDER</span>" : "<span style='color:orange;'>⏳ Waiting for Acknowledgment</span>";
                     let finalStatus = o.status === 'delivered' ? "✅ DELIVERED" : (o.status === 'failed' ? "❌ FAILED" : "🚚 EN ROUTE");
                     activeDiv.innerHTML += `<div class="delivery-card"><strong>📦 Order ID: PILLS-${shortId}</strong><br><strong>Status: ${finalStatus}</strong><br><strong>🚚 Driver: ${o.dName}</strong><br>${ack}<hr><small>📍 Area: ${o.area}</small><br><button onclick="deleteOrder('${orderId}')" class="del-btn">Remove Record</button></div>`;
                 } else if(o.status === 'pending') {
@@ -767,7 +819,7 @@
         const driverPhone = document.getElementById('select-' + orderId).value;
         if(!driverPhone) return;
         const driver = allDrivers.find(d => d.phone === driverPhone);
-        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false });
+        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false, arrived: false });
         database.ref('drivers/' + driverPhone).update({ currentStatus: 'delivering' });
         showAppNotify("Order Dispatched", `Task successfully assigned to ${driver.name}.`, "var(--green)");
     }
