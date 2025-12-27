@@ -628,18 +628,64 @@
                 const driver = driverSnap.val();
                 // ONLY DISPATCH TO "AVAILABLE" DRIVERS (Not unpaid)
                 if (driver.village === orderData.area && driver.currentStatus === 'available') {
-                    database.ref('orders/' + orderId).update({
-                        status: 'dispatched',
-                        dName: driver.name,
-                        dPhone: driver.phone,
-                        driverReceived: false,
-                        managedBy: 'System Auto-Dispatch'
-                    });
-                    database.ref('drivers/' + driver.phone).update({ currentStatus: 'delivering' });
+                    dispatchToDriver(orderId, driver, 'System Auto-Dispatch');
                     return true;
                 }
             });
         });
+    }
+
+    // NEW FUNCTION: Shared dispatch logic with timer logic
+    function dispatchToDriver(orderId, driver, managerType) {
+        database.ref('orders/' + orderId).update({
+            status: 'dispatched',
+            dName: driver.name,
+            dPhone: driver.phone,
+            driverReceived: false,
+            arrived: false,
+            managedBy: managerType
+        });
+        database.ref('drivers/' + driver.phone).update({ currentStatus: 'delivering' });
+        
+        // --- 60 SECOND RE-ASSIGNMENT TIMER ---
+        startAssignmentTimer(orderId, driver.phone);
+    }
+
+    function startAssignmentTimer(orderId, currentDriverPhone) {
+        setTimeout(() => {
+            database.ref('orders/' + orderId).once('value', (snap) => {
+                const order = snap.val();
+                // If order is still dispatched but driver NOT accepted (received)
+                if (order && order.status === 'dispatched' && order.dPhone === currentDriverPhone && order.driverReceived === false) {
+                    console.log("Driver did not accept in 1 minute. Reassigning...");
+                    
+                    // Release the old driver
+                    database.ref('drivers/' + currentDriverPhone).update({ currentStatus: 'available' });
+
+                    // Find a NEW driver in the area
+                    database.ref('drivers').once('value', (driversSnap) => {
+                        let reassigned = false;
+                        driversSnap.forEach(child => {
+                            const newDriver = child.val();
+                            if (!reassigned && newDriver.phone !== currentDriverPhone && newDriver.village === order.area && newDriver.currentStatus === 'available') {
+                                dispatchToDriver(orderId, newDriver, 'System Re-assign');
+                                reassigned = true;
+                            }
+                        });
+                        
+                        // If no other driver found, set order back to pending so admin sees it
+                        if (!reassigned) {
+                            database.ref('orders/' + orderId).update({
+                                status: 'pending',
+                                dName: null,
+                                dPhone: null,
+                                driverReceived: false
+                            });
+                        }
+                    });
+                }
+            });
+        }, 60000); // 1 Minute
     }
 
     function verifyAge() { 
@@ -817,7 +863,7 @@
         const select = document.getElementById(targetId);
         select.innerHTML = '<option value="">-- Area --</option>';
         let areas = [];
-        if (province === "Gauteng") { areas = ["Alexandra", "Diepsloot", "Ennerdale", "Johannesburg", "Lenasia (Lenz)", "Midrand", "Modderfontein", "Orange Farm", "Randburg", "Roodepoort", "Sandton", "Soweto", "Alberton", "Bapsfontein", "Bedfordview", "Benoni", "Boksburg", "Brakpan", "Clayville", "Daveyton", "Devon", "Duduza", "Dunnottar", "Edenvale", "Germiston", "Isando", "Katlehong", "Kempton Park", "KwaThema", "Nigel", "Reiger Park", "Springs", "Tembisa", "Thokoza", "Tsakane", "Vosloorus", "Wattville", "Atteridgeville", "Bronberg", "Bronkhorstspruit", "Centurion", "Cullinan", "Ekangala", "Ga-Rankuwa", "Hammanskraal", "Irene", "Mabopane", "Mamelodi", "Pretoria", "Rayton", "Refilwe", "Soshanguve", "Winterveld", "Zithobeni"];
+        if (province === "Gauteng") { areas = ["Alexandra", "Diepsloot", "Ennerdale", "Johannesburg", "Lenasia (Lenz)", "Midrand", "Modderfontein", "Orange Farm", "Randburg", "Roodepoort", "Sandton", "Soweto", "Alberton", "Bedfordview", "Benoni", "Boksburg", "Brakpan", "Clayville", "Daveyton", "Devon", "Duduza", "Dunnottar", "Edenvale", "Germiston", "Isando", "Katlehong", "Kempton Park", "KwaThema", "Nigel", "Reiger Park", "Springs", "Tembisa", "Thokoza", "Tsakane", "Vosloorus", "Wattville", "Atteridgeville", "Bronberg", "Bronkhorstspruit", "Centurion", "Cullinan", "Ekangala", "Ga-Rankuwa", "Hammanskraal", "Irene", "Mabopane", "Mamelodi", "Pretoria", "Rayton", "Refilwe", "Soshanguve", "Winterveld", "Zithobeni"];
         } else if (province === "North West") { areas = ["Bloemhof", "Brits", "Christiana", "Coligny", "Delareyville", "Ganyesa", "Groot Marico", "Hartbeespoort", "Jan Kempdorp", "Klerksdorp", "Koster", "Lichtenburg", "Mahikeng", "Mogwase", "Mooinooi", "Orkney", "Ottosdal", "Potchefstroom", "Reivilo", "Rustenburg", "Sannieshof", "Schweizer-Reneke", "Stella", "Stilfontein", "Swartruggens", "Taung", "Ventersdorp", "Vryburg", "Wolmaransstad", "Zeerust"];
         } else if (province === "Free State") { areas = ["Bloemfontein", "Heidedal", "Langenhovenpark", "Welkom", "Kroonstad", "Bethlehem", "Phuthaditjhaba", "Sasolburg", "Parys", "Winburg", "Jagersfontein", "Virginia"];
         } else if (province === "Western Cape") { areas = ["Bellville", "Durbanville", "Parow", "Goodwood", "Brackenfell", "Kraaifontein", "Kuils River", "Rondebosch", "Claremont", "Newlands", "Constantia", "Wynberg", "Plumstead", "Kenilworth", "Simon’s Town", "Fish Hoek", "Muizenberg", "Noordhoek", "Kommetjie", "Scarborough", "Somerset West", "Strand", "Gordon’s Bay", "Camps Bay", "Hout Bay", "Sea Point", "Green Point", "Llandudno", "Milnerton", "Table View", "Bloubergstrand", "Melkbosstrand", "Atlantis", "Athlone", "Mitchells Plain", "Khayelitsha", "Gugulethu", "Langa", "Nyanga", "Delft"];
@@ -898,8 +944,6 @@
             database.ref('orders/' + id).once('value', (snap) => {
                 const data = snap.val();
                 if(data.dPhone) {
-                    // Check if driver was delivering. If so, set back to available. 
-                    // If they are 'unpaid_debt', leave them that way.
                     database.ref('drivers/' + data.dPhone).once('value', drSnap => {
                         if(drSnap.val().currentStatus === 'delivering') {
                             database.ref('drivers/' + data.dPhone).update({currentStatus: 'available'});
@@ -915,9 +959,10 @@
         const driverPhone = document.getElementById('select-' + orderId).value;
         if(!driverPhone) return;
         const driver = allDrivers.find(d => d.phone === driverPhone);
-        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false, arrived: false });
-        database.ref('drivers/' + driverPhone).update({ currentStatus: 'delivering' });
-        showAppNotify("Order Dispatched", `Task successfully assigned to ${driver.name}.`, "var(--green)");
+        
+        // Use updated dispatch logic
+        dispatchToDriver(orderId, driver, 'Admin Manual Dispatch');
+        showAppNotify("Order Dispatched", `Task successfully assigned to ${driver.name}. If they don't accept in 1 minute, it will rotate.`, "var(--green)");
     }
 
     function loadDriverPortal() {
@@ -927,7 +972,6 @@
             const driver = snap.val();
             document.getElementById('portal-driver-name').innerText = driver.name;
             
-            // CHECK FOR DEBT FIRST
             if(driver.currentStatus === 'unpaid_debt') {
                 document.getElementById('driver-debt-screen').style.display = 'block';
                 document.getElementById('pending-debt-display').innerText = `R ${driver.pendingDebt}`;
@@ -1027,21 +1071,37 @@
         });
     }
 
+    // FIXED FINISH ORDER BUTTON LOGIC
     function finishOrder() {
         const id = localStorage.getItem('myOrderID');
+        if(!id) return;
+        
         database.ref('orders/' + id).once('value', snap => {
-            const data = snap.val();
-            // If the driver isn't in debt lock, set them to available
-            if(data.exists() && data.dPhone) {
-                database.ref('drivers/' + data.dPhone).once('value', drSnap => {
-                    if(drSnap.val().currentStatus === 'delivering') {
-                        database.ref('drivers/' + data.dPhone).update({ currentStatus: 'available' });
-                    }
-                });
+            const order = snap.val();
+            if(order) {
+                // 1. Mark order as delivered in the database
+                database.ref('orders/' + id).update({ status: 'delivered' });
+                
+                // 2. If it was Cash, apply the debt logic to the driver
+                if(order.payment === 'Cash on Delivery' && order.dPhone) {
+                    let cleanTotal = order.total.replace(/[^0-9.]/g, '');
+                    let debt = (parseFloat(cleanTotal) / 2).toFixed(2);
+                    
+                    database.ref('drivers/' + order.dPhone).update({
+                        currentStatus: 'unpaid_debt',
+                        pendingDebt: debt
+                    });
+                } else if(order.dPhone) {
+                    // If not cash, just set driver back to available
+                    database.ref('drivers/' + order.dPhone).update({ currentStatus: 'available' });
+                }
+
+                // 3. Update Customer UI
+                localStorage.removeItem('myOrderID');
+                document.getElementById('tracking-content').style.display = 'none';
+                document.getElementById('order-complete-view').style.display = 'block';
+                showAppNotify("Order Finalized", "Thank you for confirming your delivery.", "var(--green)");
             }
-            localStorage.removeItem('myOrderID');
-            document.getElementById('tracking-content').style.display = 'none';
-            document.getElementById('order-complete-view').style.display = 'block';
         });
     }
 
