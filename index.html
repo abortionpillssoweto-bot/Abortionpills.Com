@@ -391,14 +391,11 @@
 
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const database = firebase.database();
-    const messaging = firebase.messaging();
 
     // Setup for High Priority Notifications 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('firebase-messaging-sw.js').then((registration) => {
             console.log('Push Service Worker registered');
-            // Connect Firebase Messaging to the Service Worker
-            messaging.useServiceWorker(registration);
         });
     }
 
