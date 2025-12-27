@@ -90,7 +90,7 @@
         }
         .forgot-link { font-size: 14px; color: var(--blue); text-decoration: underline; cursor: pointer; display: block; margin-top: 10px; }
 
-        /* PROFESSIONAL NOTIFICATION UI - UPDATED */
+        /* PROFESSIONAL NOTIFICATION UI */
         #verifyNotify {
             display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             width: 92%; max-width: 400px; background: white; 
@@ -102,13 +102,11 @@
         .verify-pin-box { background: #f0f0f0; font-size: 24px; font-weight: bold; text-align: center; padding: 15px; margin: 15px 0; border-radius: 12px; border: 2px dashed var(--blue); letter-spacing: 4px; color: var(--blue); position: relative; }
         .copy-tag { position: absolute; right: 8px; bottom: 4px; font-size: 9px; color: var(--green); font-weight: bold; }
 
-        /* DRIVER SPECIFIC BUTTONS */
         .driver-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .btn-arrive { background: var(--orange); color: white; border: none; font-weight: bold; padding: 12px; border-radius: 8px; }
         .btn-delivered { background: var(--green); color: white; border: none; font-weight: bold; padding: 12px; border-radius: 8px; }
         .btn-failed { background: var(--primary); color: white; border: none; font-weight: bold; padding: 12px; border-radius: 8px; }
 
-        /* APPROVAL CARD */
         .approval-card { background: #fff5f5; border: 1px solid var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 10px; }
     </style>
 </head>
@@ -370,40 +368,17 @@
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
 
 <script>
-    // --- APP CORE CONFIG ---
+    // ---------------------------------------------------------
+    // ARCHITECTURE INJECTION: PUSH NOTIFICATION GATEWAY SETUP
+    // ---------------------------------------------------------
     let notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     let soundEnabled = false;
     let alarmInterval = null;
 
-    document.addEventListener('click', () => {
-        if(!soundEnabled) {
-            notificationSound.play().then(() => {
-                notificationSound.pause();
-                soundEnabled = true;
-            }).catch(e => console.log("Sound ready..."));
-        }
-    }, { once: true });
-
-    function triggerAlert() {
-        if (soundEnabled) {
-            notificationSound.currentTime = 0;
-            notificationSound.play();
-            if (alarmInterval) clearInterval(alarmInterval);
-            let playCount = 0;
-            alarmInterval = setInterval(() => {
-                notificationSound.currentTime = 0;
-                notificationSound.play();
-                playCount++;
-                if (playCount >= 20) clearInterval(alarmInterval); 
-            }, 3000);
-        }
-        if ("vibrate" in navigator) {
-            navigator.vibrate([300, 100, 300, 100, 300]);
-        }
-    }
-
+    // Firebase App Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBbmHfC_SvrT4YPkxeaIxF1X-E0JQ_Gl1U",
       authDomain: "sa-abortion-pills.firebaseapp.com",
@@ -416,62 +391,76 @@
 
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const database = firebase.database();
+    const messaging = firebase.messaging();
+
+    // Setup for High Priority Notifications 
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('firebase-messaging-sw.js').then((registration) => {
+            console.log('Push Service Worker registered');
+            // Connect Firebase Messaging to the Service Worker
+            messaging.useServiceWorker(registration);
+        });
+    }
+
+    // Initialize Audio Context on first click
+    document.addEventListener('click', () => {
+        if(!soundEnabled) {
+            notificationSound.play().then(() => {
+                notificationSound.pause();
+                soundEnabled = true;
+            }).catch(e => console.log("Sound ready..."));
+        }
+    }, { once: true });
+
+    // ---------------------------------------------------------
+    // "POP UP" LOGIC: Triggering High Importance Alerts UI
+    // ---------------------------------------------------------
+    function triggerAlert() {
+        if (soundEnabled) {
+            notificationSound.currentTime = 0;
+            notificationSound.play();
+            if (alarmInterval) clearInterval(alarmInterval);
+            let playCount = 0;
+            // Looping alarm for high priority
+            alarmInterval = setInterval(() => {
+                notificationSound.currentTime = 0;
+                notificationSound.play();
+                playCount++;
+                if (playCount >= 20) clearInterval(alarmInterval); 
+            }, 3000);
+        }
+        if ("vibrate" in navigator) {
+            navigator.vibrate([300, 100, 300, 100, 300]);
+        }
+    }
 
     let cart = [];
     let allDrivers = [];
     let loggedInDriverPhone = null;
     let currentRoleType = 'customer';
-    let generatedPin = "";
     let activeTaskID = null;
 
-    // --- UPDATED PROFESSIONAL NOTIFICATION LOGIC ---
     function showAppNotify(header, msg, color = "var(--primary)", showAction = true) {
         document.getElementById('notifyHeader').innerText = header;
         document.getElementById('notifySub').innerText = msg;
-        
         const notifyEl = document.getElementById('verifyNotify');
         const iconEl = document.getElementById('notifyIcon');
-        
         document.getElementById('forgotPinInputArea').style.display = "none";
         document.getElementById('pinOutput').style.display = "none";
-
+        
         if (color === 'var(--green)') iconEl.innerHTML = '✅';
         else if (color === 'var(--orange)') iconEl.innerHTML = '🚚';
         else iconEl.innerHTML = '🔔';
 
         notifyEl.style.borderTop = `5px solid ${color}`;
         iconEl.style.backgroundColor = color;
-        
         document.getElementById('notifyActionBtn').style.backgroundColor = color;
         document.getElementById('notifyActionBtn').innerText = (color === 'var(--green)') ? "CONTINUE" : "DISMISS ALERT";
         document.getElementById('notifyActionBtn').style.display = showAction ? "block" : "none";
-        
         notifyEl.style.display = "block";
-        triggerAlert();
-    }
-
-    function forgotPin() {
-        closeLoginModal();
-        showAppNotify("PIN RECOVERY", "Please enter the phone number associated with your account to recover your security PIN.", "var(--blue)", false);
-        document.getElementById('forgotPinInputArea').style.display = "block";
-    }
-
-    function sendForgotVerification() {
-        const phone = document.getElementById('forgotPhoneInput').value;
-        if(!phone) return alert("Please enter a phone number.");
-        const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
-        database.ref(path + phone).once('value', (snap) => {
-            if(snap.exists()) {
-                const pin = snap.val().pin;
-                document.getElementById('forgotPinInputArea').style.display = "none";
-                document.getElementById('pinOutput').style.display = "block";
-                document.getElementById('pinOutput').innerHTML = `${pin}<span class="copy-tag">TAP TO COPY</span>`;
-                document.getElementById('notifySub').innerText = "Account Found! Your security PIN is displayed below. Tap to copy and use it to login.";
-                document.getElementById('notifyActionBtn').style.display = "block";
-            } else {
-                showAppNotify("Error", "No account was found with that phone number. Please check the number or register.", "var(--primary)");
-            }
-        });
+        
+        // Trigger visual and audio "Priority" alert if it is an important notification
+        if(color !== "var(--green)") triggerAlert(); 
     }
 
     function checkAutoLogin() {
@@ -480,7 +469,6 @@
             document.getElementById('age-gate').style.display = 'none';
             document.getElementById('role-selection').style.display = 'flex';
         }
-
         const savedPhone = localStorage.getItem('driverLoggedInPhone');
         const savedRole = localStorage.getItem('userRole');
         if(savedPhone && savedRole) {
@@ -493,11 +481,31 @@
             else showPage('shop');
         }
         
+        // CUSTOMER OFFLINE RECOVERY: Check if driver arrived while app was closed
         const myOrderId = localStorage.getItem('myOrderID');
         if(myOrderId){
             database.ref('orders/' + myOrderId + '/arrived').on('value', snap => {
                 if(snap.val() === true){
-                    showAppNotify("DRIVER ARRIVED!", "Your delivery driver is currently outside your location. Please proceed to the delivery point.", "var(--orange)");
+                    showAppNotify("DRIVER ARRIVED!", "Your delivery driver is currently outside your location.", "var(--orange)");
+                }
+            });
+        }
+
+        // DRIVER PUSH LOGIC: Listen for new tasks
+        database.ref('orders').on('child_changed', (snapshot) => {
+            const order = snapshot.val();
+            const savedPhone = localStorage.getItem('driverLoggedInPhone');
+            if(order.status === 'dispatched' && order.dPhone === savedPhone && order.driverReceived === false) {
+                 showAppNotify("NEW TASK ASSIGNED", "Admin has assigned a new delivery. Accept immediately.", "var(--blue)");
+            }
+        });
+
+        // ADMIN PUSH LOGIC: Listen for driver acknowledgement
+        if(savedRole === 'admin') {
+            database.ref('orders').on('child_changed', (snapshot) => {
+                const order = snapshot.val();
+                if(order.driverReceived === true) {
+                    showAppNotify("ORDER ACCEPTED", `Driver ${order.dName} has accepted Order ${snapshot.key.substring(snapshot.key.length - 6)}.`, "var(--green)");
                 }
             });
         }
@@ -630,11 +638,11 @@
         const phone = document.getElementById('regDriverPhone').value;
         const pin = document.getElementById('regDriverPin').value;
         const area = document.getElementById('regVillage').value;
-        if(!name || !phone || !pin || !area) return showAppNotify("Missing Information", "Please ensure all registration fields are completed before submitting.", "var(--primary)");
+        if(!name || !phone || !pin || !area) return showAppNotify("Missing Information", "Please ensure all registration fields are completed.", "var(--primary)");
         database.ref('pendingDrivers/' + phone).set({
             name, phone, pin, village: area, status: 'pending'
         }).then(() => {
-            showAppNotify("Application Submitted", "Your registration has been sent. A site administrator will review and approve your account shortly.", "var(--green)");
+            showAppNotify("Application Submitted", "Administrator will review and approve your account shortly.", "var(--green)");
             closeRegisterModal();
         });
     }
@@ -643,10 +651,17 @@
         const div = document.getElementById('driver-approval-list');
         database.ref('pendingDrivers').on('value', snap => {
             div.innerHTML = "";
-            if(!snap.exists()) { div.innerHTML = "No pending approval requests."; return; }
+            if(!snap.exists()) { div.innerHTML = "No pending requests."; return; }
             snap.forEach(child => {
                 const d = child.val();
-                div.innerHTML += `<div class="approval-card"><strong>${d.name}</strong> (${d.phone})<br>Area: ${d.village}<br><button onclick="approveDriver('${d.phone}')" style="background:var(--green); color:white; padding:8px; width:48%;">Accept</button><button onclick="declineDriver('${d.phone}')" style="background:var(--primary); color:white; padding:8px; width:48%;">Decline</button></div>`;
+                div.innerHTML += `
+                    <div class="approval-card">
+                        <strong>${d.name}</strong> (${d.phone})<br>
+                        Area: ${d.village}<br>
+                        <button onclick="approveDriver('${d.phone}')" style="background:var(--green); color:white; padding:8px; width:48%;">Accept</button>
+                        <button onclick="declineDriver('${d.phone}')" style="background:var(--primary); color:white; padding:8px; width:48%;">Decline</button>
+                    </div>
+                `;
             });
         });
     }
@@ -658,7 +673,7 @@
                 name: data.name, phone: data.phone, pin: data.pin, village: data.village, currentStatus: 'available'
             }).then(() => {
                 database.ref('pendingDrivers/' + phone).remove();
-                showAppNotify("Driver Approved", `Account for ${data.name} is now active in the system.`, "var(--green)");
+                showAppNotify("Driver Approved", `Account for ${data.name} is now active.`, "var(--green)");
             });
         });
     }
@@ -674,7 +689,7 @@
                 localStorage.setItem('userRole', 'admin');
                 document.getElementById('loginModal').style.display = "none";
                 showPage('admin'); 
-            } else { showAppNotify("Access Denied", "The Admin PIN provided is incorrect. Please verify your credentials.", "var(--primary)"); }
+            } else { showAppNotify("Access Denied", "The Admin PIN provided is incorrect.", "var(--primary)"); }
             return;
         }
         const dbPath = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
@@ -687,7 +702,7 @@
                 if(currentRoleType === 'driver') showPage('driver');
                 else showPage('shop');
             } else {
-                showAppNotify("Authentication Failed", "We could not find a matching account or your PIN is incorrect.", "var(--primary)");
+                showAppNotify("Authentication Failed", "We could not find a matching account.", "var(--primary)");
             }
         });
     }
@@ -714,11 +729,11 @@
         const area = document.getElementById('adminVillage').value;
         if(name && phone && area) {
             database.ref('drivers/' + phone).once('value', (snap) => {
-                if(snap.exists()) showAppNotify("Duplicate Driver", "This phone number is already registered to an existing driver.", "var(--primary)");
+                if(snap.exists()) showAppNotify("Duplicate Driver", "This phone number is already registered.", "var(--primary)");
                 else {
                     database.ref('drivers/' + phone).update({ name, phone, village: area, currentStatus: 'available' });
                     document.getElementById('driverName').value = ""; document.getElementById('driverPhone').value = "";
-                    showAppNotify("Driver Registered", "The driver has been manually added to the database.", "var(--green)");
+                    showAppNotify("Driver Registered", "The driver has been added.", "var(--green)");
                 }
             });
         }
@@ -736,7 +751,7 @@
         });
     }
 
-    function deleteDriver(phone) { if(confirm("Permanently remove this driver from the system?")) database.ref('drivers/' + phone).remove(); }
+    function deleteDriver(phone) { if(confirm("Permanently remove this driver?")) database.ref('drivers/' + phone).remove(); }
 
     function fetchLiveOrders() {
         const orderDiv = document.getElementById('live-orders-list');
@@ -750,7 +765,7 @@
                 const shortId = orderId.substring(orderId.length - 6);
                 if(o.status === 'dispatched' || o.status === 'delivered' || o.status === 'failed') {
                     hasActive = true;
-                    let ack = o.driverReceived ? "<span style='color:green;'>[RECEIVED BY DRIVER]</span>" : "<span style='color:orange;'>[Waiting for Acknowledgment]</span>";
+                    let ack = o.driverReceived ? "<span style='color:green; font-weight:bold;'>✅ DRIVER ACCEPTED</span>" : "<span style='color:orange;'>⏳ Waiting...</span>";
                     let finalStatus = o.status === 'delivered' ? "✅ DELIVERED" : (o.status === 'failed' ? "❌ FAILED" : "🚚 EN ROUTE");
                     activeDiv.innerHTML += `<div class="delivery-card"><strong>📦 Order ID: PILLS-${shortId}</strong><br><strong>Status: ${finalStatus}</strong><br><strong>🚚 Driver: ${o.dName}</strong><br>${ack}<hr><small>📍 Area: ${o.area}</small><br><button onclick="deleteOrder('${orderId}')" class="del-btn">Remove Record</button></div>`;
                 } else if(o.status === 'pending') {
@@ -763,7 +778,7 @@
                     orderDiv.appendChild(card);
                 }
             });
-            if(!hasNew) orderDiv.innerHTML = "No new pending orders found.";
+            if(!hasNew) orderDiv.innerHTML = "No new pending orders.";
             if(!hasActive) activeDiv.innerHTML = "No active delivery processes.";
         });
     }
@@ -782,9 +797,9 @@
         const driverPhone = document.getElementById('select-' + orderId).value;
         if(!driverPhone) return;
         const driver = allDrivers.find(d => d.phone === driverPhone);
-        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false });
+        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false, arrived: false });
         database.ref('drivers/' + driverPhone).update({ currentStatus: 'delivering' });
-        showAppNotify("Order Dispatched", `Task successfully assigned to ${driver.name}.`, "var(--green)");
+        showAppNotify("Order Dispatched", `Task assigned to ${driver.name}.`, "var(--green)");
     }
 
     function loadDriverPortal() {
@@ -810,10 +825,7 @@
                             ackBtn.style.display = o.driverReceived ? "none" : "block";
                             arriveBtn.style.display = o.driverReceived ? "block" : "none";
                             finalActions.style.display = o.driverReceived ? "grid" : "none";
-                            ackBtn.onclick = () => { 
-                                database.ref('orders/' + oSnap.key).update({ driverReceived: true });
-                                showAppNotify("Order Accepted", "You have acknowledged this order. Customer is being updated.", "var(--blue)");
-                            };
+                            ackBtn.onclick = () => { database.ref('orders/' + oSnap.key).update({ driverReceived: true }); };
                             document.getElementById('map-link-btn').onclick = () => { window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(o.address + " " + o.area), '_blank'); };
                             document.getElementById('cust-whatsapp-btn').onclick = () => { let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1); window.open(`https://wa.me/${cp}?text=Hi, I am your driver for order PILLS-${activeTaskID.substring(activeTaskID.length - 6)}`, '_blank'); };
                         }
@@ -828,19 +840,19 @@
     function notifyArrival() {
         if(!activeTaskID) return;
         database.ref('orders/' + activeTaskID).update({ arrived: true });
-        showAppNotify("Arrival Confirmed", "The customer has been notified that you are at the location.", "var(--orange)");
+        showAppNotify("Arrival Confirmed", "The customer has been notified.", "var(--orange)");
     }
 
     function updateDeliveryStatus(status) {
         if(!activeTaskID) return;
         database.ref('orders/' + activeTaskID).update({ status: status });
         database.ref('drivers/' + loggedInDriverPhone).update({ currentStatus: 'available' });
-        showAppNotify("Action Completed", "The order status has been successfully updated to " + status.toUpperCase(), status === 'delivered' ? "var(--green)" : "var(--primary)");
+        showAppNotify("Action Completed", "Status updated to " + status.toUpperCase(), status === 'delivered' ? "var(--green)" : "var(--primary)");
     }
 
     function sendOrder() {
         const o = collectData();
-        if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Please ensure your contact details are filled and items are selected.", "var(--primary)");
+        if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Fill details and select items.", "var(--primary)");
         const newRef = database.ref('orders').push();
         newRef.set({...o, status: 'pending', timestamp: Date.now()});
         const fullId = "PILLS-" + newRef.key.substring(newRef.key.length - 6);
@@ -851,12 +863,12 @@
 
     function orderViaApp() {
         const o = collectData();
-        if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Please provide delivery details and select your items before proceeding.", "var(--primary)");
+        if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Fill details and select items.", "var(--primary)");
         const newRef = database.ref('orders').push();
         newRef.set({...o, status: 'pending', timestamp: Date.now()});
         localStorage.setItem('myOrderID', newRef.key);
         showPage('tracking'); cart = []; updateTotal();
-        showAppNotify("Order Received", "Your order has been logged. You can track the status in the Tracking tab.", "var(--green)");
+        showAppNotify("Order Received", "Tracking active in the Tracking tab.", "var(--green)");
     }
 
     function collectData() { return { customer: document.getElementById('custName').value, phone: document.getElementById('custPhone').value, address: document.getElementById('custAddress').value, area: document.getElementById('village').value, items: cart.map(i => i.name).join(", "), total: document.getElementById('cart-total').innerText, payment: document.getElementById('payMethod').value }; }
@@ -869,10 +881,10 @@
                 const d = snapshot.val();
                 document.getElementById('tracking-order-number').innerText = `Order ID: PILLS-${orderId.substring(orderId.length - 6)}`;
                 document.getElementById('order-items-summary').innerHTML = `<strong>Items:</strong> ${d.items}`;
-                if(d.status === 'pending') { document.getElementById('progress-line').style.width = "30%"; document.getElementById('status-text').innerHTML = "Status: Waiting for System Dispatch..."; }
+                if(d.status === 'pending') { document.getElementById('progress-line').style.width = "30%"; document.getElementById('status-text').innerHTML = "Status: Waiting for Dispatch..."; }
                 else if(d.status === 'dispatched') { 
                     document.getElementById('progress-line').style.width = "90%"; 
-                    document.getElementById('status-text').innerHTML = "Status: Driver Dispatched (En Route)"; 
+                    document.getElementById('status-text').innerHTML = "Status: Driver Dispatched"; 
                     document.getElementById('driver-info').style.display = 'block'; 
                     document.getElementById('assigned-driver-name').innerText = d.dName; 
                     document.getElementById('assigned-driver-phone-display').innerText = d.dPhone;
@@ -898,7 +910,6 @@
         showPage('shop'); 
     }
     if(localStorage.getItem('myOrderID')) document.getElementById('tab-track-btn').style.display = 'block';
-    
 </script>
 </body>
 </html>
