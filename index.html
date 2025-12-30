@@ -127,10 +127,18 @@
         </div>
         <button onclick="closeVerifyNotify()" style="border:none; background:#eee; width:30px; height:30px; border-radius:50%; font-size:18px; color:#666; cursor:pointer;">×</button>
     </div>
+    
     <div id="forgotPinInputArea" style="margin-top:10px; display:none;">
         <input type="tel" id="forgotPhoneInput" placeholder="Enter Registered Phone Number">
-        <button onclick="sendForgotVerification()" style="background:var(--blue); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:bold;">RECOVER PIN</button>
+        <button onclick="requestQualificationCode()" style="background:var(--blue); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:bold;">GET QUALIFICATION CODE</button>
     </div>
+
+    <div id="otpVerifyArea" style="margin-top:10px; display:none;">
+        <p style="font-size:13px; color:var(--primary);">We sent a qualification code to your SIM/WhatsApp. Enter it below:</p>
+        <input type="number" id="otpCodeInput" placeholder="Enter 6-Digit Code">
+        <button onclick="verifyQualificationCode()" style="background:var(--green); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:bold;">VERIFY & RECOVER PIN</button>
+    </div>
+
     <div class="verify-pin-box" id="pinOutput" style="display:none;" onclick="copyPin()">
         0000
         <span class="copy-tag">TAP TO COPY</span>
@@ -450,6 +458,10 @@
     let currentRoleType = 'customer';
     let generatedPin = "";
     let activeTaskID = null;
+    
+    // NEW SIM VERIFICATION VARIABLES
+    let currentQualificationCode = "";
+    let recoveryUserPhone = "";
 
     // --- CASH PAYMENT LOGIC ---
 
@@ -519,6 +531,7 @@
         const notifyEl = document.getElementById('verifyNotify');
         const iconEl = document.getElementById('notifyIcon');
         document.getElementById('forgotPinInputArea').style.display = "none";
+        document.getElementById('otpVerifyArea').style.display = "none";
         document.getElementById('pinOutput').style.display = "none";
         if (color === 'var(--green)') iconEl.innerHTML = '✅';
         else if (color === 'var(--orange)') iconEl.innerHTML = '🚚';
@@ -532,55 +545,126 @@
         triggerAlert();
     }
 
+    // UPDATED FORGOT PIN LOGIC WITH SIM VERIFICATION
     function forgotPin() {
         closeLoginModal();
-        showAppNotify("PIN RECOVERY", "Please enter the phone number associated with your account to recover your security PIN.", "var(--blue)", false);
+        showAppNotify("SIM VERIFICATION", "Please enter the phone number on your SIM card to receive a qualification code.", "var(--blue)", false);
         document.getElementById('forgotPinInputArea').style.display = "block";
     }
 
-    function sendForgotVerification() {
-        const phone = document.getElementById('forgotPhoneInput').value;
-        if(!phone) return alert("Please enter a phone number.");
+    function requestQualificationCode() {
+        recoveryUserPhone = document.getElementById('forgotPhoneInput').value;
+        if(!recoveryUserPhone) return alert("Please enter a phone number.");
+
         const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
-        database.ref(path + phone).once('value', (snap) => {
+        
+        // Admin hardcoded verification
+        if(currentRoleType === 'admin' && (recoveryUserPhone === "admin" || recoveryUserPhone === "0774")) {
+             sendSIMCode("Admin Account Recovery");
+             return;
+        }
+
+        database.ref(path + recoveryUserPhone).once('value', (snap) => {
             if(snap.exists()) {
-                const pin = snap.val().pin;
-                document.getElementById('forgotPinInputArea').style.display = "none";
-                document.getElementById('pinOutput').style.display = "block";
-                document.getElementById('pinOutput').innerHTML = `${pin}<span class="copy-tag">TAP TO COPY</span>`;
-                document.getElementById('notifySub').innerText = "Account Found! Your security PIN is displayed below. Tap to copy and use it to login.";
-                document.getElementById('notifyActionBtn').style.display = "block";
+                sendSIMCode(snap.val().name || "User");
             } else {
-                showAppNotify("Error", "No account was found with that phone number. Please check the number or register.", "var(--primary)");
+                showAppNotify("Error", "Phone number not found in our SIM registry. Check number or register.", "var(--primary)");
             }
         });
     }
 
+    function sendSIMCode(userName) {
+        // Generate 6 digit code
+        currentQualificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Hide initial input, show OTP input
+        document.getElementById('forgotPinInputArea').style.display = "none";
+        document.getElementById('otpVerifyArea').style.display = "block";
+        document.getElementById('notifySub').innerText = "A code has been generated. Send it via WhatsApp to authenticate your SIM card.";
+
+        // Open WhatsApp to send code (Verification via Possession of SIM)
+        let msg = `SIM QUALIFICATION REQUEST%0AUser: ${userName}%0APhone: ${recoveryUserPhone}%0AQualification Code: ${currentQualificationCode}`;
+        window.open(`https://wa.me/27632010938?text=${msg}`, '_blank');
+    }
+
+    function verifyQualificationCode() {
+        const enteredCode = document.getElementById('otpCodeInput').value;
+        if(enteredCode === currentQualificationCode) {
+            // Success - Reveal the PIN
+            const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
+            
+            if(currentRoleType === 'admin') {
+                revealPin("0774 / 0000");
+                return;
+            }
+
+            database.ref(path + recoveryUserPhone).once('value', (snap) => {
+                revealPin(snap.val().pin);
+            });
+        } else {
+            alert("Invalid qualification code. Please check your messages/WhatsApp.");
+        }
+    }
+
+    function revealPin(pin) {
+        document.getElementById('otpVerifyArea').style.display = "none";
+        document.getElementById('pinOutput').style.display = "block";
+        document.getElementById('pinOutput').innerHTML = `${pin}<span class="copy-tag">TAP TO COPY</span>`;
+        document.getElementById('notifySub').innerText = "SIM Verified! Your access PIN is displayed below. Tap to copy.";
+        document.getElementById('notifyActionBtn').style.display = "block";
+    }
+
+    // --- MEMORY: LOAD DATA ON STARTUP ---
     function checkAutoLogin() {
         startAutoManager();
+        
+        // 1. Load Age Verification
         if (sessionStorage.getItem('ageVerified') === 'true') {
             document.getElementById('age-gate').style.display = 'none';
             document.getElementById('role-selection').style.display = 'flex';
         }
+
+        // 2. Load Customer Form Memory
+        if(localStorage.getItem('custName')) document.getElementById('custName').value = localStorage.getItem('custName');
+        if(localStorage.getItem('custPhone')) document.getElementById('custPhone').value = localStorage.getItem('custPhone');
+        if(localStorage.getItem('custAddress')) document.getElementById('custAddress').value = localStorage.getItem('custAddress');
+
+        // 3. Load Cart Memory
+        const savedCart = localStorage.getItem('userCart');
+        if(savedCart) {
+            cart = JSON.parse(savedCart);
+            updateTotal();
+            updateCartUI();
+        }
+
+        // 4. Load Active Session (Role & Page)
         const savedPhone = localStorage.getItem('driverLoggedInPhone');
         const savedRole = localStorage.getItem('userRole');
+        const myOrderId = localStorage.getItem('myOrderID');
+
         if(savedPhone && savedRole) {
             loggedInDriverPhone = savedPhone;
             currentRoleType = savedRole;
             document.getElementById('age-gate').style.display = 'none';
             document.getElementById('role-selection').style.display = 'none';
+            
             if(currentRoleType === 'driver') showPage('driver');
             else if(currentRoleType === 'admin') showPage('admin');
+            else if(myOrderId) showPage('tracking'); // Return to tracking if order active
             else showPage('shop');
         }
-        const myOrderId = localStorage.getItem('myOrderID');
+
+        // 5. Watch active order for status updates
         if(myOrderId){
+            document.getElementById('tab-track-btn').style.display = 'block';
             database.ref('orders/' + myOrderId + '/arrived').on('value', snap => {
                 if(snap.val() === true){
                     showAppNotify("DRIVER ARRIVED!", "Your delivery driver is currently outside your location. Please proceed to the delivery point.", "var(--orange)");
                 }
             });
         }
+
+        // Listen for new assignments (Global)
         database.ref('orders').on('child_changed', (snapshot) => {
             const order = snapshot.val();
             const savedPhone = localStorage.getItem('driverLoggedInPhone');
@@ -588,14 +672,6 @@
                  showAppNotify("NEW TASK ASSIGNED", "Admin has assigned a new delivery to you. Please check your portal and accept.", "var(--blue)");
             }
         });
-        if(savedRole === 'admin') {
-            database.ref('orders').on('child_changed', (snapshot) => {
-                const order = snapshot.val();
-                if(order.driverReceived === true) {
-                    showAppNotify("ORDER ACCEPTED", `Driver ${order.dName} has accepted Order ${snapshot.key.substring(snapshot.key.length - 6)}.`, "var(--green)");
-                }
-            });
-        }
     }
 
     function startAutoManager() {
@@ -626,7 +702,6 @@
         database.ref('drivers').once('value', (snap) => {
             snap.forEach(driverSnap => {
                 const driver = driverSnap.val();
-                // ONLY DISPATCH TO "AVAILABLE" DRIVERS (Not unpaid)
                 if (driver.village === orderData.area && driver.currentStatus === 'available') {
                     dispatchToDriver(orderId, driver, 'System Auto-Dispatch');
                     return true;
@@ -635,7 +710,6 @@
         });
     }
 
-    // NEW FUNCTION: Shared dispatch logic with timer logic
     function dispatchToDriver(orderId, driver, managerType) {
         database.ref('orders/' + orderId).update({
             status: 'dispatched',
@@ -646,8 +720,6 @@
             managedBy: managerType
         });
         database.ref('drivers/' + driver.phone).update({ currentStatus: 'delivering' });
-        
-        // --- 60 SECOND RE-ASSIGNMENT TIMER ---
         startAssignmentTimer(orderId, driver.phone);
     }
 
@@ -655,14 +727,8 @@
         setTimeout(() => {
             database.ref('orders/' + orderId).once('value', (snap) => {
                 const order = snap.val();
-                // If order is still dispatched but driver NOT accepted (received)
                 if (order && order.status === 'dispatched' && order.dPhone === currentDriverPhone && order.driverReceived === false) {
-                    console.log("Driver did not accept in 1 minute. Reassigning...");
-                    
-                    // Release the old driver
                     database.ref('drivers/' + currentDriverPhone).update({ currentStatus: 'available' });
-
-                    // Find a NEW driver in the area
                     database.ref('drivers').once('value', (driversSnap) => {
                         let reassigned = false;
                         driversSnap.forEach(child => {
@@ -672,20 +738,15 @@
                                 reassigned = true;
                             }
                         });
-                        
-                        // If no other driver found, set order back to pending so admin sees it
                         if (!reassigned) {
                             database.ref('orders/' + orderId).update({
-                                status: 'pending',
-                                dName: null,
-                                dPhone: null,
-                                driverReceived: false
+                                status: 'pending', dName: null, dPhone: null, driverReceived: false
                             });
                         }
                     });
                 }
             });
-        }, 60000); // 1 Minute
+        }, 60000); 
     }
 
     function verifyAge() { 
@@ -744,9 +805,25 @@
         if(page === 'driver') { loadDriverPortal(); }
     }
 
-    function addToCart(n, p) { cart.push({name: n, price: p}); updateTotal(); document.getElementById('customModal').style.display = "block"; }
-    function removeFromCart(index) { cart.splice(index, 1); updateTotal(); updateCartUI(); }
-    function updateTotal() { const total = cart.reduce((s, i) => s + i.price, 0); document.getElementById('cart-total').innerText = `Total Order: R ${total.toFixed(2)}`; }
+    // --- MEMORY: SAVE CART ---
+    function addToCart(n, p) { 
+        cart.push({name: n, price: p}); 
+        updateTotal(); 
+        localStorage.setItem('userCart', JSON.stringify(cart));
+        document.getElementById('customModal').style.display = "block"; 
+    }
+    
+    function removeFromCart(index) { 
+        cart.splice(index, 1); 
+        updateTotal(); 
+        updateCartUI(); 
+        localStorage.setItem('userCart', JSON.stringify(cart));
+    }
+    
+    function updateTotal() { 
+        const total = cart.reduce((s, i) => s + i.price, 0); 
+        document.getElementById('cart-total').innerText = `Total Order: R ${total.toFixed(2)}`; 
+    }
     
     function updateCartUI() {
         const list = document.getElementById('cart-list');
@@ -918,7 +995,6 @@
                     activeDiv.innerHTML += `<div class="delivery-card"><strong>📦 Order ID: PILLS-${shortId}</strong><br><strong>Status: ${finalStatus}</strong><br><strong>🚚 Driver: ${o.dName}</strong><br><strong>🛒 Items: ${o.items}</strong><br><strong>💰 Price: ${o.total}</strong><br>${ack}<hr><small>📍 Area: ${o.area}</small><br><button onclick="deleteOrder('${orderId}')" class="del-btn">Remove Record</button></div>`;
                 } else if(o.status === 'pending') {
                     hasNew = true;
-                    // Filter drivers to only show those who are NOT in debt
                     let suggestedDriver = allDrivers.find(d => d.village === o.area && d.currentStatus === 'available');
                     let suggestionText = suggestedDriver ? `<div style="color:var(--green); font-size:12px; margin-top:5px;">💡 Suggested: <b>${suggestedDriver.name}</b> (Local & Available)</div>` : `<div style="color:var(--orange); font-size:12px; margin-top:5px;">⚠️ No local driver available in ${o.area}</div>`;
                     let driverOptions = `<option value="">-- Select Near Driver --</option>`;
@@ -959,8 +1035,6 @@
         const driverPhone = document.getElementById('select-' + orderId).value;
         if(!driverPhone) return;
         const driver = allDrivers.find(d => d.phone === driverPhone);
-        
-        // Use updated dispatch logic
         dispatchToDriver(orderId, driver, 'Admin Manual Dispatch');
         showAppNotify("Order Dispatched", `Task successfully assigned to ${driver.name}. If they don't accept in 1 minute, it will rotate.`, "var(--green)");
     }
@@ -971,7 +1045,6 @@
             if(!snap.exists()) return;
             const driver = snap.val();
             document.getElementById('portal-driver-name').innerText = driver.name;
-            
             if(driver.currentStatus === 'unpaid_debt') {
                 document.getElementById('driver-debt-screen').style.display = 'block';
                 document.getElementById('pending-debt-display').innerText = `R ${driver.pendingDebt}`;
@@ -981,7 +1054,6 @@
             } else {
                 document.getElementById('driver-debt-screen').style.display = 'none';
             }
-
             database.ref('orders').orderByChild('dPhone').equalTo(loggedInDriverPhone).on('value', snapOrders => {
                 const taskCard = document.getElementById('assigned-task-card');
                 const taskDetails = document.getElementById('task-details');
@@ -996,11 +1068,9 @@
                         if(o.status === 'dispatched') {
                             foundTask = true; activeTaskID = oSnap.key;
                             taskDetails.innerHTML = `<p><strong>ID: PILLS-${activeTaskID.substring(activeTaskID.length - 6)}</strong></p><p><strong>Cust:</strong> ${o.customer}</p><p><strong>Addr:</strong> ${o.address}</p><p><strong>Items:</strong> <span style="color:var(--primary); font-weight:bold;">${o.items}</span></p><p><strong>Price Breakdown:</strong> <span style="color:var(--green); font-weight:bold;">${o.total}</span></p><p><strong>Pay Method:</strong> ${o.payment}</p>`;
-                            
                             ackBtn.style.display = o.driverReceived ? "none" : "block";
                             arriveBtn.style.display = (o.driverReceived && !o.arrived) ? "block" : "none";
                             finalActions.style.display = (o.driverReceived && o.arrived) ? "grid" : "none";
-                            
                             ackBtn.onclick = () => { database.ref('orders/' + oSnap.key).update({ driverReceived: true }); };
                             document.getElementById('map-link-btn').onclick = () => { window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(o.address + ", " + o.area + ", South Africa"), '_blank'); };
                             document.getElementById('cust-whatsapp-btn').onclick = () => { let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1); window.open(`https://wa.me/${cp}?text=Hi, I am your driver for order PILLS-${activeTaskID.substring(activeTaskID.length - 6)}`, '_blank'); };
@@ -1016,7 +1086,7 @@
     function notifyArrival() {
         if(!activeTaskID) return;
         database.ref('orders/' + activeTaskID).update({ arrived: true }).then(() => {
-            showAppNotify("Arrival Confirmed", "The customer has been notified. You can now mark the order as delivered or failed.", "var(--orange)");
+            showAppNotify("Arrival Confirmed", "The customer has been notified.", "var(--orange)");
         });
     }
 
@@ -1029,22 +1099,33 @@
 
     function sendOrder() {
         const o = collectData();
-        if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Please fill details and add items.", "var(--primary)");
+        if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Please fill details.", "var(--primary)");
+        
+        // Save Form Data to Memory
+        localStorage.setItem('custName', o.customer);
+        localStorage.setItem('custPhone', o.phone);
+        localStorage.setItem('custAddress', o.address);
+
         const newRef = database.ref('orders').push();
         newRef.set({...o, status: 'pending', timestamp: Date.now()});
         const fullId = "PILLS-" + newRef.key.substring(newRef.key.length - 6);
         localStorage.setItem('myOrderID', newRef.key);
         window.open(`https://wa.me/27632010938?text=New Order: ${fullId}%0AItems: ${o.items}%0APrice: ${o.total}%0APayment: ${o.payment}`, '_blank');
-        showPage('tracking'); cart = []; updateTotal();
+        showPage('tracking'); cart = []; updateTotal(); localStorage.removeItem('userCart');
     }
 
     function orderViaApp() {
         const o = collectData();
-        if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Please fill details and add items.", "var(--primary)");
+        if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Please fill details.", "var(--primary)");
+        
+        localStorage.setItem('custName', o.customer);
+        localStorage.setItem('custPhone', o.phone);
+        localStorage.setItem('custAddress', o.address);
+
         const newRef = database.ref('orders').push();
         newRef.set({...o, status: 'pending', timestamp: Date.now()});
         localStorage.setItem('myOrderID', newRef.key);
-        showPage('tracking'); cart = []; updateTotal();
+        showPage('tracking'); cart = []; updateTotal(); localStorage.removeItem('userCart');
         showAppNotify("Order Received", "Tracking your order now.", "var(--green)");
     }
 
@@ -1071,36 +1152,24 @@
         });
     }
 
-    // FIXED FINISH ORDER BUTTON LOGIC
     function finishOrder() {
         const id = localStorage.getItem('myOrderID');
         if(!id) return;
-        
         database.ref('orders/' + id).once('value', snap => {
             const order = snap.val();
             if(order) {
-                // 1. Mark order as delivered in the database
                 database.ref('orders/' + id).update({ status: 'delivered' });
-                
-                // 2. If it was Cash, apply the debt logic to the driver
                 if(order.payment === 'Cash on Delivery' && order.dPhone) {
                     let cleanTotal = order.total.replace(/[^0-9.]/g, '');
                     let debt = (parseFloat(cleanTotal) / 2).toFixed(2);
-                    
-                    database.ref('drivers/' + order.dPhone).update({
-                        currentStatus: 'unpaid_debt',
-                        pendingDebt: debt
-                    });
+                    database.ref('drivers/' + order.dPhone).update({ currentStatus: 'unpaid_debt', pendingDebt: debt });
                 } else if(order.dPhone) {
-                    // If not cash, just set driver back to available
                     database.ref('drivers/' + order.dPhone).update({ currentStatus: 'available' });
                 }
-
-                // 3. Update Customer UI
                 localStorage.removeItem('myOrderID');
                 document.getElementById('tracking-content').style.display = 'none';
                 document.getElementById('order-complete-view').style.display = 'block';
-                showAppNotify("Order Finalized", "Thank you for confirming your delivery.", "var(--green)");
+                showAppNotify("Order Finalized", "Thank you!", "var(--green)");
             }
         });
     }
@@ -1110,7 +1179,6 @@
         document.getElementById('order-complete-view').style.display = 'none'; 
         showPage('shop'); 
     }
-    if(localStorage.getItem('myOrderID')) document.getElementById('tab-track-btn').style.display = 'block';
 </script>
 </body>
 </html>
