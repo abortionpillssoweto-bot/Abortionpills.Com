@@ -134,7 +134,7 @@
     </div>
 
     <div id="otpVerifyArea" style="margin-top:10px; display:none;">
-        <p style="font-size:13px; color:var(--primary);">We sent a qualification code to your SIM/WhatsApp. Enter it below:</p>
+        <p style="font-size:13px; color:var(--primary);">Admin will send your code via WhatsApp. Enter it below:</p>
         <input type="number" id="otpCodeInput" placeholder="Enter 6-Digit Code">
         <button onclick="verifyQualificationCode()" style="background:var(--green); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:bold;">VERIFY & RECOVER PIN</button>
     </div>
@@ -266,6 +266,11 @@
 <div id="admin-page" class="container">
     <button onclick="resetRoleSelection()" style="background:#444; color:white;">← Back to Selection</button>
     <h2 style="color:var(--primary);">Admin Dashboard</h2>
+
+    <h3 style="color:var(--orange);">Verification Requests (Forgot PIN)</h3>
+    <div id="admin-verify-requests" style="background:#fffbe6; padding:15px; border:1px solid #ffe58f; border-radius:12px; margin-bottom:20px;">
+        Checking for verification requests...
+    </div>
 
     <h3 style="color:var(--primary);">0. Driver Cash Settlements</h3>
     <div id="debt-clearance-list" style="background:#e8f5e9; padding:15px; border-radius:10px; border:1px solid var(--green); margin-bottom:20px;">
@@ -545,11 +550,11 @@
         triggerAlert();
     }
 
-    // --- UPDATED SMS GATEWAY INJECTION ---
+    // --- UPDATED FORGOT PIN LOGIC: ADMIN MANUAL REDIRECT ---
 
     function forgotPin() {
         closeLoginModal();
-        showAppNotify("SIM VERIFICATION", "Please enter the phone number on your SIM card to receive a qualification code via SMS.", "var(--blue)", false);
+        showAppNotify("FORGOT PIN", "Enter your phone number. Admin will send your qualification code via WhatsApp.", "var(--blue)", false);
         document.getElementById('forgotPinInputArea').style.display = "block";
     }
 
@@ -557,101 +562,98 @@
         recoveryUserPhone = document.getElementById('forgotPhoneInput').value;
         if(!recoveryUserPhone) return alert("Please enter a phone number.");
 
-        // SIM Detection: Format phone for South African network
-        let formattedPhone = recoveryUserPhone;
-        if(formattedPhone.startsWith('0')) formattedPhone = '27' + formattedPhone.substring(1);
-        if(!formattedPhone.startsWith('27')) formattedPhone = '27' + formattedPhone;
-
         const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
         
-        // Admin hardcoded verification check
-        if(currentRoleType === 'admin' && (recoveryUserPhone === "admin" || recoveryUserPhone === "0774")) {
-             await sendAutomatedCode(formattedPhone, "Admin");
-             return;
-        }
-
         database.ref(path + recoveryUserPhone).once('value', async (snap) => {
             if(snap.exists()) {
-                await sendAutomatedCode(formattedPhone, snap.val().name || "User");
+                const userName = snap.val().name || "User";
+                const code = Math.floor(100000 + Math.random() * 900000).toString();
+                
+                // 1. Send code to Admin Dashboard node in Firebase
+                await database.ref('verificationRequests/' + recoveryUserPhone).set({
+                    name: userName,
+                    phone: recoveryUserPhone,
+                    code: code,
+                    timestamp: Date.now(),
+                    autoSent: false
+                });
+
+                // 2. UI Updates for the user
+                document.getElementById('forgotPinInputArea').style.display = "none";
+                document.getElementById('otpVerifyArea').style.display = "block";
+                document.getElementById('notifySub').innerText = "Request sent to Admin. Please wait for a WhatsApp message with your code.";
+                
             } else {
-                showAppNotify("Error", "Phone number not found in our SIM registry.", "var(--primary)");
+                showAppNotify("Error", "Phone number not found.", "var(--primary)");
             }
         });
     }
 
-    async function sendAutomatedCode(phoneNumber, userName) {
-        // 1. Generate 6-digit PIN on the fly
-        currentQualificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        // 2. Prepare SMS Gateway Request
-        // Replace 'YOUR_GATEWAY_URL' with your actual SMS provider endpoint
-        const smsMessage = `Your SA Pills Qualification Code is: ${currentQualificationCode}`;
-        
-        try {
-            // Trigger SMS Gateway (Example using fetch to a professional provider)
-            await sendDirectSMS(phoneNumber, smsMessage);
+    // ADMIN VIEW: Listen for verification requests + 36 SEC AUTO SEND
+    function fetchVerificationRequests() {
+        const div = document.getElementById('admin-verify-requests');
+        database.ref('verificationRequests').on('value', snap => {
+            div.innerHTML = "";
+            if(!snap.exists()) { div.innerHTML = "No active verification requests."; return; }
             
-            // Trigger WhatsApp Business API (Secondary Trigger)
-            await triggerWhatsAppAPI(phoneNumber, currentQualificationCode);
+            snap.forEach(child => {
+                const req = child.val();
+                const phoneKey = child.key;
+                let waPhone = req.phone.startsWith('0') ? '27' + req.phone.substring(1) : req.phone;
+                
+                // --- 36 SECONDS AUTO DISPATCH LOGIC ---
+                const timePassed = (Date.now() - req.timestamp) / 1000;
+                if(timePassed >= 36 && !req.autoSent) {
+                    database.ref('verificationRequests/' + phoneKey).update({ autoSent: true });
+                    sendWhatsAppCode(waPhone, req.name, req.code);
+                }
 
-            // UI Updates
-            document.getElementById('forgotPinInputArea').style.display = "none";
-            document.getElementById('otpVerifyArea').style.display = "block";
-            document.getElementById('notifySub').innerText = "System has sent the code to your SIM card. Please check your SMS inbox.";
-            
-        } catch (error) {
-            console.error("SMS Gateway Error:", error);
-            // Fallback for demo: Show on screen if API not configured
-            alert("API Note: Gateway not configured. Code sent to SIM: " + currentQualificationCode);
-            document.getElementById('forgotPinInputArea').style.display = "none";
-            document.getElementById('otpVerifyArea').style.display = "block";
-        }
-    }
-
-    async function sendDirectSMS(to, msg) {
-        // This function calls the professional SMS Gateway system
-        // Example: https://api.bulksms.com/v1/messages
-        console.log(`System sending SMS to ${to}: ${msg}`);
-        
-        /* return fetch('https://api.bulksms.com/v1/messages', {
-            method: 'POST',
-            headers: { 'Authorization': 'Basic YOUR_AUTH_KEY', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ to: to, body: msg })
+                div.innerHTML += `
+                    <div style="background:white; padding:10px; border-radius:10px; margin-bottom:10px; border: 1px solid #ddd;">
+                        <strong>${req.name} (${req.phone})</strong><br>
+                        Verification Code: <span style="color:var(--blue); font-weight:bold; font-size:1.2rem;">${req.code}</span><br>
+                        <button onclick="sendWhatsAppCode('${waPhone}', '${req.name}', '${req.code}')" 
+                                style="background:var(--green); color:white; border:none; padding:8px; margin-top:5px; border-radius:5px; width:100%; font-weight:bold;">
+                            SEND CODE VIA WHATSAPP
+                        </button>
+                        <button onclick="clearVerifyRequest('${req.phone}')" style="background:#eee; color:#666; border:none; padding:5px; width:100%; margin-top:5px; border-radius:5px; font-size:11px;">Clear Request</button>
+                    </div>
+                `;
+            });
         });
-        */
     }
 
-    async function triggerWhatsAppAPI(to, code) {
-        // Trigger WhatsApp Business API template message
-        console.log(`System triggering WhatsApp API for ${to}`);
+    function sendWhatsAppCode(phone, name, code) {
+        window.open(`https://wa.me/${phone}?text=Hi ${name}, your SA Pills verification code is: ${code}`, '_blank');
     }
 
-    // --- END SMS GATEWAY INJECTION ---
+    function clearVerifyRequest(phone) {
+        database.ref('verificationRequests/' + phone).remove();
+    }
 
     function verifyQualificationCode() {
         const enteredCode = document.getElementById('otpCodeInput').value;
-        if(enteredCode === currentQualificationCode) {
-            // Success - Reveal the PIN
-            const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
-            
-            if(currentRoleType === 'admin') {
-                revealPin("0774 / 0000");
-                return;
-            }
+        const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
 
-            database.ref(path + recoveryUserPhone).once('value', (snap) => {
-                revealPin(snap.val().pin);
-            });
-        } else {
-            alert("Invalid qualification code. Please check your SMS messages.");
-        }
+        database.ref('verificationRequests/' + recoveryUserPhone).once('value', (vSnap) => {
+            if(vSnap.exists() && vSnap.val().code === enteredCode) {
+                database.ref(path + recoveryUserPhone).once('value', (uSnap) => {
+                    revealPin(uSnap.val().pin);
+                    database.ref('verificationRequests/' + recoveryUserPhone).remove();
+                });
+            } else {
+                alert("Invalid code. Please wait for the code from Admin via WhatsApp.");
+            }
+        });
     }
+
+    // --- END FORGOT PIN LOGIC ---
 
     function revealPin(pin) {
         document.getElementById('otpVerifyArea').style.display = "none";
         document.getElementById('pinOutput').style.display = "block";
         document.getElementById('pinOutput').innerHTML = `${pin}<span class="copy-tag">TAP TO COPY</span>`;
-        document.getElementById('notifySub').innerText = "SIM Verified! Your access PIN is displayed below. Tap to copy.";
+        document.getElementById('notifySub').innerText = "Verified! Your access PIN is displayed below. Tap to copy.";
         document.getElementById('notifyActionBtn').style.display = "block";
     }
 
@@ -836,7 +838,7 @@
         if(page === 'shop') document.getElementById('tab-shop-btn').classList.add('active-tab');
         if(page === 'checkout') { document.getElementById('tab-check-btn').classList.add('active-tab'); updateCartUI(); }
         if(page === 'tracking') { document.getElementById('tab-track-btn').classList.add('active-tab'); updateTrackingUI(); }
-        if(page === 'admin') { fetchDrivers(); fetchLiveOrders(); fetchPendingDrivers(); fetchDebtRequests(); }
+        if(page === 'admin') { fetchDrivers(); fetchLiveOrders(); fetchPendingDrivers(); fetchDebtRequests(); fetchVerificationRequests(); }
         if(page === 'driver') { loadDriverPortal(); }
     }
 
@@ -974,7 +976,7 @@
         const select = document.getElementById(targetId);
         select.innerHTML = '<option value="">-- Area --</option>';
         let areas = [];
-        if (province === "Gauteng") { areas = ["Alexandra", "Diepsloot", "Ennerdale", "Johannesburg", "Lenasia (Lenz)", "Midrand", "Modderfontein", "Orange Farm", "Randburg", "Roodepoort", "Sandton", "Soweto", "Alberton", "Bedfordview", "Benoni", "Boksburg", "Brakpan", "Clayville", "Daveyton", "Devon", "Duduza", "Dunnottar", "Edenvale", "Germiston", "Isando", "Katlehong", "Kempton Park", "KwaThema", "Nigel", "Reiger Park", "Springs", "Tembisa", "Thokoza", "Tsakane", "Vosloorus", "Wattville", "Atteridgeville", "Bronberg", "Bronkhorstspruit", "Centurion", "Cullinan", "Ekangala", "Ga-Rankuwa", "Hammanskraal", "Irene", "Mabopane", "Mamelodi", "Pretoria", "Rayton", "Refilwe", "Soshanguve", "Winterveld", "Zithobeni"];
+        if (province === "Gauteng") { areas = ["Alexandra", "Diepsloot", "Ennerdale", "Johannesburg", "Lenasia (Lenz)", "Midrand", "Modderfontein", "Orange Farm", "Randburg", "Roodepoort", "Sandton", "Soweto", "Alberton", "Bedfordview", "Benoni", "Benoni", "Boksburg", "Brakpan", "Clayville", "Daveyton", "Devon", "Duduza", "Dunnottar", "Edenvale", "Germiston", "Isando", "Katlehong", "Kempton Park", "KwaThema", "Nigel", "Reiger Park", "Springs", "Tembisa", "Thokoza", "Tsakane", "Vosloorus", "Wattville", "Atteridgeville", "Bronberg", "Bronkhorstspruit", "Centurion", "Cullinan", "Ekangala", "Ga-Rankuwa", "Hammanskraal", "Irene", "Mabopane", "Mamelodi", "Pretoria", "Rayton", "Refilwe", "Soshanguve", "Winterveld", "Zithobeni"];
         } else if (province === "North West") { areas = ["Bloemhof", "Brits", "Christiana", "Coligny", "Delareyville", "Ganyesa", "Groot Marico", "Hartbeespoort", "Jan Kempdorp", "Klerksdorp", "Koster", "Lichtenburg", "Mahikeng", "Mogwase", "Mooinooi", "Orkney", "Ottosdal", "Potchefstroom", "Reivilo", "Rustenburg", "Sannieshof", "Schweizer-Reneke", "Stella", "Stilfontein", "Swartruggens", "Taung", "Ventersdorp", "Vryburg", "Wolmaransstad", "Zeerust"];
         } else if (province === "Free State") { areas = ["Bloemfontein", "Heidedal", "Langenhovenpark", "Welkom", "Kroonstad", "Bethlehem", "Phuthaditjhaba", "Sasolburg", "Parys", "Winburg", "Jagersfontein", "Virginia"];
         } else if (province === "Western Cape") { areas = ["Bellville", "Durbanville", "Parow", "Goodwood", "Brackenfell", "Kraaifontein", "Kuils River", "Rondebosch", "Claremont", "Newlands", "Constantia", "Wynberg", "Plumstead", "Kenilworth", "Simon’s Town", "Fish Hoek", "Muizenberg", "Noordhoek", "Kommetjie", "Scarborough", "Somerset West", "Strand", "Gordon’s Bay", "Camps Bay", "Hout Bay", "Sea Point", "Green Point", "Llandudno", "Milnerton", "Table View", "Bloubergstrand", "Melkbosstrand", "Atlantis", "Athlone", "Mitchells Plain", "Khayelitsha", "Gugulethu", "Langa", "Nyanga", "Delft"];
@@ -1212,5 +1214,16 @@
         showPage('shop'); 
     }
 </script>
+
+<script type="text/javascript">
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://pills.la-dev.net/scripts/track.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'liveagent-js'));
+</script>
+
 </body>
 </html>
