@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -569,7 +569,7 @@
                 const userName = snap.val().name || "User";
                 const code = Math.floor(100000 + Math.random() * 900000).toString();
                 
-                // 1. Send code to Admin Dashboard node in Firebase
+                // 1. Send code to Admin Dashboard node in Firebase with TIMESTAMP
                 await database.ref('verificationRequests/' + recoveryUserPhone).set({
                     name: userName,
                     phone: recoveryUserPhone,
@@ -589,7 +589,7 @@
         });
     }
 
-    // ADMIN VIEW: Listen for verification requests + 36 SEC AUTO SEND
+    // ADMIN VIEW: Listen for verification requests + 30 SEC AUTO SEND
     function fetchVerificationRequests() {
         const div = document.getElementById('admin-verify-requests');
         database.ref('verificationRequests').on('value', snap => {
@@ -601,9 +601,11 @@
                 const phoneKey = child.key;
                 let waPhone = req.phone.startsWith('0') ? '27' + req.phone.substring(1) : req.phone;
                 
-                // --- 36 SECONDS AUTO DISPATCH LOGIC ---
+                // --- 30 SECONDS AUTO DISPATCH LOGIC ---
+                // We calculate time difference. If > 30s and not auto-sent, we trigger send.
                 const timePassed = (Date.now() - req.timestamp) / 1000;
-                if(timePassed >= 36 && !req.autoSent) {
+                if(timePassed >= 30 && !req.autoSent) {
+                    // Mark as sent first to prevent double-firing
                     database.ref('verificationRequests/' + phoneKey).update({ autoSent: true });
                     sendWhatsAppCode(waPhone, req.name, req.code);
                 }
@@ -612,7 +614,7 @@
                     <div style="background:white; padding:10px; border-radius:10px; margin-bottom:10px; border: 1px solid #ddd;">
                         <strong>${req.name} (${req.phone})</strong><br>
                         Verification Code: <span style="color:var(--blue); font-weight:bold; font-size:1.2rem;">${req.code}</span><br>
-                        <button onclick="sendWhatsAppCode('${waPhone}', '${req.name}', '${req.code}')" 
+                        <button onclick="manualSendCode('${phoneKey}', '${waPhone}', '${req.name}', '${req.code}')" 
                                 style="background:var(--green); color:white; border:none; padding:8px; margin-top:5px; border-radius:5px; width:100%; font-weight:bold;">
                             SEND CODE VIA WHATSAPP
                         </button>
@@ -621,6 +623,11 @@
                 `;
             });
         });
+    }
+
+    function manualSendCode(key, phone, name, code) {
+        database.ref('verificationRequests/' + key).update({ autoSent: true });
+        sendWhatsAppCode(phone, name, code);
     }
 
     function sendWhatsAppCode(phone, name, code) {
