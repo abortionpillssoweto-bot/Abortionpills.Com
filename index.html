@@ -13,7 +13,7 @@
     
     <link rel="apple-touch-icon" href="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg">
     
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22SA%20Abortion%20Pills%20Delivery%22,%22short_name%22:%22SA%20Pills%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#ffffff%22,%22theme_color%22:%22#e41e26%22,%22icons%22:[{%22src%22:%22https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg%22,%22sizes%22:%22192x192%22,%22type%22:%22image/jpg%22}]}">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22SA%20Abortion%20Pills%22,%22short_name%22:%22SA%20Pills%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#ffffff%22,%22theme_color%22:%22#e41e26%22,%22icons%22:[{%22src%22:%22https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg%22,%22sizes%22:%22192x192%22,%22type%22:%22image/jpg%22}]}">
 
     <style>
         :root { --primary: #e41e26; --blue: #00529B; --green: #25D366; --dark: #222; --orange: #ff9800;}
@@ -115,6 +115,24 @@
         /* NEW DEBT STYLES */
         .debt-alert { background: #fff3f3; border: 2px solid #f44336; padding: 20px; border-radius: 15px; text-align: center; margin-top: 20px; }
         .debt-amount { font-size: 2rem; font-weight: bold; color: #f44336; margin: 10px 0; }
+
+        /* INJECTED TIMER CIRCLE STYLES */
+        .timer-container { display: none; flex-direction: column; align-items: center; margin: 20px 0; }
+        .timer-circle {
+            width: 120px; height: 120px; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 8px solid #eee; transition: all 0.5s ease;
+            background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .timer-val { font-size: 1.4rem; font-weight: bold; color: #333; }
+        .timer-label { font-size: 10px; text-transform: uppercase; color: #666; margin-top: 4px; }
+        .timer-green { border-color: var(--green); color: var(--green); }
+        .timer-yellow { border-color: var(--orange); color: var(--orange); }
+        .timer-red { border-color: var(--primary); color: var(--primary); }
+
+        /* POP VIEW STYLES */
+        .pop-preview { max-width: 100%; border-radius: 10px; margin-top: 10px; border: 2px solid #ddd; display: none; }
+        .balance-box { background: #fffbe6; border: 2px dashed var(--orange); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body onload="checkAutoLogin()">
@@ -177,7 +195,7 @@
 
     <div class="role-card" onclick="selectRole('driver')">
         <h3 style="margin:0; color:var(--blue);">🚚 Driver</h3>
-        <small>Login or Register as a Driver</small>
+        <small>Login or Registration as a Driver</small>
     </div>
 
     <div class="role-card" onclick="selectRole('admin')">
@@ -197,7 +215,7 @@
     <div class="tab active-tab" id="tab-shop-btn" onclick="showPage('shop')">Menu</div>
     <div class="tab" id="tab-check-btn" onclick="showPage('checkout')">My Cart</div>
     <div class="tab" id="tab-track-btn" style="display:none;" onclick="showPage('tracking')">Track Order</div>
-    <div class="tab" onclick="resetRoleSelection()">Switch Role</div>
+    <div class="tab" onclick="switchRoleManual()">Switch Role</div>
 </div>
 
 <div id="shop-page" class="container">
@@ -235,25 +253,60 @@
 <div id="tracking-page" class="container" style="display:none;">
     <div id="tracking-content" class="card" style="padding:15px;">
         <h3 style="color:var(--blue);">Live Order Status</h3>
+        
+        <div id="orderTimer" class="timer-container">
+            <div id="timerCircle" class="timer-circle">
+                <div id="timerDisplay" class="timer-val">00:00</div>
+                <div id="timerLabel" class="timer-label">Waiting</div>
+            </div>
+            <p id="timerMessage" style="font-size: 11px; color: #777; margin-top: 8px; font-weight: bold;"></p>
+        </div>
+
         <div id="tracking-order-number" style="font-weight:bold; color:var(--primary); margin-bottom:10px;">Order ID: Loading...</div>
         <div id="order-items-summary" class="order-summary-box">Loading order details...</div>
-        <p id="status-text"><strong>Status:</strong> Processing Order...</p>
-        <div class="tracking-bar"><div id="progress-line" class="tracking-progress"></div></div>
         
-        <div id="driver-info" style="margin-top:20px; padding:15px; border:2px solid var(--blue); border-radius:8px; display:none; background: #f0f7ff;">
-            <p><strong>🚚 Your Order is being delivered by:</strong></p>
-            <p style="font-size: 1.1rem; margin-bottom: 5px;"><strong id="assigned-driver-name">Searching...</strong></p>
-            <p><strong>📞 Driver Phone:</strong> <span id="assigned-driver-phone-display" style="font-weight:bold;">---</span></p>
+        <div id="tracking-cancelled-notice" style="display:none; background:#fee; border:2px solid #fcc; padding:15px; border-radius:10px; margin-bottom:15px; text-align:center;">
+            <strong style="color:#c00;">🚫 UPDATE FROM ADMIN</strong><br>
+            <p id="cancel-reason-display" style="font-size:14px; margin:10px 0; font-weight:bold;"></p>
             
-            <a id="cust-to-driver-wa" href="#" target="_blank" style="text-decoration:none;">
-                <button style="background:var(--green); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:bold; margin:10px 0; cursor:pointer;">
-                    💬 CHAT WITH DRIVER (WhatsApp)
-                </button>
-            </a>
+            <div class="balance-box">
+                <p style="font-size:13px; margin-bottom:10px;">How would you like to proceed?</p>
+                <button onclick="switchOrderToCOD()" style="background:var(--orange); color:white; border:none; padding:10px; border-radius:5px; width:100%; font-weight:bold; margin-bottom:8px;">PAY BALANCE VIA CASH ON DELIVERY</button>
+                <button onclick="document.getElementById('pop-upload-input').click()" style="background:var(--blue); color:white; border:none; padding:10px; border-radius:5px; width:100%; font-weight:bold;">PAY BALANCE & UPLOAD NEW POP</button>
+            </div>
 
-            <p id="driver-received-msg" style="color:var(--green); font-weight:bold; font-size: 13px; display:none;">✅ Driver has acknowledged your order!</p>
-            <hr>
-            <button onclick="finishOrder()" style="background:var(--green); color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer;">Order Delivered ✅</button>
+            <button onclick="returnToMenu()" style="background:#eee; color:#333; padding:10px; width:100%; border-radius:5px; border:none; margin-top:15px;">Order Again / Return Home</button>
+        </div>
+
+        <div id="tracking-payment-notice" style="display:none; background:#fff3e0; border:2px solid #ff9800; padding:15px; border-radius:10px; margin-bottom:15px;">
+            <strong style="color:#e65100;">⚠️ ACTION REQUIRED: PAYMENT</strong><br>
+            <span style="font-size:13px;">Please upload your Capitec transfer Proof of Payment (Screenshot) below to start delivery.</span>
+            
+            <input type="file" id="pop-upload-input" accept="image/*" style="display:none" onchange="handlePopUpload(this)">
+            <button onclick="document.getElementById('pop-upload-input').click()" style="background:var(--blue); color:white; border:none; padding:12px; margin-top:10px; width:100%; border-radius:5px; font-weight:bold;">UPLOAD POP SCREENSHOT</button>
+            
+            <div id="pop-success-msg" style="display:none; color:var(--green); font-weight:bold; margin-top:10px; font-size:12px;">✅ POP Uploaded to System! Waiting for Admin.</div>
+        </div>
+
+        <div id="tracking-active-ui">
+            <p id="status-text"><strong>Status:</strong> Processing Order...</p>
+            <div class="tracking-bar"><div id="progress-line" class="tracking-progress"></div></div>
+            
+            <div id="driver-info" style="margin-top:20px; padding:15px; border:2px solid var(--blue); border-radius:8px; display:none; background: #f0f7ff;">
+                <p><strong>🚚 Your Order is being delivered by:</strong></p>
+                <p style="font-size: 1.1rem; margin-bottom: 5px;"><strong id="assigned-driver-name">Searching...</strong></p>
+                <p><strong>📞 Driver Phone:</strong> <span id="assigned-driver-phone-display" style="font-weight:bold;">---</span></p>
+                
+                <a id="cust-to-driver-wa" href="#" target="_blank" style="text-decoration:none;">
+                    <button style="background:var(--green); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:bold; margin:10px 0; cursor:pointer;">
+                        💬 CHAT WITH DRIVER (WhatsApp)
+                    </button>
+                </a>
+
+                <p id="driver-received-msg" style="color:var(--green); font-weight:bold; font-size: 13px; display:none;">✅ Driver has acknowledged your order!</p>
+                <hr>
+                <button onclick="finishOrder()" style="background:var(--green); color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer;">Order Delivered ✅</button>
+            </div>
         </div>
     </div>
 
@@ -265,8 +318,13 @@
 </div>
 
 <div id="admin-page" class="container">
-    <button onclick="resetRoleSelection()" style="background:#444; color:white;">← Back to Selection</button>
+    <button onclick="switchRoleManual()" style="background:#444; color:white;">← Back to Selection</button>
     <h2 style="color:var(--primary);">Admin Dashboard</h2>
+
+    <h3 style="color:var(--blue);">💰 Pending Capitec Payments</h3>
+    <div id="admin-pending-payments" style="background:#e3f2fd; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #2196f3;">
+        Checking for customer payments...
+    </div>
 
     <h3 style="color:var(--orange);">Verification Requests (Forgot PIN)</h3>
     <div id="admin-verify-requests" style="background:#fffbe6; padding:15px; border:1px solid #ffe58f; border-radius:12px; margin-bottom:20px;">
@@ -324,8 +382,13 @@
             Account: 2033037351<br>
             Reference: Your Name
         </div>
-        <p style="font-weight:bold; color:var(--primary); margin-top:15px;">Send proof of payment/slip image to Admin via WhatsApp to get more orders.</p>
-        <button onclick="window.open('https://wa.me/27632010938?text=I have paid my delivery commission. Here is the proof.', '_blank')" style="background:var(--green); color:white; font-weight:bold;">SEND PROOF OF PAYMENT</button>
+        
+        <input type="file" id="driver-debt-upload" accept="image/*" style="display:none" onchange="handleDriverPopUpload(this)">
+        <button onclick="document.getElementById('driver-debt-upload').click()" style="background:var(--blue); color:white; font-weight:bold; margin-bottom:10px;">UPLOAD SETTLEMENT SLIP (IMAGE)</button>
+        
+        <div id="driver-pop-success" style="display:none; color:var(--green); font-weight:bold; margin-bottom:15px;">✅ Slip Sent to Admin!</div>
+
+        <button onclick="window.open('https://wa.me/27632010938?text=I have paid my delivery commission. Here is the proof.', '_blank')" style="background:var(--green); color:white; font-weight:bold;">SEND PROOF VIA WHATSAPP</button>
     </div>
 
     <div id="assigned-task-card" class="card" style="padding:15px; border-left: 10px solid var(--green); display:none;">
@@ -333,6 +396,7 @@
         <div id="task-details"></div>
         
         <button id="driver-acknowledge-btn" style="background:var(--blue); color:white; margin-bottom:10px;">📲 Accept Order</button>
+        <button id="driver-reject-btn" style="background:var(--primary); color:white; margin-bottom:10px;">↩️ Return to Admin</button>
         
         <button id="driver-arrive-btn" class="btn-arrive" style="display:none; width:100%; margin-bottom:10px;" onclick="notifyArrival()">🚀 I HAVE ARRIVED</button>
         
@@ -417,6 +481,9 @@
     let soundEnabled = false;
     let alarmInterval = null;
 
+    // INJECTED TIMER VARIABLES
+    let orderTimerInterval = null;
+
     document.addEventListener('click', () => {
         if(!soundEnabled) {
             notificationSound.play().then(() => {
@@ -446,23 +513,20 @@
             navigator.vibrate([300, 100, 300, 100, 300]);
         }
     }
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBbmHfC_SvrT4YPkxeaIxF1X-E0JQ_Gl1U",
-  authDomain: "sa-abortion-pills.firebaseapp.com",
-  databaseURL: "https://sa-abortion-pills-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "sa-abortion-pills",
-  storageBucket: "sa-abortion-pills.firebasestorage.app",
-  messagingSenderId: "1026604792208",
-  appId: "1:1026604792208:web:3d1a993e25e0b6c25d9b15",
-  measurementId: "G-LPFPFN9J0S"
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbmHfC_SvrT4YPkxeaIxF1X-E0JQ_Gl1U",
+      authDomain: "sa-abortion-pills.firebaseapp.com",
+      databaseURL: "https://sa-abortion-pills-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "sa-abortion-pills",
+      storageBucket: "sa-abortion-pills.firebasestorage.app",
+      messagingSenderId: "1026604792208",
+      appId: "1:1026604792208:web:3d1a993e25e0b6c25d9b15",
+      measurementId: "G-LPFPFN9J0S"
     };
 
-    // Database Connection Safety Check
     if (firebaseConfig.apiKey !== "PASTE_YOUR_API_KEY_HERE") {
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-    } else {
-        console.error("Firebase API Key is missing. Please paste it in the firebaseConfig section.");
     }
     
     const database = firebase.database();
@@ -476,6 +540,44 @@ const firebaseConfig = {
     let currentQualificationCode = "";
     let recoveryUserPhone = "";
 
+    // --- PRO INJECTED LOGIC ---
+
+    function startCountdown(durationSeconds, label, isOrderWait = false) {
+        clearInterval(orderTimerInterval);
+        const container = document.getElementById('orderTimer');
+        const circle = document.getElementById('timerCircle');
+        const display = document.getElementById('timerDisplay');
+        const labelEl = document.getElementById('timerLabel');
+        const msgEl = document.getElementById('timerMessage');
+
+        container.style.display = 'flex';
+        labelEl.innerText = label;
+        msgEl.innerText = isOrderWait ? "Wait for Admin to give order to driver" : "Driver is on the way - arriving within 1hr 30min";
+
+        let remaining = durationSeconds;
+        
+        const updateUI = () => {
+            const m = Math.floor(remaining / 60);
+            const s = remaining % 60;
+            display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+
+            circle.classList.remove('timer-green', 'timer-yellow', 'timer-red');
+            let percentage = (remaining / durationSeconds) * 100;
+            if (percentage > 50) circle.classList.add('timer-green');
+            else if (percentage > 20) circle.classList.add('timer-yellow');
+            else circle.classList.add('timer-red');
+
+            if (remaining <= 0) {
+                clearInterval(orderTimerInterval);
+                display.innerText = "READY";
+            }
+            remaining--;
+        };
+
+        updateUI();
+        orderTimerInterval = setInterval(updateUI, 1000);
+    }
+
     function processDriverDelivery(status) {
         if(!activeTaskID) return;
         database.ref('orders/' + activeTaskID).once('value', snap => {
@@ -485,7 +587,7 @@ const firebaseConfig = {
                 let debt = (parseFloat(cleanTotal) / 2).toFixed(2);
                 database.ref('drivers/' + loggedInDriverPhone).update({ currentStatus: 'unpaid_debt', pendingDebt: debt });
                 database.ref('orders/' + activeTaskID).update({ status: status });
-                showAppNotify("Payment Required", `Order Complete. You must pay R${debt} to continue.`, "var(--primary)");
+                showAppNotify("Payment Required", `Order Complete. You must pay R${debt} commission to Admin to continue.`, "var(--primary)");
             } else { updateDeliveryStatus(status); }
         });
     }
@@ -499,7 +601,10 @@ const firebaseConfig = {
                 const d = child.val();
                 if(d.currentStatus === 'unpaid_debt') {
                     count++;
-                    div.innerHTML += `<div style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; border-left:5px solid red;"><strong>${d.name} owes R${d.pendingDebt}</strong><br>Phone: ${d.phone}<br><button onclick="clearDriverDebt('${d.phone}')" style="background:var(--green); color:white; padding:5px; width:100%; margin-top:5px; border:none; border-radius:5px;">CONFIRM PAYMENT RECEIVED</button></div>`;
+                    let slipHtml = d.debtSlip ? `<button onclick="viewPopImage('debt-${child.key}', '${d.debtSlip}')" style="background:var(--orange); color:white; padding:5px; width:100%; border:none; margin-top:5px; border-radius:5px;">VIEW SETTLEMENT SLIP</button>
+                    <img id="pop-img-debt-${child.key}" class="pop-preview" src="${d.debtSlip}">` : `<p style='color:red; font-size:10px;'>Waiting for driver to upload slip...</p>`;
+
+                    div.innerHTML += `<div style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; border-left:5px solid red;"><strong>${d.name} owes R${d.pendingDebt}</strong><br>Phone: ${d.phone}<br>${slipHtml}<button onclick="clearDriverDebt('${d.phone}')" style="background:var(--green); color:white; padding:5px; width:100%; margin-top:5px; border:none; border-radius:5px;">CONFIRM PAYMENT RECEIVED</button></div>`;
                 }
             });
             if(count === 0) div.innerHTML = "No pending payments from drivers.";
@@ -508,7 +613,7 @@ const firebaseConfig = {
 
     function clearDriverDebt(phone) {
         if(confirm("Confirm that you have received the cash from this driver?")) {
-            database.ref('drivers/' + phone).update({ currentStatus: 'available', pendingDebt: null });
+            database.ref('drivers/' + phone).update({ currentStatus: 'available', pendingDebt: null, debtSlip: null });
             showAppNotify("Debt Cleared", "Driver is now active and can receive orders again.", "var(--green)");
         }
     }
@@ -530,7 +635,6 @@ const firebaseConfig = {
         notifyEl.style.borderTop = `5px solid ${color}`;
         iconEl.style.backgroundColor = color;
         document.getElementById('notifyActionBtn').style.backgroundColor = color;
-        document.getElementById('notifyActionBtn').innerText = (color === 'var(--green)') ? "CONTINUE" : "DISMISS ALERT";
         document.getElementById('notifyActionBtn').style.display = showAction ? "block" : "none";
         
         notifyEl.style.display = "block";
@@ -592,10 +696,6 @@ const firebaseConfig = {
 
     function manualSendCode(key, phone, name, code) { 
         database.ref('verificationRequests/' + key).update({ autoSent: true }); 
-        sendWhatsAppCode(phone, name, code); 
-    }
-
-    function sendWhatsAppCode(phone, name, code) { 
         window.open(`https://wa.me/${phone}?text=Hi ${name}, your SA Pills qualification code is: ${code}`, '_blank'); 
     }
 
@@ -625,6 +725,8 @@ const firebaseConfig = {
         document.getElementById('notifyActionBtn').style.display = "block";
     }
 
+    // --- END PRO INJECTED LOGIC ---
+
     function checkAutoLogin() {
         startAutoManager();
         if (sessionStorage.getItem('ageVerified') === 'true') {
@@ -641,16 +743,21 @@ const firebaseConfig = {
         const savedPhone = localStorage.getItem('driverLoggedInPhone');
         const savedRole = localStorage.getItem('userRole');
         const myOrderId = localStorage.getItem('myOrderID');
+        const lastPage = localStorage.getItem('lastPageVisited'); // MEMORY FIX
         
         if(savedPhone && savedRole) {
             loggedInDriverPhone = savedPhone;
             currentRoleType = savedRole;
             document.getElementById('age-gate').style.display = 'none';
             document.getElementById('role-selection').style.display = 'none';
+            
+            // REFRESH FIX: If customer was on tracking, stay there
             if(currentRoleType === 'driver') showPage('driver');
             else if(currentRoleType === 'admin') showPage('admin');
-            else if(myOrderId) showPage('tracking');
+            else if(lastPage === 'tracking' && myOrderId) showPage('tracking');
             else showPage('shop');
+        } else if (myOrderId && lastPage === 'tracking') {
+             showPage('tracking'); // Handle guest checkout refresh
         }
         
         if(myOrderId){
@@ -662,20 +769,30 @@ const firebaseConfig = {
     }
 
     function startAutoManager() {
-        database.ref('orders').on('child_added', (snapshot) => {
-            const order = snapshot.val();
-            const orderId = snapshot.key;
-            if(localStorage.getItem('userRole') === 'admin' && order.status === 'pending') {
-                showAppNotify("NEW ORDER RECEIVED", `Order PILLS-${orderId.substring(orderId.length - 6)} is waiting.`, "var(--primary)");
-            }
-            if(order.status === 'pending') {
-                setTimeout(() => {
-                    database.ref('orders/' + orderId).once('value', (freshSnap) => {
-                        const freshData = freshSnap.val();
-                        if(freshData && freshData.status === 'pending') { autoDispatchOrder(orderId, freshData); }
-                    });
-                }, 60000); 
-            }
+        database.ref('orders').on('value', (snapshot) => {
+            snapshot.forEach(child => {
+                const order = child.val();
+                const orderId = child.key;
+                
+                // NEW: AUTO REASSIGN IF DRIVER DOES NOT ACCEPT WITHIN 10 MINS
+                if(order.status === 'dispatched' && !order.driverReceived) {
+                    const now = Date.now();
+                    const assignedAt = order.assignedTimestamp || 0;
+                    const diff = now - assignedAt;
+                    if(diff > 600000) { // 10 minutes (600,000 ms)
+                        reassignOrderBackToAdmin(orderId, order.dPhone);
+                    }
+                }
+                
+                if(order.status === 'pending') {
+                    setTimeout(() => {
+                        database.ref('orders/' + orderId).once('value', (freshSnap) => {
+                            const freshData = freshSnap.val();
+                            if(freshData && freshData.status === 'pending') { autoDispatchOrder(orderId, freshData); }
+                        });
+                    }, 5000); 
+                }
+            });
         });
     }
 
@@ -692,8 +809,29 @@ const firebaseConfig = {
     }
 
     function dispatchToDriver(orderId, driver, managerType) {
-        database.ref('orders/' + orderId).update({ status: 'dispatched', dName: driver.name, dPhone: driver.phone, driverReceived: false, arrived: false, managedBy: managerType });
+        database.ref('orders/' + orderId).update({ 
+            status: 'dispatched', 
+            dName: driver.name, 
+            dPhone: driver.phone, 
+            driverReceived: false, 
+            arrived: false, 
+            managedBy: managerType,
+            assignedTimestamp: Date.now() // Track when assigned
+        });
         database.ref('drivers/' + driver.phone).update({ currentStatus: 'delivering' });
+    }
+
+    function reassignOrderBackToAdmin(orderId, driverPhone) {
+        database.ref('orders/' + orderId).update({
+            status: 'pending',
+            dName: null,
+            dPhone: null,
+            driverReceived: false,
+            assignedTimestamp: null
+        });
+        if(driverPhone) {
+            database.ref('drivers/' + driverPhone).update({ currentStatus: 'available' });
+        }
     }
 
     function verifyAge() { 
@@ -720,19 +858,26 @@ const firebaseConfig = {
         }
     }
 
-    function resetRoleSelection() {
+    function switchRoleManual() {
         const pages = ['shop-page', 'checkout-page', 'admin-page', 'tracking-page', 'driver-page', 'footer-controls'];
         pages.forEach(p => document.getElementById(p).style.display = 'none');
         document.getElementById('role-selection').style.display = 'flex';
+    }
+
+    function resetRoleSelection() {
+        switchRoleManual();
         localStorage.removeItem('driverLoggedInPhone');
         localStorage.removeItem('userRole');
         localStorage.removeItem('myOrderID');
+        localStorage.removeItem('lastPageVisited');
+        clearInterval(orderTimerInterval);
     }
 
     function exitSite() { window.location.href = "https://google.com"; }
-    function driverLogout() { localStorage.removeItem('driverLoggedInPhone'); localStorage.removeItem('userRole'); loggedInDriverPhone = null; resetRoleSelection(); }
+    function driverLogout() { localStorage.removeItem('driverLoggedInPhone'); localStorage.removeItem('userRole'); localStorage.removeItem('lastPageVisited'); loggedInDriverPhone = null; switchRoleManual(); }
 
     function showPage(page) {
+        localStorage.setItem('lastPageVisited', page); // MEMORY FIX
         document.getElementById('shop-page').style.display = page === 'shop' ? 'block' : 'none';
         document.getElementById('checkout-page').style.display = page === 'checkout' ? 'block' : 'none';
         document.getElementById('admin-page').style.display = page === 'admin' ? 'block' : 'none';
@@ -743,7 +888,7 @@ const firebaseConfig = {
         if(page === 'shop') document.getElementById('tab-shop-btn').classList.add('active-tab');
         if(page === 'checkout') { document.getElementById('tab-check-btn').classList.add('active-tab'); updateCartUI(); }
         if(page === 'tracking') { document.getElementById('tab-track-btn').classList.add('active-tab'); updateTrackingUI(); }
-        if(page === 'admin') { fetchDrivers(); fetchLiveOrders(); fetchPendingDrivers(); fetchDebtRequests(); fetchVerificationRequests(); }
+        if(page === 'admin') { fetchDrivers(); fetchLiveOrders(); fetchPendingDrivers(); fetchDebtRequests(); fetchVerificationRequests(); fetchAdminPendingPayments(); }
         if(page === 'driver') { loadDriverPortal(); }
     }
 
@@ -910,11 +1055,22 @@ const firebaseConfig = {
             snapshot.forEach((child) => {
                 const o = child.val(); const orderId = child.key;
                 const shortId = orderId.substring(orderId.length - 6);
+                
+                // ACTIVE DELIVERIES DASHBOARD FIX
                 if(o.status === 'dispatched' || o.status === 'delivered' || o.status === 'failed') {
                     hasActive = true;
                     let ack = o.driverReceived ? "<span style='color:green; font-weight:bold;'>✅ DRIVER ACCEPTED</span>" : "<span style='color:orange;'>⏳ Waiting...</span>";
                     let finalStatus = o.status === 'delivered' ? "✅ DELIVERED" : (o.status === 'failed' ? "❌ FAILED" : "🚚 EN ROUTE");
-                    activeDiv.innerHTML += `<div class="delivery-card"><strong>📦 PILLS-${shortId}</strong><br><strong>Status: ${finalStatus}</strong><br><strong>🚚 Driver: ${o.dName}</strong><br>${ack}<hr><button onclick="deleteOrder('${orderId}')" class="del-btn">Remove Record</button></div>`;
+                    
+                    // REASSIGN DRIVER SELECT (If driver hasn't accepted yet)
+                    let reassignHtml = "";
+                    if(!o.driverReceived && o.status === 'dispatched') {
+                        let reOptions = `<option value="">-- Change Driver --</option>`;
+                        allDrivers.forEach(dr => { if(dr.currentStatus === 'available') reOptions += `<option value="${dr.phone}">${dr.name}</option>`; });
+                        reassignHtml = `<div class="assign-area"><select id="re-${orderId}">${reOptions}</select><button onclick="reassignDriver('${orderId}')" style="background:var(--orange); font-size:10px; padding:5px; margin-top:5px;">Update Driver</button></div>`;
+                    }
+
+                    activeDiv.innerHTML += `<div class="delivery-card"><strong>📦 PILLS-${shortId}</strong><br><strong>Status: ${finalStatus}</strong><br><strong>🚚 Driver: ${o.dName}</strong><br>${ack}${reassignHtml}<hr><button onclick="deleteOrder('${orderId}')" class="del-btn">Remove Record</button></div>`;
                 } else if(o.status === 'pending') {
                     hasNew = true;
                     let suggestedDriver = allDrivers.find(d => d.village === o.area && d.currentStatus === 'available');
@@ -931,11 +1087,111 @@ const firebaseConfig = {
         });
     }
 
+    // NEW: ADMIN PAYMENT LIST (UPDATED WITH POP VIEWER & CANCEL SYSTEM)
+    function fetchAdminPendingPayments() {
+        const div = document.getElementById('admin-pending-payments');
+        database.ref('orders').orderByChild('status').equalTo('awaiting_payment').on('value', snap => {
+            div.innerHTML = "";
+            let count = 0;
+            snap.forEach(child => {
+                count++;
+                const o = child.val();
+                let popHtml = o.popImage ? `<button onclick="viewPopImage('${child.key}', '${o.popImage}')" style="background:var(--orange); color:white; border:none; padding:8px; margin-top:5px; width:100%; border-radius:5px; font-weight:bold;">VIEW POP SCREENSHOT</button>
+                <img id="pop-img-${child.key}" class="pop-preview" src="${o.popImage}">` : `<p style='color:red; font-size:11px;'>No screenshot uploaded yet.</p>`;
+                
+                div.innerHTML += `<div style="background:white; padding:10px; border-radius:10px; margin-bottom:10px; border-left:5px solid #2196f3;">
+                    <strong>Customer: ${o.customer}</strong><br>
+                    Amount: ${o.total}<br>
+                    ${popHtml}
+                    <button onclick="adminConfirmPayment('${child.key}')" style="background:var(--green); color:white; border:none; padding:8px; margin-top:10px; width:100%; border-radius:5px; font-weight:bold;">CONFIRM PAYMENT RECEIVED</button>
+                    <button onclick="adminCancelOrderPrompt('${child.key}')" style="background:#eee; color:#c00; border:1px solid #fcc; padding:8px; width:100%; margin-top:5px; border-radius:5px; font-weight:bold;">REPLY / CANCEL ORDER</button>
+                </div>`;
+            });
+            if(count === 0) div.innerHTML = "No pending payments.";
+        });
+    }
+
+    function viewPopImage(id, src) {
+        let img = document.getElementById('pop-img-' + id);
+        img.style.display = img.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // NEW: CUSTOMER POP UPLOADER
+    function handlePopUpload(input) {
+        if (input.files && input.files[0]) {
+            const orderId = localStorage.getItem('myOrderID');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                database.ref('orders/' + orderId).update({ popImage: e.target.result, status: 'awaiting_payment' });
+                document.getElementById('pop-success-msg').style.display = 'block';
+                showAppNotify("Upload Successful", "Proof of payment has been sent to Admin dashboard.", "var(--green)");
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // NEW: DRIVER DEBT SLIP UPLOADER
+    function handleDriverPopUpload(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                database.ref('drivers/' + loggedInDriverPhone).update({ debtSlip: e.target.result });
+                document.getElementById('driver-pop-success').style.display = 'block';
+                showAppNotify("Slip Uploaded", "Admin has been notified. They will clear you shortly.", "var(--green)");
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function adminConfirmPayment(orderId) {
+        if(confirm("Have you verified the money in the bank?")) {
+            database.ref('orders/' + orderId).update({ status: 'pending', cancelReason: null });
+            showAppNotify("Payment Confirmed", "Order is now in 'New Orders' list.", "var(--green)");
+        }
+    }
+
+    function adminCancelOrderPrompt(id) {
+        const reason = prompt("Enter the reason for cancellation or your reply to the customer:");
+        if(reason !== null && reason.trim() !== "") {
+            database.ref('orders/' + id).update({ status: 'cancelled', cancelReason: reason.trim() }).then(() => {
+                showAppNotify("Order Updated", "The customer has been notified.", "var(--primary)");
+            });
+        }
+    }
+
+    function switchOrderToCOD() {
+        const orderId = localStorage.getItem('myOrderID');
+        if(!orderId) return;
+        if(confirm("Change this order to Cash on Delivery? Our driver will collect the balance at your door.")) {
+            database.ref('orders/' + orderId).update({ status: 'pending', payment: 'Cash on Delivery', cancelReason: null }).then(() => {
+                showAppNotify("Payment Method Changed", "Order is now being processed as Cash on Delivery.", "var(--green)");
+            });
+        }
+    }
+
+    // FIX FOR NON-ACCEPTING DRIVERS & INCORRECT DRIVER NAME
+    function reassignDriver(orderId) {
+        const newDriverPhone = document.getElementById('re-' + orderId).value;
+        if(!newDriverPhone) return alert("Select a new driver.");
+        
+        database.ref('orders/' + orderId).once('value', (snap) => {
+            const oldDriverPhone = snap.val().dPhone;
+            const newDriver = allDrivers.find(d => d.phone === newDriverPhone);
+            
+            // 1. Release old driver
+            if(oldDriverPhone) database.ref('drivers/' + oldDriverPhone).update({currentStatus: 'available'});
+            
+            // 2. Assign new driver (Sync Name and Phone Fix)
+            dispatchToDriver(orderId, newDriver, 'Admin Reassignment');
+            showAppNotify("Driver Changed", `Order reassigned to ${newDriver.name}.`, "var(--green)");
+        });
+    }
+
     function deleteOrder(id) {
         if(confirm("Permanently delete this order?")) {
             database.ref('orders/' + id).once('value', (snap) => {
                 const data = snap.val();
-                if(data.dPhone) { database.ref('drivers/' + data.dPhone).once('value', drSnap => { if(drSnap.val().currentStatus === 'delivering') { database.ref('drivers/' + data.dPhone).update({currentStatus: 'available'}); } }); }
+                if(data.dPhone) { database.ref('drivers/' + data.dPhone).update({currentStatus: 'available'}); }
                 database.ref('orders/' + id).remove();
             });
         }
@@ -962,27 +1218,47 @@ const firebaseConfig = {
                 document.getElementById('no-task-msg').style.display = 'none';
                 return;
             } else { document.getElementById('driver-debt-screen').style.display = 'none'; }
+            
+            // REAL-TIME TASK WATCHER
             database.ref('orders').orderByChild('dPhone').equalTo(loggedInDriverPhone).on('value', snapOrders => {
                 const taskCard = document.getElementById('assigned-task-card');
                 const taskDetails = document.getElementById('task-details');
                 const ackBtn = document.getElementById('driver-acknowledge-btn');
+                const rejectBtn = document.getElementById('driver-reject-btn');
                 const arriveBtn = document.getElementById('driver-arrive-btn');
                 const finalActions = document.getElementById('delivery-final-actions');
                 let foundTask = false;
                 taskDetails.innerHTML = "";
+                
                 if(snapOrders.exists()) {
                     snapOrders.forEach(oSnap => {
                         const o = oSnap.val();
                         if(o.status === 'dispatched') {
                             foundTask = true; activeTaskID = oSnap.key;
                             taskDetails.innerHTML = `<p><strong>ID: PILLS-${activeTaskID.substring(activeTaskID.length - 6)}</strong></p><p><strong>Cust:</strong> ${o.customer}</p><p><strong>Addr:</strong> ${o.address}</p><p><strong>Items:</strong> ${o.items}</p><p><strong>Price:</strong> ${o.total}</p>`;
+                            
+                            // Accept/Reject visibility
                             ackBtn.style.display = o.driverReceived ? "none" : "block";
+                            rejectBtn.style.display = o.driverReceived ? "none" : "block";
+                            
                             arriveBtn.style.display = (o.driverReceived && !o.arrived) ? "block" : "none";
                             finalActions.style.display = (o.driverReceived && o.arrived) ? "grid" : "none";
+                            
                             ackBtn.onclick = () => { database.ref('orders/' + oSnap.key).update({ driverReceived: true }); };
                             
-                            // FIXED GOOGLE MAPS URL FORMAT
-                            document.getElementById('map-link-btn').onclick = () => { window.open("https://www.google.com/maps/search/" + encodeURIComponent(o.address + ", " + o.area), '_blank'); };
+                            // Manual Reject Function
+                            rejectBtn.onclick = () => {
+                                if(confirm("Are you sure you want to return this order to Admin?")) {
+                                    reassignOrderBackToAdmin(oSnap.key, loggedInDriverPhone);
+                                    showAppNotify("Order Returned", "Task sent back to Admin dashboard.", "var(--orange)");
+                                }
+                            };
+
+                            // MAP LOCATION FIX (Standard search query is more reliable for Protea North)
+                            document.getElementById('map-link-btn').onclick = () => { 
+                                const fullLocation = `${o.address}, ${o.area}, South Africa`;
+                                window.open(`maps.google.com${encodeURIComponent(fullLocation)}`, '_blank'); 
+                            };
                             
                             document.getElementById('cust-whatsapp-btn').onclick = () => { let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1); window.open(`https://wa.me/${cp}?text=Hi, I am your driver.`, '_blank'); };
                         }
@@ -1000,24 +1276,39 @@ const firebaseConfig = {
     function sendOrder() {
         const o = collectData();
         if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Fill details.", "var(--primary)");
+        
+        // PAYMENT RULE: If Capitec, set to awaiting_payment
+        const finalStatus = (o.payment === 'Capitec Bank') ? 'awaiting_payment' : 'pending';
+        
         database.ref('users/' + o.phone).update({ name: o.customer, phone: o.phone, pin: "0000" });
         const newRef = database.ref('orders').push();
-        newRef.set({...o, status: 'pending', timestamp: Date.now()});
+        newRef.set({...o, status: finalStatus, timestamp: Date.now()});
         const fullId = "PILLS-" + newRef.key.substring(newRef.key.length - 6);
         localStorage.setItem('myOrderID', newRef.key);
-        window.open(`https://wa.me/27632010938?text=New Order: ${fullId}%0AItems: ${o.items}%0APrice: ${o.total}`, '_blank');
+        
+        const waMsg = (finalStatus === 'awaiting_payment') ? `New Order (Capitec): ${fullId}%0AItems: ${o.items}%0APrice: ${o.total}%0AI am sending the POP now.` : `New Order: ${fullId}%0AItems: ${o.items}%0APrice: ${o.total}`;
+        
+        window.open(`https://wa.me/27632010938?text=${waMsg}`, '_blank');
         showPage('tracking'); cart = []; updateTotal(); localStorage.removeItem('userCart');
     }
 
     function orderViaApp() {
         const o = collectData();
         if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Fill details.", "var(--primary)");
+        
+        const finalStatus = (o.payment === 'Capitec Bank') ? 'awaiting_payment' : 'pending';
+        
         database.ref('users/' + o.phone).update({ name: o.customer, phone: o.phone, pin: "0000" });
         const newRef = database.ref('orders').push();
-        newRef.set({...o, status: 'pending', timestamp: Date.now()});
+        newRef.set({...o, status: finalStatus, timestamp: Date.now()});
         localStorage.setItem('myOrderID', newRef.key);
         showPage('tracking'); cart = []; updateTotal(); localStorage.removeItem('userCart');
-        showAppNotify("Order Received", "Tracking order...", "var(--green)");
+        
+        if(finalStatus === 'awaiting_payment') {
+            showAppNotify("Payment Required", "Please upload Proof of Payment to system.", "var(--orange)");
+        } else {
+            showAppNotify("Order Received", "Tracking order...", "var(--green)");
+        }
     }
 
     function collectData() { return { customer: document.getElementById('custName').value, phone: document.getElementById('custPhone').value, address: document.getElementById('custAddress').value, area: document.getElementById('village').value, items: cart.map(i => i.name).join(", "), total: document.getElementById('cart-total').innerText, payment: document.getElementById('payMethod').value }; }
@@ -1030,11 +1321,48 @@ const firebaseConfig = {
                 const d = snapshot.val();
                 document.getElementById('tracking-order-number').innerText = `Order ID: PILLS-${orderId.substring(orderId.length - 6)}`;
                 document.getElementById('order-items-summary').innerHTML = `<strong>Items:</strong> ${d.items}<br><strong>Total:</strong> ${d.total}`;
-                if(d.status === 'pending') { document.getElementById('progress-line').style.width = "30%"; document.getElementById('status-text').innerHTML = "Status: Waiting..."; }
+                
+                // HANDLE CANCELLED STATUS
+                if(d.status === 'cancelled') {
+                    document.getElementById('tracking-cancelled-notice').style.display = 'block';
+                    document.getElementById('cancel-reason-display').innerText = `${d.cancelReason}`;
+                    document.getElementById('tracking-payment-notice').style.display = 'none';
+                    document.getElementById('tracking-active-ui').style.display = 'none';
+                    document.getElementById('orderTimer').style.display = 'none';
+                    return;
+                } else {
+                    document.getElementById('tracking-cancelled-notice').style.display = 'none';
+                    document.getElementById('tracking-active-ui').style.display = 'block';
+                }
+
+                // Show payment notice for Capitec
+                document.getElementById('tracking-payment-notice').style.display = (d.status === 'awaiting_payment') ? 'block' : 'none';
+
+                if(d.status === 'awaiting_payment') {
+                    document.getElementById('progress-line').style.width = "10%"; 
+                    document.getElementById('status-text').innerHTML = "Status: Awaiting Payment Confirmation..."; 
+                }
+                else if(d.status === 'pending') { 
+                    document.getElementById('progress-line').style.width = "30%"; 
+                    document.getElementById('status-text').innerHTML = "Status: Waiting for Dispatch..."; 
+                    startCountdown(5, "DISPATCHING", true); 
+                }
                 else if(d.status === 'dispatched') { 
-                    document.getElementById('progress-line').style.width = "90%"; document.getElementById('status-text').innerHTML = "Status: Driver En Route"; 
-                    document.getElementById('driver-info').style.display = 'block'; document.getElementById('assigned-driver-name').innerText = d.dName; document.getElementById('assigned-driver-phone-display').innerText = d.dPhone;
-                    if(d.driverReceived) document.getElementById('driver-received-msg').style.display = 'block';
+                    document.getElementById('progress-line').style.width = "90%"; 
+                    document.getElementById('status-text').innerHTML = "Status: Driver En Route"; 
+                    document.getElementById('driver-info').style.display = 'block'; 
+                    document.getElementById('assigned-driver-name').innerText = d.dName; 
+                    document.getElementById('assigned-driver-phone-display').innerText = d.dPhone;
+                    
+                    if(d.driverReceived) {
+                        document.getElementById('driver-received-msg').style.display = 'block';
+                        startCountdown(60, "EN ROUTE"); 
+                    } else {
+                        startCountdown(5, "HAND-OVER", true); 
+                    }
+                } else {
+                    document.getElementById('orderTimer').style.display = 'none';
+                    clearInterval(orderTimerInterval);
                 }
             }
         });
@@ -1053,14 +1381,20 @@ const firebaseConfig = {
                     database.ref('drivers/' + order.dPhone).update({ currentStatus: 'unpaid_debt', pendingDebt: debt });
                 } else if(order.dPhone) { database.ref('drivers/' + order.dPhone).update({ currentStatus: 'available' }); }
                 localStorage.removeItem('myOrderID');
+                localStorage.removeItem('lastPageVisited'); // CLEAR MEMORY
                 document.getElementById('tracking-content').style.display = 'none';
                 document.getElementById('order-complete-view').style.display = 'block';
-                showAppNotify("Order Finalized", "Thank you!", "var(--green)");
+                showAppNotify("Order Finalized", "Thank you for using our service!", "var(--green)");
             }
         });
     }
 
-    function returnToMenu() { document.getElementById('tracking-content').style.display = 'block'; document.getElementById('order-complete-view').style.display = 'none'; showPage('shop'); }
+    function returnToMenu() { 
+        document.getElementById('tracking-content').style.display = 'block'; 
+        document.getElementById('order-complete-view').style.display = 'none'; 
+        localStorage.removeItem('myOrderID');
+        showPage('shop'); 
+    }
 </script>
 </body>
 </html>
