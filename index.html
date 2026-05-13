@@ -16,21 +16,47 @@
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22SA%20Abortion%20Pills%22,%22short_name%22:%22SA%20Pills%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#ffffff%22,%22theme_color%22:%22#e41e26%22,%22icons%22:[{%22src%22:%22https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg%22,%22sizes%22:%22192x192%22,%22type%22:%22image/jpg%22}]}">
 
     <style>
-        :root { --primary: #e41e26; --blue: #00529B; --green: #25D366; --dark: #222; --orange: #ff9800;}
+        :root { --primary: #e41e26; --blue: #00529B; --green: #25D366; --dark: #222;--orange: #ff9800;--bg-gray: #f8f9fa; }
         body { font-family: sans-serif; margin: 0; background: #f4f4f4; padding-bottom: 320px; -webkit-tap-highlight-color: transparent; }
         
-        #age-gate, #role-selection {
+
+        #age-gate {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.98); color: white; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
             z-index: 9999; text-align: center; padding: 20px; box-sizing: border-box;
         }
-        #role-selection { background: #fff; color: #333; display: none; }
+        
+        #role-selection {
+    display: none; 
+}
+
+
 
         .gate-btn { width: 100%; max-width: 280px; padding: 18px; margin: 10px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
-        .role-card { background: #f8f8f8; border: 2px solid #eee; color: var(--dark); margin: 10px; width: 100%; max-width: 300px; padding: 20px; border-radius: 15px; cursor: pointer; }
+        .role-card {
+            background: white; border-radius: 15px; padding: 25px; margin-bottom: 15px;
+            text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            cursor: pointer; border: 1px solid #eee; width: 100%; max-width: 400px;
+        }
+        .role-card:active { transform: scale(0.98); }
         .role-card:hover { border-color: var(--primary); background: #fff5f5; }
-
+        #auth-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none;
+            justify-content: center; align-items: center; z-index: 10000;
+        }
+        .modal-content {
+            background: white; width: 90%; max-width: 400px;
+            padding: 30px; border-radius: 20px; text-align: center;
+        }
+        
+        input { width: 100%; padding: 15px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .btn-red { background: var(--primary); color: white; }
+        .btn-blue { background: var(--blue); color: white; }
+        .btn-gray { background: #e9ecef; color: #333; }
+        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        
         header { background: var(--primary); color: white; padding: 15px; text-align: center; padding-top: 30px; }
         .nav-tabs { display: flex; background: white; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 100; }
         .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; }
@@ -90,7 +116,7 @@
         }
         .forgot-link { font-size: 14px; color: var(--blue); text-decoration: underline; cursor: pointer; display: block; margin-top: 10px; }
 
-        /* PROFESSIONAL NOTIFICATION UI - UPDATED */
+
         #verifyNotify {
             display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             width: 92%; max-width: 400px; background: white; 
@@ -103,7 +129,7 @@
         .verify-pin-box { background: #f0f0f0; font-size: 24px; font-weight: bold; text-align: center; padding: 15px; margin: 15px 0; border-radius: 12px; border: 2px dashed var(--blue); letter-spacing: 4px; color: var(--blue); position: relative; }
         .copy-tag { position: absolute; right: 8px; bottom: 4px; font-size: 9px; color: var(--green); font-weight: bold; }
 
-        /* DRIVER SPECIFIC BUTTONS */
+
         .driver-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .btn-arrive { background: var(--orange); color: white; border: none; font-weight: bold; padding: 16px; border-radius: 8px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3); cursor: pointer; }
         .btn-delivered { background: var(--green); color: white; border: none; font-weight: bold; padding: 12px; border-radius: 8px; }
@@ -112,11 +138,11 @@
         /* APPROVAL CARD */
         .approval-card { background: #fff5f5; border: 1px solid var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 10px; }
         
-        /* NEW DEBT STYLES */
+
         .debt-alert { background: #fff3f3; border: 2px solid #f44336; padding: 20px; border-radius: 15px; text-align: center; margin-top: 20px; }
         .debt-amount { font-size: 2rem; font-weight: bold; color: #f44336; margin: 10px 0; }
 
-        /* INJECTED TIMER CIRCLE STYLES */
+
         .timer-container { display: none; flex-direction: column; align-items: center; margin: 20px 0; }
         .timer-circle {
             width: 120px; height: 120px; border-radius: 50%;
@@ -130,9 +156,82 @@
         .timer-yellow { border-color: var(--orange); color: var(--orange); }
         .timer-red { border-color: var(--primary); color: var(--primary); }
 
-        /* POP VIEW STYLES */
+
         .pop-preview { max-width: 100%; border-radius: 10px; margin-top: 10px; border: 2px solid #ddd; display: none; }
-        .balance-box { background: #fffbe6; border: 2px dashed var(--orange); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; }
+        .balance-box { background: #fffbe6; border: 2px dashed var(--orange); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center;}
+        .hidden { display: none; }
+        .gate-btn { width: 100%; max-width: 280px; padding: 18px; margin: 10px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; }
+
+#footer-controls {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 12px 15px;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-top: 1px solid #eee;
+}
+
+
+.footer-container {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.button-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+
+.whatsapp-btn, .app-btn {
+    flex: 1;
+    padding: 12px 5px !important;
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 45px;
+}
+
+
+.float-chat {
+    bottom: 100px !important; 
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 24px !important;
+}
+
+
+@media (min-width: 768px) {
+    .whatsapp-btn, .app-btn {
+        font-size: 1rem !important;
+        height: 50px;
+    }
+}
+ .price-tag { color: var(--blue); font-weight: bold; font-size: 1.3rem; margin-bottom: 10px; }
+    .cart-item { display: flex; align-items: center; gap: 15px; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .cart-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+    .cart-info { flex: 1; }
+    .cart-info h4 { margin: 0; font-size: 14px; }
+    .cart-info p { margin: 2px 0; color: var(--blue); font-weight: bold; }
+    
+    .delivery-toggle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .toggle-btn { padding: 15px; border: 2px solid #eee; border-radius: 10px; background: white; font-weight: bold; cursor: pointer; }
+    .toggle-btn.active { border-color: var(--primary); background: #fff5f5; color: var(--primary); }
+    
+    .info-box { background: #e3f2fd; padding: 15px; border-radius: 10px; font-size: 14px; line-height: 1.5; margin-bottom: 15px; border-left: 5px solid var(--blue); }
+
     </style>
 </head>
 <body onload="checkAutoLogin()">
@@ -148,15 +247,23 @@
     </div>
     
     <div id="forgotPinInputArea" style="margin-top:10px; display:none;">
-        <input type="tel" id="forgotPhoneInput" placeholder="Enter Registered Phone Number">
+        <input type="email" id="user-email" placeholder="Enter Your Email Address">
         <button onclick="requestQualificationCode()" style="background:var(--blue); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:bold;">GET QUALIFICATION CODE</button>
     </div>
 
-    <div id="otpVerifyArea" style="margin-top:10px; display:none;">
-        <p style="font-size:13px; color:var(--primary);">Admin will send your code via WhatsApp. Enter it below:</p>
-        <input type="number" id="otpCodeInput" placeholder="Enter 6-Digit Code">
-        <button onclick="verifyQualificationCode()" style="background:var(--green); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:bold;">VERIFY & RECOVER PIN</button>
-    </div>
+    <div id="otpVerifyArea" style="display:none;">
+    <h3>Verify Your Email</h3>
+    <p>Enter the 6-digit code sent to your inbox.</p>
+    
+
+    <input type="hidden" id="user-email"> 
+    
+    <input type="number" id="otpCodeInput" placeholder="000000" class="otp-input">
+    
+    <button onclick="verifyQualificationCode()">Verify Code</button>
+    <button onclick="resendCode()">Resend Email</button>
+</div>
+
 
     <div class="verify-pin-box" id="pinOutput" style="display:none;" onclick="copyPin()">
         0000
@@ -183,68 +290,98 @@
     <button class="gate-btn" style="background:var(--green); color:white;" onclick="verifyAge()">YES, I AM 18+</button>
     <button class="gate-btn" style="background:var(--primary); color:white;" onclick="exitSite()">NO, EXIT</button>
 </div>
-
-<div id="role-selection">
-    <h2 style="color:var(--primary); margin-bottom:5px;">SA Delivery Portal</h2>
-    <p style="margin-bottom:25px;">Please select your role to continue</p>
-    
-    <div class="role-card" onclick="selectRole('customer')">
-        <h3 style="margin:0; color:var(--primary);">🛍️ Customer</h3>
-        <small>Order pills & track delivery</small>
-    </div>
-
-    <div class="role-card" onclick="selectRole('driver')">
-        <h3 style="margin:0; color:var(--blue);">🚚 Driver</h3>
-        <small>Login or Registration as a Driver</small>
-    </div>
-
-    <div class="role-card" onclick="selectRole('admin')">
-        <h3 style="margin:0; color:var(--dark);">⚙️ Admin / Staff</h3>
-        <small>Management & Dispatch</small>
-    </div>
-</div>
-
 <header>
-    <h1>SA Abortion Pills Delivery</h1>
+    <h1 onclick="handleAdminClick('SA')" style="cursor:pointer;">SA Abortion Pills Delivery</h1>
     <p>Fast Delivery to Villages & Cities</p>
 </header>
-
 <a href="https://wa.me/27632010938?text=Hi, I need help with my order." class="float-chat" target="_blank">💬</a>
 
-<div class="nav-tabs">
+<div class="nav-tabs" id="main-nav">
     <div class="tab active-tab" id="tab-shop-btn" onclick="showPage('shop')">Menu</div>
+
     <div class="tab" id="tab-check-btn" onclick="showPage('checkout')">My Cart</div>
-    <div class="tab" id="tab-track-btn" style="display:none;" onclick="showPage('tracking')">Track Order</div>
-    <div class="tab" onclick="switchRoleManual()">Switch Role</div>
+    <div class="tab" id="tab-track-btn" onclick="showPage('tracking')">Track Order</div>
+    
+    <div id="auth-buttons" style="background:#eee; display:flex; gap:5px; padding:5px;">
+        <button id="btn-login-customer" onclick="selectRole('customer')" style="font-size:10px; padding:5px; margin:0; background:var(--primary); color:white;">Customer</button>
+        <button id="btn-login-driver" onclick="selectRole('driver')" style="font-size:10px; padding:5px; margin:0; background:var(--blue); color:white;">Drive Portal</button>
+        <button id="btn-logout" onclick="handleLogout()" style="display:none; font-size:10px; padding:5px; margin:0; background:#444; color:white;">Logout</button>
+    </div>
 </div>
 
+
+
+
 <div id="shop-page" class="container">
-    <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>1 Week - 4 Weeks Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 650.00</div><button class="add-btn" onclick="addToCart('1-4 Weeks Pills', 650)">Add to Order</button></div></div>
-    <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>2 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 750.00</div><button class="add-btn" onclick="addToCart('2 Months Pills', 750)">Add to Order</button></div></div>
-    <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>3 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 950.00</div><button class="add-btn" onclick="addToCart('3 Months Pills', 950)">Add to Order</button></div></div>
-    <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>4 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 1200.00</div><button class="add-btn" onclick="addToCart('4 Months Pills', 1200)">Add to Order</button></div></div>
-</div>
+
+    <div class="card">
+        <img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg" alt="1-4 Weeks Pills">
+        <div class="card-content">
+            <h3>1 Week - 4 Weeks Pills</h3>
+            <div class="price-tag">R 650.00</div>
+            <!-- Example for 2 Months Pills -->
+<button class="add-btn" onclick="addToCart('2 Months Pills', 750, 'https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg')">Add to Order</button>
+
+        </div>
+    </div>
+    
+    <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>2 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 750.00</div><!-- Example for 2 Months Pills -->
+    <button class="add-btn" onclick="addToCart('2 Months Pills', 750, 'https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg')">Add to Order</button>
+    </div>
+    </div>
+    <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>3 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 950.00</div><<!-- Example for 2 Months Pills -->
+    <button class="add-btn" onclick="addToCart('2 Months Pills', 750, 'https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg')">Add to Order</button>
+    </div>
+    </div>
+    <div class="card"><img src="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg"><div class="card-content"><h3>4 Months Pills</h3><div style="color:var(--blue); font-weight:bold; font-size:1.2rem;">R 1200.00</div><!-- Example for 2 Months Pills -->
+    <button class="add-btn" onclick="addToCart('2 Months Pills', 750, 'https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg')">Add to Order</button>
+    </div>
+    </div>
+    </div>
+
 
 <div id="checkout-page" class="container" style="display:none;">
     <div class="card" style="padding:15px;">
-        <h3 style="color:var(--primary); margin-top:0;">Your Selection</h3>
+        <h3 style="color:var(--primary); margin-top:0;">🛒 Your Selection</h3>
         <div id="cart-list">Your cart is empty.</div>
-        <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
-        <h3 style="color:var(--primary);">Delivery Details</h3>
-        <select id="province" onchange="updateVillages('village')">
-            <option value="">-- Choose Province --</option>
-            <option value="Gauteng">Gauteng</option>
-            <option value="North West">North West</option>
-            <option value="Free State">Free State</option>
-            <option value="Western Cape">Western Cape</option>
-            <option value="KZN">KZN</option>
-        </select>
-        <select id="village"><option value="">-- Area --</option></select>
-        <input type="text" id="custName" placeholder="Your Full Name">
-        <input type="tel" id="custPhone" placeholder="Phone Number (WhatsApp)">
-        <input type="text" id="custAddress" placeholder="Full Delivery Address">
-        <select id="payMethod">
-            <option value="Cash on Delivery">Cash on Delivery</option>
+        
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        
+        <h3 style="color:var(--primary);">How would you like your order?</h3>
+        <div class="delivery-toggle-grid">
+            <button id="btn-delivery" class="toggle-btn active" onclick="setServiceMode('delivery')">🚚 Delivery</button>
+            <button id="btn-collect" class="toggle-btn" onclick="setServiceMode('collect')">🏢 Collect Order</button>
+        </div>
+
+
+        <div id="delivery-info-section">
+            <p style="font-size: 13px; color: #666;">Enter your details for fast door-to-door delivery.</p>
+            <select id="province" onchange="updateVillages('village')">
+                <option value="">-- Choose Province --</option>
+                <option value="Gauteng">Gauteng</option>
+                <option value="North West">North West</option>
+                <option value="Free State">Free State</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="KZN">KZN</option>
+            </select>
+            <select id="village"><option value="">-- Area --</option></select>
+            <input type="text" id="custName" placeholder="Your Full Name">
+            <input type="tel" id="custPhone" placeholder="WhatsApp Number">
+            <input type="text" id="custAddress" placeholder="Full Home Address / Building Name">
+        </div>
+
+
+        <div id="collect-info-section" style="display:none;">
+            <div class="info-box">
+                <strong style="color:var(--blue);">Branch Pick-up</strong><br>
+                Please enter your current location/suburb. Our Admin will send you the nearest branches where you can collect your order safely.
+            </div>
+            <input type="text" id="collect-location" placeholder="Enter your current Suburb/City">
+            <input type="tel" id="collect-phone" placeholder="WhatsApp Number for Branch Info">
+        </div>
+
+        <select id="payMethod" style="margin-top:15px;">
+            <option value="Cash on Delivery">Pay at Hand (Cash)</option>
             <option value="Capitec Bank">Capitec Transfer (2033037351)</option>
         </select>
     </div>
@@ -317,12 +454,16 @@
     </div>
 </div>
 
-<div id="admin-page" class="container">
-    <button onclick="switchRoleManual()" style="background:#444; color:white;">← Back to Selection</button>
-    <h2 style="color:var(--primary);">Admin Dashboard</h2>
 
-    <h3 style="color:var(--blue);">💰 Pending Capitec Payments</h3>
-    <div id="admin-pending-payments" style="background:#e3f2fd; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #2196f3;">
+<div id="admin-page" class="container">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <button onclick="handleLogout()" style="background:var(--primary); color:white; width: auto; padding: 10px 20px;">Logout Admin</button>
+    </div>
+
+    <h2 style="color:var(--primary);">Admin Dashboard</h2>
+    <!-- Rest of your admin content... -->
+        <div id="admin-pending-payments" style="background:#e3f2fd; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #2196f3;">
         Checking for customer payments...
     </div>
 
@@ -363,11 +504,18 @@
         <select id="adminVillage"><option value="">-- Area --</option></select>
         <button onclick="saveDriver()" style="background:var(--green); color:white; font-weight:bold;">Register Driver</button>
     </div>
-    <div id="driver-list" style="margin-top: 20px;"></div>
+    <div id="driver-list" style="margin-top: 20px;">
+      
+    </div>
+</div>
 </div>
 
+
+
+    
+
+
 <div id="driver-page" class="container">
-    <button onclick="driverLogout()" style="background:#444; color:white;">← Logout</button>
     <h2 style="color:var(--blue);">Driver Portal</h2>
     
     <p>Welcome, <span id="portal-driver-name">Driver</span></p>
@@ -416,11 +564,23 @@
     </div>
 </div>
 
-<div id="footer-controls" style="position: fixed; bottom: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); box-sizing: border-box; z-index: 500; display: none;">
-    <div id="cart-total" style="font-weight: bold; margin-bottom: 10px; font-size: 1.1rem;">Total: R 0.00</div>
-    <button class="whatsapp-btn" style="width:100%;" onclick="sendOrder()">Confirm Order via WhatsApp</button>
-    <button class="app-btn" style="width:100%;" onclick="orderViaApp()">Order Now</button>
+<div id="footer-controls">
+    <div class="footer-container">
+        <div id="cart-total" style="font-weight: bold; font-size: 0.9rem; text-align: center; color: var(--dark);">
+            Total: R 0.00
+        </div>
+        <div class="button-row">
+            <button class="whatsapp-btn" onclick="sendOrder()">
+                <span>Confirm WhatsApp</span>
+            </button>
+            <button class="app-btn" onclick="orderViaApp()">
+                <span>Order Now</span>
+            </button>
+        </div>
+    </div>
 </div>
+
+
 
 <div id="customModal" class="modal">
     <div class="modal-content">
@@ -433,8 +593,8 @@
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <h3 id="loginTitle">Portal Login</h3>
-        <input type="tel" id="loginPhoneInput" placeholder="WhatsApp Phone Number">
-        <input type="password" id="adminPinInput" placeholder="Enter Login PIN">
+        <input type="email" id="loginEmailInput" placeholder="Enter Email Address">
+        <input type="password" id="loginPinInput" placeholder="Enter PIN">
         <button class="modal-btn" onclick="checkAdminLogin()">Login Securely</button>
         
         <div id="customerRegArea" style="display:none; border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
@@ -447,41 +607,86 @@
     </div>
 </div>
 
+
 <div id="registerModal" class="modal">
     <div class="modal-content">
-        <h3 id="regTitle">Registration</h3>
-        <p id="regInfo" style="font-size:12px; color:gray;">After registering, Admin must approve your account.</p>
-        <input type="text" id="regDriverName" placeholder="Full Name">
-        <input type="tel" id="regDriverPhone" placeholder="WhatsApp Phone Number">
-        <input type="password" id="regDriverPin" placeholder="Create a 4-Digit PIN">
+        <h3 id="regTitle">Join SA Pills</h3>
+        <p id="regInfo" style="font-size:13px; color:#666;">Enter your details to create an account.</p>
+        
+        <input type="text" id="reg-user-name" placeholder="Full Name">
+        <input type="email" id="reg-user-email" placeholder="Email Address (Primary Login)">
+        <input type="tel" id="reg-user-phone" placeholder="Phone Number (Verification Required)">
+        <input type="password" id="reg-user-pass" placeholder="Create a 4-Digit PIN">
 
-        <div id="areaRegGroup">
+        <div id="locationGroup">
             <select id="regProvince" onchange="updateVillages('regVillage')">
-                <option value="">-- Province --</option>
+                <option value="">-- Select Province --</option>
                 <option value="Gauteng">Gauteng</option>
                 <option value="North West">North West</option>
                 <option value="Free State">Free State</option>
                 <option value="Western Cape">Western Cape</option>
                 <option value="KZN">KZN</option>
             </select>
-            <select id="regVillage"><option value="">-- Area --</option></select>
+            <select id="regVillage">
+                <option value="">-- City / Village --</option>
+            </select>
+            <input type="text" id="reg-extension" placeholder="Zone / Extension / Street No">
         </div>
         
-        <button id="requestPinBtn" class="modal-btn" style="background:var(--green);" onclick="submitRegistration()">Submit Registration</button>
+        <button id="requestPinBtn" class="modal-btn" style="background:var(--green);" onclick="submitRegistration()">Register & Verify</button>
         <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeRegisterModal()">Cancel</button>
     </div>
 </div>
 
+
+
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 
 <script>
-    // --- APP CORE CONFIG ---
+
+    (function() { emailjs.init("z3b_opIsDq1OFptzg"); })();
+    
+
     let notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     let soundEnabled = false;
     let alarmInterval = null;
+    
 
-    // INJECTED TIMER VARIABLES
+let saClickCount = 0;
+
+function handleAdminClick(key) {
+    if (key === 'SA') {
+        saClickCount++;
+        if (saClickCount === 4) {
+
+            document.getElementById('admin-card').classList.remove('hidden');
+            
+
+            document.getElementById('shop-page').style.display = 'none';
+            document.getElementById('checkout-page').style.display = 'none';
+            
+
+            selectRole('admin');
+            
+
+            showAppNotify("Staff Access", "Staff login portal opened.", "var(--primary)");
+            
+
+            saClickCount = 0;
+        }
+    } else {
+        saClickCount = 0;
+    }
+}
+
+
+
+
+
     let orderTimerInterval = null;
 
     document.addEventListener('click', () => {
@@ -540,83 +745,117 @@
     let currentQualificationCode = "";
     let recoveryUserPhone = "";
 
-    // --- PRO INJECTED LOGIC ---
 
-    function startCountdown(durationSeconds, label, isOrderWait = false) {
-        clearInterval(orderTimerInterval);
-        const container = document.getElementById('orderTimer');
-        const circle = document.getElementById('timerCircle');
-        const display = document.getElementById('timerDisplay');
-        const labelEl = document.getElementById('timerLabel');
-        const msgEl = document.getElementById('timerMessage');
 
-        container.style.display = 'flex';
-        labelEl.innerText = label;
-        msgEl.innerText = isOrderWait ? "Wait for Admin to give order to driver" : "Driver is on the way - arriving within 1hr 30min";
+    function startCountdown(durationSeconds, label, status) {
+    clearInterval(orderTimerInterval);
+    const container = document.getElementById('orderTimer');
+    const circle = document.getElementById('timerCircle');
+    const display = document.getElementById('timerDisplay');
+    const labelEl = document.getElementById('timerLabel');
 
-        let remaining = durationSeconds;
-        
-        const updateUI = () => {
-            const m = Math.floor(remaining / 60);
-            const s = remaining % 60;
-            display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+    container.style.display = 'flex';
+    labelEl.innerText = label;
 
-            circle.classList.remove('timer-green', 'timer-yellow', 'timer-red');
-            let percentage = (remaining / durationSeconds) * 100;
-            if (percentage > 50) circle.classList.add('timer-green');
-            else if (percentage > 20) circle.classList.add('timer-yellow');
-            else circle.classList.add('timer-red');
+    // Reset colors
+    circle.style.borderColor = "#eee";
+    circle.style.color = "#333";
 
-            if (remaining <= 0) {
-                clearInterval(orderTimerInterval);
-                display.innerText = "READY";
-            }
-            remaining--;
-        };
 
-        updateUI();
-        orderTimerInterval = setInterval(updateUI, 1000);
+    if (status === 'dispatched') {
+        circle.style.borderColor = "var(--blue)"; // Admin Assigned
+        circle.style.color = "var(--blue)";
+    } else if (status === 'en_route') {
+        circle.style.borderColor = "var(--orange)"; // Driver Accepted (Yellow/Orange)
+        circle.style.color = "var(--orange)";
     }
+
+    let remaining = durationSeconds;
+    const updateUI = () => {
+        if (remaining <= 0) {
+            clearInterval(orderTimerInterval);
+            display.innerText = "ARRIVED";
+            return;
+        }
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+        remaining--;
+    };
+
+    updateUI();
+    orderTimerInterval = setInterval(updateUI, 1000);
+}
 
     function processDriverDelivery(status) {
-        if(!activeTaskID) return;
-        database.ref('orders/' + activeTaskID).once('value', snap => {
-            const order = snap.val();
-            if(status === 'delivered' && order.payment === 'Cash on Delivery') {
-                let cleanTotal = order.total.replace(/[^0-9.]/g, '');
-                let debt = (parseFloat(cleanTotal) / 2).toFixed(2);
-                database.ref('drivers/' + loggedInDriverPhone).update({ currentStatus: 'unpaid_debt', pendingDebt: debt });
-                database.ref('orders/' + activeTaskID).update({ status: status });
-                showAppNotify("Payment Required", `Order Complete. You must pay R${debt} commission to Admin to continue.`, "var(--primary)");
-            } else { updateDeliveryStatus(status); }
-        });
-    }
+    if(!activeTaskID) return;
+    
+    database.ref('orders/' + activeTaskID).once('value', snap => {
+        const order = snap.val();
+        
+        if(status === 'delivered' && order.payment === 'Cash on Delivery') {
+            // Calculate 50% Debt
+            let cleanTotal = order.total.replace(/[^0-9.]/g, '');
+            let debt = (parseFloat(cleanTotal) / 2).toFixed(2);
+            
+
+            database.ref('drivers/' + loggedInDriverPhone).update({ 
+                currentStatus: 'unpaid_debt', 
+                pendingDebt: debt 
+            });
+            
+
+            database.ref('orders/' + activeTaskID).update({ status: status });
+            showAppNotify("Payment Required", `Order Complete. You must pay R${debt} commission to Admin to continue.`, "var(--primary)");
+        } else { 
+
+            updateDeliveryStatus(status); 
+        }
+    });
+}
 
     function fetchDebtRequests() {
-        const div = document.getElementById('debt-clearance-list');
-        database.ref('drivers').on('value', snap => {
-            div.innerHTML = "";
-            let count = 0;
-            snap.forEach(child => {
-                const d = child.val();
-                if(d.currentStatus === 'unpaid_debt') {
-                    count++;
-                    let slipHtml = d.debtSlip ? `<button onclick="viewPopImage('debt-${child.key}', '${d.debtSlip}')" style="background:var(--orange); color:white; padding:5px; width:100%; border:none; margin-top:5px; border-radius:5px;">VIEW SETTLEMENT SLIP</button>
-                    <img id="pop-img-debt-${child.key}" class="pop-preview" src="${d.debtSlip}">` : `<p style='color:red; font-size:10px;'>Waiting for driver to upload slip...</p>`;
+    const div = document.getElementById('debt-clearance-list');
+    database.ref('drivers').on('value', snap => {
+        div.innerHTML = "";
+        let count = 0;
+        snap.forEach(child => {
+            const d = child.val();
+            const emailKey = child.key;
+            
+            if(d.currentStatus === 'unpaid_debt') {
+                count++;
+                let slipHtml = d.debtSlip ? 
+                    `<button onclick="viewPopImage('debt-${emailKey}', '${d.debtSlip}')" style="background:var(--orange); color:white; padding:8px; width:100%; border:none; margin-top:5px; border-radius:5px;">VIEW SETTLEMENT SLIP</button>
+                     <img id="pop-img-debt-${emailKey}" class="pop-preview" src="${d.debtSlip}" style="display:none; width:100%; margin-top:10px;">` 
+                    : `<p style='color:red; font-size:12px; font-weight:bold;'>Waiting for driver to upload proof...</p>`;
 
-                    div.innerHTML += `<div style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; border-left:5px solid red;"><strong>${d.name} owes R${d.pendingDebt}</strong><br>Phone: ${d.phone}<br>${slipHtml}<button onclick="clearDriverDebt('${d.phone}')" style="background:var(--green); color:white; padding:5px; width:100%; margin-top:5px; border:none; border-radius:5px;">CONFIRM PAYMENT RECEIVED</button></div>`;
-                }
-            });
-            if(count === 0) div.innerHTML = "No pending payments from drivers.";
+                div.innerHTML += `
+                <div style="background:white; padding:15px; border-radius:12px; margin-bottom:10px; border-left:8px solid #f44336; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <strong style="font-size:1.1rem;">${d.name} owes R${d.pendingDebt}</strong><br>
+                    <small>Phone: ${d.phone}</small><br>
+                    ${slipHtml}
+                    <button onclick="clearDriverDebt('${emailKey}')" style="background:var(--green); color:white; padding:12px; width:100%; margin-top:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
+                        CONFIRM PAYMENT RECEIVED ✅
+                    </button>
+                </div>`;
+            }
+        });
+        if(count === 0) div.innerHTML = "<p style='color:#666; text-align:center;'>No pending driver settlements.</p>";
+    });
+}
+
+    function clearDriverDebt(emailKey) {
+    if(confirm("Confirm that you have received the cash from this driver? This will allow them to take new orders.")) {
+        database.ref('drivers/' + emailKey).update({ 
+            currentStatus: 'available', 
+            pendingDebt: null, 
+            debtSlip: null 
+        }).then(() => {
+            showAppNotify("Debt Cleared", "Driver is now active.", "var(--green)");
         });
     }
-
-    function clearDriverDebt(phone) {
-        if(confirm("Confirm that you have received the cash from this driver?")) {
-            database.ref('drivers/' + phone).update({ currentStatus: 'available', pendingDebt: null, debtSlip: null });
-            showAppNotify("Debt Cleared", "Driver is now active and can receive orders again.", "var(--green)");
-        }
-    }
+}
 
     function showAppNotify(header, msg, color = "var(--primary)", showAction = true) {
         document.getElementById('notifyHeader').innerText = header;
@@ -643,38 +882,47 @@
 
     function forgotPin() {
         closeLoginModal();
-        showAppNotify("FORGOT PIN", "Enter your phone number. Admin will send your qualification code via WhatsApp.", "var(--blue)", false);
+        showAppNotify("FORGOT PIN", "Enter Your Email Address. Admin will send your qualification code via Email.", "var(--blue)", false);
         document.getElementById('forgotPinInputArea').style.display = "block";
     }
 
     async function requestQualificationCode() {
-        recoveryUserPhone = document.getElementById('forgotPhoneInput').value;
-        if(!recoveryUserPhone) return alert("Please enter a phone number.");
-        
-        const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
-        database.ref(path + recoveryUserPhone).once('value', async (snap) => {
-            if(snap.exists()) {
-                const userName = snap.val().name || "User";
-                const code = Math.floor(100000 + Math.random() * 900000).toString();
-                
-                await database.ref('verificationRequests/' + recoveryUserPhone).set({ 
-                    name: userName, 
-                    phone: recoveryUserPhone, 
-                    code: code, 
-                    timestamp: Date.now(), 
-                    autoSent: false 
-                });
-                
+    const recoveryEmail = document.getElementById('user-email').value;
+    if(!recoveryEmail) return alert("Please enter your registered email.");
+    
+    const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
+    const emailKey = recoveryEmail.replace(/\./g, '_');
+
+    database.ref(path + emailKey).once('value', async (snap) => {
+        if(snap.exists()) {
+            const userData = snap.val();
+            const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            await database.ref('verificationRequests/' + emailKey).set({ 
+                name: userData.name, 
+                code: newOtp 
+            });
+
+ 
+            emailjs.send("service_abortion", "template_mq2ml5e", {
+                to_email: recoveryEmail,
+                to_name: "SA Abortion Pills Delivery",
+                otp_code: newOtp
+            }).then(() => {
                 document.getElementById('forgotPinInputArea').style.display = "none";
                 document.getElementById('otpVerifyArea').style.display = "block";
-                document.getElementById('notifySub').innerText = "Request sent to Admin. Please wait for a WhatsApp message with your code.";
-            } else { 
-                showAppNotify("Error", "Phone number not found.", "var(--primary)"); 
-            }
-        });
-    }
+                showAppNotify("Code Sent", "Check your email for the recovery code.", "var(--green)");
+            });
+        } else { 
+            showAppNotify("Error", "Email not found.", "var(--primary)"); 
+        }
+    });
+}
 
-    function fetchVerificationRequests() {
+
+
+
+function fetchVerificationRequests() {
         const div = document.getElementById('admin-verify-requests');
         database.ref('verificationRequests').on('value', snap => {
             div.innerHTML = "";
@@ -701,21 +949,8 @@
 
     function clearVerifyRequest(phone) { database.ref('verificationRequests/' + phone).remove(); }
 
-    function verifyQualificationCode() {
-        const enteredCode = document.getElementById('otpCodeInput').value;
-        const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
-        
-        database.ref('verificationRequests/' + recoveryUserPhone).once('value', (vSnap) => {
-            if(vSnap.exists() && vSnap.val().code === enteredCode) {
-                database.ref(path + recoveryUserPhone).once('value', (uSnap) => {
-                    revealPin(uSnap.val().pin);
-                    database.ref('verificationRequests/' + recoveryUserPhone).remove();
-                });
-            } else { 
-                alert("Invalid code. Please wait for the code from Admin via WhatsApp."); 
-            }
-        });
-    }
+    
+
 
     function revealPin(pin) {
         document.getElementById('otpVerifyArea').style.display = "none";
@@ -725,76 +960,134 @@
         document.getElementById('notifyActionBtn').style.display = "block";
     }
 
-    // --- END PRO INJECTED LOGIC ---
-
     function checkAutoLogin() {
-        startAutoManager();
-        if (sessionStorage.getItem('ageVerified') === 'true') {
-            document.getElementById('age-gate').style.display = 'none';
-            document.getElementById('role-selection').style.display = 'flex';
-        }
-        if(localStorage.getItem('custName')) document.getElementById('custName').value = localStorage.getItem('custName');
-        if(localStorage.getItem('custPhone')) document.getElementById('custPhone').value = localStorage.getItem('custPhone');
-        if(localStorage.getItem('custAddress')) document.getElementById('custAddress').value = localStorage.getItem('custAddress');
-        
-        const savedCart = localStorage.getItem('userCart');
-        if(savedCart) { cart = JSON.parse(savedCart); updateTotal(); updateCartUI(); }
-        
-        const savedPhone = localStorage.getItem('driverLoggedInPhone');
-        const savedRole = localStorage.getItem('userRole');
-        const myOrderId = localStorage.getItem('myOrderID');
-        const lastPage = localStorage.getItem('lastPageVisited'); // MEMORY FIX
-        
-        if(savedPhone && savedRole) {
-            loggedInDriverPhone = savedPhone;
-            currentRoleType = savedRole;
-            document.getElementById('age-gate').style.display = 'none';
-            document.getElementById('role-selection').style.display = 'none';
-            
-            // REFRESH FIX: If customer was on tracking, stay there
-            if(currentRoleType === 'driver') showPage('driver');
-            else if(currentRoleType === 'admin') showPage('admin');
-            else if(lastPage === 'tracking' && myOrderId) showPage('tracking');
-            else showPage('shop');
-        } else if (myOrderId && lastPage === 'tracking') {
-             showPage('tracking'); // Handle guest checkout refresh
-        }
-        
-        if(myOrderId){
-            document.getElementById('tab-track-btn').style.display = 'block';
-            database.ref('orders/' + myOrderId + '/arrived').on('value', snap => {
-                if(snap.val() === true){ showAppNotify("DRIVER ARRIVED!", "Your delivery driver is currently outside your location.", "var(--orange)"); }
-            });
-        }
+    const savedRole = localStorage.getItem('userRole');
+    const userEmailKey = localStorage.getItem('customerEmailKey') || localStorage.getItem('driverLoggedInPhone');
+
+    if (!savedRole) {
+        showPage('shop');
+        return;
     }
 
-    function startAutoManager() {
-        database.ref('orders').on('value', (snapshot) => {
+window.addEventListener('load', () => {
+    const savedOrderId = localStorage.getItem('myOrderID');
+    if (savedOrderId) {
+
+        document.getElementById('tab-track-btn').style.display = 'block';
+
+        if(localStorage.getItem('lastPageVisited') === 'tracking') {
+            updateTrackingUI();
+        }
+    }
+});
+
+
+
+    if (savedRole === 'admin') {
+        showPage('admin');
+        loadAdminDashboard();
+    } else if (savedRole === 'driver' && userEmailKey) {
+        loggedInDriverPhone = userEmailKey;
+        showPage('driver');
+        loadDriverPortal();
+    } else if (savedRole === 'customer') {
+        showPage('shop');
+    }
+    toggleMenuUI();
+}
+
+
+
+// Add this variable at the top of your script to keep track of the manager
+let systemManagerInterval = null;
+
+function startAutoManager() {
+    // Run the check every 5 seconds to catch orders reaching the 15s limit
+    if (systemManagerInterval) clearInterval(systemManagerInterval);
+    
+    systemManagerInterval = setInterval(() => {
+        const now = Date.now();
+
+        database.ref('orders').once('value', (snapshot) => {
             snapshot.forEach(child => {
                 const order = child.val();
                 const orderId = child.key;
-                
-                // NEW: AUTO REASSIGN IF DRIVER DOES NOT ACCEPT WITHIN 10 MINS
-                if(order.status === 'dispatched' && !order.driverReceived) {
-                    const now = Date.now();
-                    const assignedAt = order.assignedTimestamp || 0;
-                    const diff = now - assignedAt;
-                    if(diff > 600000) { // 10 minutes (600,000 ms)
-                        reassignOrderBackToAdmin(orderId, order.dPhone);
-                    }
+                const orderAge = now - (order.timestamp || now);
+
+                // LOGIC A: ADMIN TO DRIVER (15 Seconds)
+                // If order is pending and older than 15 seconds, assign to first available local driver
+                if (order.status === 'pending' && orderAge > 15000) {
+                    autoAssignToLocalDriver(orderId, order);
                 }
-                
-                if(order.status === 'pending') {
-                    setTimeout(() => {
-                        database.ref('orders/' + orderId).once('value', (freshSnap) => {
-                            const freshData = freshSnap.val();
-                            if(freshData && freshData.status === 'pending') { autoDispatchOrder(orderId, freshData); }
-                        });
-                    }, 5000); 
+
+                // LOGIC B: DRIVER TO AUTO-SWITCH (15 Seconds)
+                // If assigned to a driver but they haven't clicked "Accept" within 15 seconds
+                if (order.status === 'dispatched' && !order.driverReceived) {
+                    const assignedAge = now - (order.assignedTimestamp || now);
+                    if (assignedAge > 15000) {
+                        reassignOrderToNextDriver(orderId, order);
+                    }
                 }
             });
         });
+    }, 5000); 
+}
+
+// Function to find a driver in the area and assign automatically
+function autoAssignToLocalDriver(orderId, orderData) {
+    database.ref('drivers').once('value', (snap) => {
+        let assigned = false;
+        snap.forEach(driverSnap => {
+            if (assigned) return; // Stop once one is found
+            const driver = driverSnap.val();
+            const driverKey = driverSnap.key;
+
+            if (driver.village === orderData.area && driver.currentStatus === 'available') {
+                dispatchToDriver(orderId, driver, driverKey);
+                assigned = true;
+            }
+        });
+    });
+}
+
+// Function to switch order if driver is idle
+function reassignOrderToNextDriver(orderId, orderData) {
+    // 1. Mark old driver as available again
+    if (orderData.dEmailKey) {
+        database.ref('drivers/' + orderData.dEmailKey).update({ currentStatus: 'available' });
     }
+
+    // 2. Try to find a DIFFERENT driver in the same area
+    database.ref('drivers').once('value', (snap) => {
+        let assigned = false;
+        snap.forEach(driverSnap => {
+            if (assigned) return;
+            const driver = driverSnap.val();
+            const driverKey = driverSnap.key;
+
+            if (driver.village === orderData.area && 
+                driver.currentStatus === 'available' && 
+                driverKey !== orderData.dEmailKey) {
+                
+                dispatchToDriver(orderId, driver, driverKey);
+                assigned = true;
+            }
+        });
+
+        // 3. If no other driver is available, send back to Admin pool (Status: pending)
+        if (!assigned) {
+            database.ref('orders/' + orderId).update({
+                status: 'pending',
+                dName: null,
+                dPhone: null,
+                dEmailKey: null,
+                driverReceived: false,
+                assignedTimestamp: Date.now() // Reset timer for admin
+            });
+        }
+    });
+}
+
 
     function autoDispatchOrder(orderId, orderData) {
         database.ref('drivers').once('value', (snap) => {
@@ -809,18 +1102,22 @@
     }
 
     function dispatchToDriver(orderId, driver, managerType) {
-        database.ref('orders/' + orderId).update({ 
-            status: 'dispatched', 
-            dName: driver.name, 
-            dPhone: driver.phone, 
-            driverReceived: false, 
-            arrived: false, 
-            managedBy: managerType,
-            assignedTimestamp: Date.now() // Track when assigned
-        });
-        database.ref('drivers/' + driver.phone).update({ currentStatus: 'delivering' });
-    }
 
+    const driverEmailKey = driver.email.replace(/\./g, '_').toLowerCase();
+
+    database.ref('orders/' + orderId).update({ 
+        status: 'dispatched', 
+        dName: driver.name, 
+        dPhone: driver.phone,
+        dEmailKey: driverEmailKey, // 
+        driverReceived: false, 
+        arrived: false, 
+        assignedTimestamp: Date.now() 
+    }).then(() => {
+
+        database.ref('drivers/' + driverEmailKey).update({ currentStatus: 'delivering' });
+    });
+}
     function reassignOrderBackToAdmin(orderId, driverPhone) {
         database.ref('orders/' + orderId).update({
             status: 'pending',
@@ -835,28 +1132,47 @@
     }
 
     function verifyAge() { 
-        sessionStorage.setItem('ageVerified', 'true');
-        document.getElementById('age-gate').style.display = 'none'; 
-        document.getElementById('role-selection').style.display = 'flex';
+
+    sessionStorage.setItem('ageVerified', 'true');
+    
+
+    document.getElementById('age-gate').style.display = 'none'; 
+    
+
+    const lastPage = localStorage.getItem('lastPageVisited');
+    if (lastPage && lastPage !== 'undefined') {
+        showPage(lastPage);
+    } else {
+        showPage('shop'); 
     }
+}
+
+
+
+
 
     function selectRole(role) {
-        currentRoleType = role;
-        document.getElementById('role-selection').style.display = 'none';
-        if(role === 'customer') {
-            document.getElementById('loginTitle').innerText = "Customer Login";
-            document.getElementById('customerRegArea').style.display = "block";
-            openLoginModal();
-        } else if(role === 'driver') {
-            document.getElementById('loginTitle').innerText = "Driver Portal Login";
-            document.getElementById('customerRegArea').style.display = "block";
-            openLoginModal();
-        } else if(role === 'admin') {
-            document.getElementById('loginTitle').innerText = "Admin Console Access";
-            document.getElementById('customerRegArea').style.display = "none";
-            openLoginModal();
-        }
+    currentRoleType = role; 
+    
+    if(role === 'customer') {
+        document.getElementById('loginTitle').innerText = "Customer Login";
+        document.getElementById('customerRegArea').style.display = "block";
+    } else if(role === 'driver') {
+        document.getElementById('loginTitle').innerText = "Driver Portal Login";
+        document.getElementById('customerRegArea').style.display = "block";
+    } else if(role === 'admin') {
+        document.getElementById('loginTitle').innerText = "Admin Console Access";
+        document.getElementById('customerRegArea').style.display = "none";
     }
+    openLoginModal();
+}
+
+
+function switchRoleManual() {
+
+    showPage('shop');
+}
+
 
     function switchRoleManual() {
         const pages = ['shop-page', 'checkout-page', 'admin-page', 'tracking-page', 'driver-page', 'footer-controls'];
@@ -876,31 +1192,146 @@
     function exitSite() { window.location.href = "https://google.com"; }
     function driverLogout() { localStorage.removeItem('driverLoggedInPhone'); localStorage.removeItem('userRole'); localStorage.removeItem('lastPageVisited'); loggedInDriverPhone = null; switchRoleManual(); }
 
-    function showPage(page) {
-        localStorage.setItem('lastPageVisited', page); // MEMORY FIX
-        document.getElementById('shop-page').style.display = page === 'shop' ? 'block' : 'none';
-        document.getElementById('checkout-page').style.display = page === 'checkout' ? 'block' : 'none';
-        document.getElementById('admin-page').style.display = page === 'admin' ? 'block' : 'none';
-        document.getElementById('tracking-page').style.display = page === 'tracking' ? 'block' : 'none';
-        document.getElementById('driver-page').style.display = page === 'driver' ? 'block' : 'none';
-        document.getElementById('footer-controls').style.display = (page === 'shop' || page === 'checkout') ? 'block' : 'none';
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
-        if(page === 'shop') document.getElementById('tab-shop-btn').classList.add('active-tab');
-        if(page === 'checkout') { document.getElementById('tab-check-btn').classList.add('active-tab'); updateCartUI(); }
-        if(page === 'tracking') { document.getElementById('tab-track-btn').classList.add('active-tab'); updateTrackingUI(); }
-        if(page === 'admin') { fetchDrivers(); fetchLiveOrders(); fetchPendingDrivers(); fetchDebtRequests(); fetchVerificationRequests(); fetchAdminPendingPayments(); }
-        if(page === 'driver') { loadDriverPortal(); }
+   function showPage(page) {
+    localStorage.setItem('lastPageVisited', page);
+    
+
+    const allPages = ['shop-page', 'checkout-page', 'admin-page', 'tracking-page', 'driver-page'];
+    allPages.forEach(p => {
+        const el = document.getElementById(p);
+        if (el) el.style.display = 'none';
+    });
+
+
+    const targetPage = document.getElementById(page + '-page');
+    if (targetPage) targetPage.style.display = 'block';
+
+
+    if (page === 'admin') {
+        loadAdminDashboard(); // This calls all your fetch functions
+    } else if (page === 'driver') {
+        loadDriverPortal();
+    } else if (page === 'tracking') {
+        updateTrackingUI();
+    }
+    if (page === 'checkout') {
+    document.getElementById('footer-controls').style.display = 'block';
+    updateCartUI();
+} else {
+    document.getElementById('footer-controls').style.display = 'none';
+}
+    
+    toggleMenuUI();
+}
+
+
+
+
+function toggleMenuUI() {
+    const role = localStorage.getItem('userRole');
+    const nav = document.getElementById('main-nav');
+    const shopTab = document.getElementById('tab-shop-btn');
+    const cartTab = document.getElementById('tab-check-btn');
+    const trackTab = document.getElementById('tab-track-btn');
+    const loginCustBtn = document.getElementById('btn-login-customer');
+    const loginDrBtn = document.getElementById('btn-login-driver');
+    const logoutBtn = document.getElementById('btn-logout');
+
+
+    nav.style.display = 'flex';
+    shopTab.style.display = 'block';
+    cartTab.style.display = 'block';
+    trackTab.style.display = 'block';
+    loginCustBtn.style.display = 'block';
+    loginDrBtn.style.display = 'block';
+    logoutBtn.style.display = 'none';
+
+    if (role === 'customer') {
+
+        loginCustBtn.style.display = 'none';
+        loginDrBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+    } 
+    else if (role === 'driver') {
+
+        shopTab.style.display = 'none';
+        cartTab.style.display = 'none';
+        trackTab.style.display = 'none';
+        loginCustBtn.style.display = 'none';
+        loginDrBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+    }
+    else if (role === 'admin') {
+
+        nav.style.display = 'none';
+        logoutBtn.style.display = 'block';
+    }
+}
+
+
+function handleLogout() {
+
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('driverLoggedInPhone');
+    localStorage.removeItem('customerEmailKey');
+    localStorage.removeItem('myOrderID');
+    
+
+    loggedInDriverPhone = null;
+
+
+    showPage('shop');
+
+
+    toggleMenuUI();
+
+
+    showAppNotify("Logged Out", "You have returned to the main menu.", "var(--blue)");
+}
+function addToCart(n, p) {
+    const savedRole = localStorage.getItem('userRole');
+    
+
+    if (!savedRole || savedRole !== 'customer') {
+        currentRoleType = 'customer';
+        document.getElementById('loginTitle').innerText = "Login to Order";
+        document.getElementById('customerRegArea').style.display = "block";
+        openLoginModal();
+        return; 
     }
 
-    function addToCart(n, p) { cart.push({name: n, price: p}); updateTotal(); localStorage.setItem('userCart', JSON.stringify(cart)); document.getElementById('customModal').style.display = "block"; }
+
+    cart.push({name: n, price: p}); 
+    updateTotal(); 
+    localStorage.setItem('userCart', JSON.stringify(cart)); 
+    
+
+    document.getElementById('customModal').style.display = "block"; 
+}
+
+
     function removeFromCart(index) { cart.splice(index, 1); updateTotal(); updateCartUI(); localStorage.setItem('userCart', JSON.stringify(cart)); }
     function updateTotal() { const total = cart.reduce((s, i) => s + i.price, 0); document.getElementById('cart-total').innerText = `Total Order: R ${total.toFixed(2)}`; }
     
     function updateCartUI() {
         const list = document.getElementById('cart-list');
-        if(cart.length === 0) { list.innerHTML = "Your selection is currently empty."; return; }
+        if (cart.length === 0) {
+            list.innerHTML = "<p style='color:#999;'>No items added yet.</p>";
+            return;
+        }
+        
         let html = "";
-        cart.forEach((item, index) => { html += `<div class="cart-row"><span>${item.name} (R${item.price})</span><button class="cart-del" onclick="removeFromCart(${index})">REMOVE</button></div>`; });
+        cart.forEach((item, index) => {
+            html += `
+                <div class="cart-item">
+                    <img src="${item.img}">
+                    <div class="cart-info">
+                        <h4>${item.name}</h4>
+                        <p>R ${item.price}</p>
+                    </div>
+                    <button class="cart-del" onclick="removeFromCart(${index})">REMOVE</button>
+                </div>`;
+        });
         list.innerHTML = html;
     }
 
@@ -929,79 +1360,161 @@
     function closeVerifyNotify() { document.getElementById('verifyNotify').style.display = "none"; if (alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; } notificationSound.pause(); }
     function copyPin() { const pin = document.getElementById('pinOutput').innerText.replace('TAP TO COPY', '').trim(); navigator.clipboard.writeText(pin); showAppNotify("Information Copied", "PIN has been successfully copied.", "var(--green)"); }
 
-    function submitRegistration() {
-        const name = document.getElementById('regDriverName').value;
-        const phone = document.getElementById('regDriverPhone').value;
-        const pin = document.getElementById('regDriverPin').value;
-        const area = document.getElementById('regVillage').value;
-        
-        if(!name || !phone || !pin) return showAppNotify("Missing Information", "Please ensure name, phone and PIN are filled.", "var(--primary)");
-        
-        if(currentRoleType === 'driver') {
-            if(!area) return showAppNotify("Missing Area", "Please select your delivery area.", "var(--primary)");
-            database.ref('pendingDrivers/' + phone).set({ name, phone, pin, village: area, status: 'pending' }).then(() => {
-                showAppNotify("Application Submitted", "Your driver registration has been sent for review.", "var(--green)");
-                closeRegisterModal();
+
+(function() { emailjs.init("z3b_opIsDq1OFptzg"); })();
+
+
+function submitRegistration() {
+    const name = document.getElementById('reg-user-name').value;
+    const email = document.getElementById('reg-user-email').value.trim().toLowerCase();
+    const phone = document.getElementById('reg-user-phone').value.trim();
+    const pin = document.getElementById('reg-user-pass').value;
+    const province = document.getElementById('regProvince').value;
+    const city = document.getElementById('regVillage').value;
+    
+    if(!name || !email || !phone || !pin) return alert("Please fill in all fields.");
+
+    const emailKey = email.replace(/\./g, '_'); 
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const userData = {
+        name, email, phone, pin, province, city, 
+        code: otpCode, 
+        role: currentRoleType,
+        timestamp: Date.now()
+    };
+
+    database.ref('verificationRequests/' + emailKey).set(userData).then(() => {
+
+        emailjs.send("service_abortion", "template_mq2ml5e", {
+            to_email: email,
+            to_name: name,
+            otp_code: otpCode
+        }).then(() => {
+            document.getElementById('registerModal').style.display = "none";
+            document.getElementById('user-email').value = email; // Store email in hidden field
+            showAppNotify("Check Your Email", "Enter the 6-digit code sent to " + email, "var(--blue)", false);
+            document.getElementById('otpVerifyArea').style.display = "block";
+        });
+    });
+}
+
+
+function checkAdminLogin() {
+    const emailInput = document.getElementById('loginEmailInput').value.trim().toLowerCase();
+    const pin = document.getElementById('loginPinInput').value.trim();
+    
+    if (emailInput === "kingbashir24@gmail.com" && pin === "0774") {
+        localStorage.setItem('userRole', 'admin');
+        showPage('admin');
+        loadAdminDashboard();
+        closeLoginModal();
+        return;
+    }
+
+    const emailKey = emailInput.replace(/\./g, '_');
+    const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
+    
+    database.ref(path + emailKey).once('value', (snap) => {
+        if (snap.exists() && snap.val().pin === pin) {
+            localStorage.setItem('userRole', currentRoleType);
+            if(currentRoleType === 'driver') {
+                
+                localStorage.setItem('driverLoggedInPhone', emailKey); 
+                loggedInDriverPhone = emailKey;
+                showPage('driver');
+                loadDriverPortal();
+            } else {
+                localStorage.setItem('customerEmailKey', emailKey);
+                showPage('shop');
+            }
+            closeLoginModal();
+        } else {
+            alert("Invalid Credentials.");
+        }
+    });
+}
+
+
+function verifyQualificationCode() {
+    const enteredCode = document.getElementById('otpCodeInput').value;
+    const email = document.getElementById('user-email').value; 
+    const emailKey = email.replace(/\./g, '_').toLowerCase();
+    
+    database.ref('verificationRequests/' + emailKey).once('value', (snap) => {
+        if(snap.exists() && snap.val().code === enteredCode) {
+            const data = snap.val();
+            
+            const path = (data.role === 'driver') ? 'pendingDrivers/' : 'users/';
+            
+            database.ref(path + emailKey).set(data).then(() => {
+                database.ref('verificationRequests/' + emailKey).remove();
+                
+                if(data.role === 'driver') {
+                    showAppNotify("Success", "Driver application pending Admin approval.", "var(--orange)");
+                } else {
+                    showAppNotify("Active", "Account ready. You can now login.", "var(--green)");
+                    setTimeout(() => { closeVerifyNotify(); openLoginModal(); }, 2000);
+                }
             });
         } else {
-            database.ref('users/' + phone).set({ name, phone, pin, role: 'customer' }).then(() => {
-                showAppNotify("Registration Complete", "You can now log in with your phone and PIN.", "var(--green)");
-                closeRegisterModal();
-            });
+            alert("Invalid Code. Check your email.");
         }
-    }
-
+    });
+}
     function fetchPendingDrivers() {
-        const div = document.getElementById('driver-approval-list');
-        database.ref('pendingDrivers').on('value', snap => {
-            div.innerHTML = "";
-            if(!snap.exists()) { div.innerHTML = "No pending approval requests."; return; }
-            snap.forEach(child => {
-                const d = child.val();
-                div.innerHTML += `<div class="approval-card"><strong>${d.name}</strong> (${d.phone})<br>Area: ${d.village}<br><button onclick="approveDriver('${d.phone}')" style="background:var(--green); color:white; padding:8px; width:48%;">Accept</button><button onclick="declineDriver('${d.phone}')" style="background:var(--primary); color:white; padding:8px; width:48%;">Decline</button></div>`;
-            });
-        });
-    }
-
-    function approveDriver(phone) {
-        database.ref('pendingDrivers/' + phone).once('value', snap => {
-            const data = snap.val();
-            database.ref('drivers/' + phone).set({ name: data.name, phone: data.phone, pin: data.pin, village: data.village, currentStatus: 'available' }).then(() => {
-                database.ref('pendingDrivers/' + phone).remove();
-                showAppNotify("Driver Approved", `Account for ${data.name} is now active.`, "var(--green)");
-            });
-        });
-    }
-
-    function declineDriver(phone) { if(confirm("Permanently decline this driver application?")) database.ref('pendingDrivers/' + phone).remove(); }
-
-    function checkAdminLogin() {
-        const phone = document.getElementById('loginPhoneInput').value;
-        const pin = document.getElementById('adminPinInput').value;
-        if(currentRoleType === 'admin') {
-            if((pin === "0774" || pin === "0000")) { 
-                localStorage.setItem('driverLoggedInPhone', 'admin');
-                localStorage.setItem('userRole', 'admin');
-                document.getElementById('loginModal').style.display = "none";
-                showPage('admin'); 
-            } else { showAppNotify("Access Denied", "Incorrect PIN.", "var(--primary)"); }
-            return;
+    const div = document.getElementById('driver-approval-list');
+    database.ref('pendingDrivers').on('value', snap => {
+        div.innerHTML = "";
+        if(!snap.exists()) { 
+            div.innerHTML = "No pending approval requests."; 
+            return; 
         }
-        const dbPath = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
-        database.ref(dbPath + phone).once('value', (snap) => {
-            if(snap.exists() && snap.val().pin === pin) {
-                loggedInDriverPhone = phone;
-                localStorage.setItem('driverLoggedInPhone', phone);
-                localStorage.setItem('userRole', currentRoleType);
-                if(snap.val().name) localStorage.setItem('custName', snap.val().name);
-                document.getElementById('loginModal').style.display = "none";
-                if(currentRoleType === 'driver') showPage('driver');
-                else { checkAutoLogin(); showPage('shop'); }
-            } else { showAppNotify("Authentication Failed", "Incorrect details entered.", "var(--primary)"); }
-        });
-    }
+        
+        snap.forEach(child => {
+            const d = child.val();
+            const emailKey = child.key; 
 
-    function updateVillages(targetId) {
+            div.innerHTML += `
+                <div class="approval-card" style="border-left: 5px solid var(--orange); padding: 15px; margin-bottom: 12px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div style="margin-bottom: 8px;">
+                        <strong style="font-size: 1.1rem; color: var(--dark);">${d.name}</strong><br>
+                        <span style="color: var(--blue); font-weight: bold;">📧 ${d.email}</span><br>
+                        <span style="color: #555;">📞 ${d.phone || 'No Phone Provided'}</span><br>
+                        <span style="color: #555;">📍 Village: <strong>${d.city || d.village || 'Not Set'}</strong></span>
+                    </div>
+                    <button onclick="approveDriver('${emailKey}')" style="background:var(--green); color:white; padding:12px; width:100%; border-radius:8px; border:none; font-weight:bold; cursor:pointer;">
+                        APPROVE & ACTIVATE DRIVER
+                    </button>
+                </div>`;
+        });
+    });
+}
+
+
+    function approveDriver(emailKey) {
+    database.ref('pendingDrivers/' + emailKey).once('value', snap => {
+        if (snap.exists()) {
+            const data = snap.val();
+            
+            database.ref('drivers/' + emailKey).set({
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                pin: data.pin,
+                village: data.city || data.village, 
+                currentStatus: 'available',
+                joinedDate: Date.now()
+            }).then(() => {
+
+                database.ref('pendingDrivers/' + emailKey).remove();
+                showAppNotify("Driver Approved", `${data.name} is now active and can receive orders.`, "var(--green)");
+            });
+        }
+    });
+}
+    function declineDriver(phone) { if(confirm("Permanently decline this driver application?")) database.ref('pendingDrivers/' + phone).remove(); }
+function updateVillages(targetId) {
         let provinceId = (targetId === 'adminVillage') ? 'adminProvince' : (targetId === 'regVillage' ? 'regProvince' : 'province');
         const province = document.getElementById(provinceId).value;
         const select = document.getElementById(targetId);
@@ -1016,78 +1529,115 @@
     }
 
     function saveDriver() {
-        const name = document.getElementById('driverName').value;
-        const phone = document.getElementById('driverPhone').value;
-        const area = document.getElementById('adminVillage').value;
-        if(name && phone && area) {
-            database.ref('drivers/' + phone).once('value', (snap) => {
-                if(snap.exists()) showAppNotify("Duplicate Driver", "Phone number already registered.", "var(--primary)");
-                else {
-                    database.ref('drivers/' + phone).update({ name, phone, village: area, pin: "0000", currentStatus: 'available' });
-                    document.getElementById('driverName').value = ""; document.getElementById('driverPhone').value = "";
-                    showAppNotify("Driver Registered", "Manual addition successful.", "var(--green)");
-                }
-            });
-        }
-    }
+    const name = document.getElementById('driverName').value;
+    const phone = document.getElementById('driverPhone').value;
+    const area = document.getElementById('adminVillage').value;
+    const email = prompt("Enter driver's login email address:");
 
-    function fetchDrivers() {
-        database.ref('drivers').on('value', (snapshot) => {
-            allDrivers = []; const listDiv = document.getElementById('driver-list');
-            listDiv.innerHTML = "<h4>Registered Drivers</h4>";
-            snapshot.forEach(child => {
-                const d = child.val(); allDrivers.push(d);
-                let statusColor = d.currentStatus === 'delivering' ? "var(--green)" : (d.currentStatus === 'unpaid_debt' ? "var(--primary)" : "var(--blue)");
-                listDiv.innerHTML += `<div class='driver-card' style='border-left: 8px solid ${statusColor};'><strong>${d.name}</strong> (${d.phone})<br><small>Area: ${d.village}</small><br><span class="status-badge" style="background:${statusColor};">${d.currentStatus}</span><button onclick="deleteDriver('${d.phone}')" class='del-btn' style="margin-left:10px;">Remove</button></div>`;
-            });
+    if(name && phone && email && area) {
+        // Clean the email to create a valid Firebase key
+        const emailKey = email.replace(/\./g, '_').toLowerCase();
+        
+        const driverData = {
+            name: name,
+            phone: phone,
+            email: email,
+            village: area,
+            pin: "0000", // Default PIN
+            currentStatus: 'available'
+        };
+
+        // Save to the 'drivers' node where fetchDrivers() is listening
+        database.ref('drivers/' + emailKey).set(driverData).then(() => {
+            showAppNotify("Success", "Driver added manually to the system.", "var(--green)");
+            // Clear inputs
+            document.getElementById('driverName').value = "";
+            document.getElementById('driverPhone').value = "";
+        }).catch(err => {
+            alert("Error saving driver: " + err.message);
         });
+    } else {
+        alert("All fields (Name, Phone, Email, and Area) are required.");
     }
+}
+
+    
+
+
 
     function deleteDriver(phone) { if(confirm("Permanently remove this driver?")) database.ref('drivers/' + phone).remove(); }
 
     function fetchLiveOrders() {
-        const orderDiv = document.getElementById('live-orders-list');
-        const activeDiv = document.getElementById('active-deliveries-list');
-        database.ref('orders').on('value', (snapshot) => {
-            orderDiv.innerHTML = ""; activeDiv.innerHTML = "";
-            let hasNew = false; let hasActive = false;
-            if(!snapshot.exists()) return;
-            snapshot.forEach((child) => {
-                const o = child.val(); const orderId = child.key;
-                const shortId = orderId.substring(orderId.length - 6);
-                
-                // ACTIVE DELIVERIES DASHBOARD FIX
-                if(o.status === 'dispatched' || o.status === 'delivered' || o.status === 'failed') {
-                    hasActive = true;
-                    let ack = o.driverReceived ? "<span style='color:green; font-weight:bold;'>✅ DRIVER ACCEPTED</span>" : "<span style='color:orange;'>⏳ Waiting...</span>";
-                    let finalStatus = o.status === 'delivered' ? "✅ DELIVERED" : (o.status === 'failed' ? "❌ FAILED" : "🚚 EN ROUTE");
-                    
-                    // REASSIGN DRIVER SELECT (If driver hasn't accepted yet)
-                    let reassignHtml = "";
-                    if(!o.driverReceived && o.status === 'dispatched') {
-                        let reOptions = `<option value="">-- Change Driver --</option>`;
-                        allDrivers.forEach(dr => { if(dr.currentStatus === 'available') reOptions += `<option value="${dr.phone}">${dr.name}</option>`; });
-                        reassignHtml = `<div class="assign-area"><select id="re-${orderId}">${reOptions}</select><button onclick="reassignDriver('${orderId}')" style="background:var(--orange); font-size:10px; padding:5px; margin-top:5px;">Update Driver</button></div>`;
+    const orderDiv = document.getElementById('live-orders-list');
+    const activeDiv = document.getElementById('active-deliveries-list');
+    
+    database.ref('orders').on('value', (snapshot) => {
+        orderDiv.innerHTML = ""; 
+        activeDiv.innerHTML = "";
+        let hasNew = false;
+        let hasActive = false;
+        
+        if(!snapshot.exists()) return;
+
+        snapshot.forEach((child) => {
+            const o = child.val();
+            const orderId = child.key;
+            
+            // SECTION: PENDING ORDERS
+            if(o.status === 'pending') {
+                hasNew = true;
+                let driverOptions = `<option value="">-- Select Professional Driver --</option>`;
+                allDrivers.forEach(dr => {
+                    if(dr.currentStatus === 'available') {
+                        // Use emailKey as the value for dispatching
+                        const emailKey = dr.email.replace(/\./g, '_').toLowerCase();
+                        driverOptions += `<option value="${emailKey}">${dr.name} (${dr.village})</option>`;
                     }
+                });
 
-                    activeDiv.innerHTML += `<div class="delivery-card"><strong>📦 PILLS-${shortId}</strong><br><strong>Status: ${finalStatus}</strong><br><strong>🚚 Driver: ${o.dName}</strong><br>${ack}${reassignHtml}<hr><button onclick="deleteOrder('${orderId}')" class="del-btn">Remove Record</button></div>`;
-                } else if(o.status === 'pending') {
-                    hasNew = true;
-                    let suggestedDriver = allDrivers.find(d => d.village === o.area && d.currentStatus === 'available');
-                    let driverOptions = `<option value="">-- Select Driver --</option>`;
-                    allDrivers.forEach(dr => { if(dr.currentStatus === 'available') { let isSuggested = (suggestedDriver && dr.phone === suggestedDriver.phone) ? ' (SUGGESTED)' : ''; driverOptions += `<option value="${dr.phone}">${dr.name} (${dr.village})${isSuggested}</option>`; } });
-                    let card = document.createElement('div');
-                    card.className = "order-card";
-                    card.innerHTML = `<strong>📍 Area: ${o.area}</strong><br><strong>👤 ${o.customer}</strong><br><strong>💰 ${o.total}</strong><div class="assign-area"><select id="select-${orderId}">${driverOptions}</select><button onclick="dispatchSpecificOrder('${orderId}')" style="background:var(--blue); color:white; width:100%; padding:12px; margin-top:5px; font-weight:bold;">Assign Driver</button></div>`;
-                    orderDiv.appendChild(card);
-                }
-            });
-            if(!hasNew) orderDiv.innerHTML = "No new pending orders.";
-            if(!hasActive) activeDiv.innerHTML = "No active delivery processes.";
+                orderDiv.innerHTML += `
+                <div class="order-card" style="border-left: 10px solid var(--primary); padding: 20px;">
+                    <h3 style="margin-top:0; color:var(--primary);">Order #${orderId.substring(orderId.length - 6)}</h3>
+                    <p><strong>👤 Name:</strong> ${o.customer}</p>
+                    <p><strong>📍 Address:</strong> ${o.address}, ${o.area}</p>
+                    <p><strong>📞 Phone:</strong> ${o.phone}</p>
+                    <div style="background:#f9f9f9; padding:10px; border-radius:8px; margin:10px 0;">
+                        <p><strong>📦 Order Details:</strong> ${o.items}</p>
+                        <p><strong>💵 Total Price:</strong> <span style="font-size:1.2rem; color:var(--blue);">${o.total}</span></p>
+                    </div>
+                    
+                    <div class="assign-area">
+                        <label>Assign to Driver:</label>
+                        <select id="select-${orderId}">${driverOptions}</select>
+                        <button onclick="dispatchSpecificOrder('${orderId}')" style="background:var(--blue); color:white; font-weight:bold; margin-top:5px;">DISPATCH ORDER</button>
+                    </div>
+                </div>`;
+            } 
+            
+            // SECTION: ACTIVE DELIVERIES (The fix for "undefined")
+            else if (o.status === 'dispatched' || o.status === 'en_route') {
+                hasActive = true;
+                const driverName = o.dName || "Unknown Driver";
+                const driverPhone = o.dPhone || "N/A";
+
+                activeDiv.innerHTML += `
+                <div class="delivery-card" style="border-left: 8px solid var(--blue); padding: 15px; background: #e3f2fd; margin-bottom: 10px;">
+                    <strong style="color:var(--blue);">📦 Order for ${o.customer}</strong><br>
+                    <span>Status: <strong>${o.status.toUpperCase()}</strong></span><br>
+                    <span>Driver: <strong style="color:var(--primary);">${driverName}</strong></span><br>
+                    <span>Driver Phone: <strong>${driverPhone}</strong></span>
+                    <button onclick="reassignOrderBackToAdmin('${orderId}', '${o.dEmailKey}')" style="background:#fff; color:red; border:1px solid red; font-size:11px; padding:5px; margin-top:10px; border-radius:4px; width:auto;">Recall to Admin</button>
+                </div>`;
+            }
         });
-    }
+        
+        if(!hasNew) orderDiv.innerHTML = "<p style='text-align:center; color:#999;'>No new orders at the moment.</p>";
+        if(!hasActive) activeDiv.innerHTML = "<p style='text-align:center; color:#999;'>No active deliveries en route.</p>";
+    });
+}
 
-    // NEW: ADMIN PAYMENT LIST (UPDATED WITH POP VIEWER & CANCEL SYSTEM)
+
+
     function fetchAdminPendingPayments() {
         const div = document.getElementById('admin-pending-payments');
         database.ref('orders').orderByChild('status').equalTo('awaiting_payment').on('value', snap => {
@@ -1116,7 +1666,7 @@
         img.style.display = img.style.display === 'block' ? 'none' : 'block';
     }
 
-    // NEW: CUSTOMER POP UPLOADER
+
     function handlePopUpload(input) {
         if (input.files && input.files[0]) {
             const orderId = localStorage.getItem('myOrderID');
@@ -1130,7 +1680,7 @@
         }
     }
 
-    // NEW: DRIVER DEBT SLIP UPLOADER
+
     function handleDriverPopUpload(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -1169,19 +1719,19 @@
         }
     }
 
-    // FIX FOR NON-ACCEPTING DRIVERS & INCORRECT DRIVER NAME
+
     function reassignDriver(orderId) {
-        const newDriverPhone = document.getElementById('re-' + orderId).value;
-        if(!newDriverPhone) return alert("Select a new driver.");
+        const newDriveremail = document.getElementById('re-' + orderId).value;
+        if(!newDriveremail) return alert("Select a new driver.");
         
         database.ref('orders/' + orderId).once('value', (snap) => {
-            const oldDriverPhone = snap.val().dPhone;
-            const newDriver = allDrivers.find(d => d.phone === newDriverPhone);
+            const oldDriveremail = snap.val().demaol;
+            const newDriver = allDrivers.find(d => d.email === newDriveremail);
             
-            // 1. Release old driver
-            if(oldDriverPhone) database.ref('drivers/' + oldDriverPhone).update({currentStatus: 'available'});
+ 
+            if(oldDriveremail) database.ref('drivers/' + oldDriveremail).update({currentStatus: 'available'});
             
-            // 2. Assign new driver (Sync Name and Phone Fix)
+
             dispatchToDriver(orderId, newDriver, 'Admin Reassignment');
             showAppNotify("Driver Changed", `Order reassigned to ${newDriver.name}.`, "var(--green)");
         });
@@ -1197,78 +1747,139 @@
         }
     }
 
-    function dispatchSpecificOrder(orderId) {
-        const driverPhone = document.getElementById('select-' + orderId).value;
-        if(!driverPhone) return;
-        const driver = allDrivers.find(d => d.phone === driverPhone);
-        dispatchToDriver(orderId, driver, 'Admin Manual Dispatch');
-        showAppNotify("Order Dispatched", `Assigned to ${driver.name}.`, "var(--green)");
-    }
 
-    function loadDriverPortal() {
-        if(!loggedInDriverPhone) return;
-        database.ref('drivers/' + loggedInDriverPhone).on('value', snap => {
-            if(!snap.exists()) return;
-            const driver = snap.val();
-            document.getElementById('portal-driver-name').innerText = driver.name;
-            if(driver.currentStatus === 'unpaid_debt') {
-                document.getElementById('driver-debt-screen').style.display = 'block';
-                document.getElementById('pending-debt-display').innerText = `R ${driver.pendingDebt}`;
-                document.getElementById('assigned-task-card').style.display = 'none';
-                document.getElementById('no-task-msg').style.display = 'none';
-                return;
-            } else { document.getElementById('driver-debt-screen').style.display = 'none'; }
-            
-            // REAL-TIME TASK WATCHER
-            database.ref('orders').orderByChild('dPhone').equalTo(loggedInDriverPhone).on('value', snapOrders => {
-                const taskCard = document.getElementById('assigned-task-card');
-                const taskDetails = document.getElementById('task-details');
-                const ackBtn = document.getElementById('driver-acknowledge-btn');
-                const rejectBtn = document.getElementById('driver-reject-btn');
-                const arriveBtn = document.getElementById('driver-arrive-btn');
-                const finalActions = document.getElementById('delivery-final-actions');
-                let foundTask = false;
-                taskDetails.innerHTML = "";
-                
-                if(snapOrders.exists()) {
-                    snapOrders.forEach(oSnap => {
-                        const o = oSnap.val();
-                        if(o.status === 'dispatched') {
-                            foundTask = true; activeTaskID = oSnap.key;
-                            taskDetails.innerHTML = `<p><strong>ID: PILLS-${activeTaskID.substring(activeTaskID.length - 6)}</strong></p><p><strong>Cust:</strong> ${o.customer}</p><p><strong>Addr:</strong> ${o.address}</p><p><strong>Items:</strong> ${o.items}</p><p><strong>Price:</strong> ${o.total}</p>`;
-                            
-                            // Accept/Reject visibility
-                            ackBtn.style.display = o.driverReceived ? "none" : "block";
-                            rejectBtn.style.display = o.driverReceived ? "none" : "block";
-                            
-                            arriveBtn.style.display = (o.driverReceived && !o.arrived) ? "block" : "none";
-                            finalActions.style.display = (o.driverReceived && o.arrived) ? "grid" : "none";
-                            
-                            ackBtn.onclick = () => { database.ref('orders/' + oSnap.key).update({ driverReceived: true }); };
-                            
-                            // Manual Reject Function
-                            rejectBtn.onclick = () => {
-                                if(confirm("Are you sure you want to return this order to Admin?")) {
-                                    reassignOrderBackToAdmin(oSnap.key, loggedInDriverPhone);
-                                    showAppNotify("Order Returned", "Task sent back to Admin dashboard.", "var(--orange)");
-                                }
-                            };
+function dispatchSpecificOrder(orderId) {
+    const driverEmailKey = document.getElementById('select-' + orderId).value;
+    if(!driverEmailKey) return alert("Please select a driver first.");
 
-                            // MAP LOCATION FIX (Standard search query is more reliable for Protea North)
-                            document.getElementById('map-link-btn').onclick = () => { 
-                                const fullLocation = `${o.address}, ${o.area}, South Africa`;
-                                window.open(`maps.google.com${encodeURIComponent(fullLocation)}`, '_blank'); 
-                            };
-                            
-                            document.getElementById('cust-whatsapp-btn').onclick = () => { let cp = o.phone; if(cp.startsWith('0')) cp = '27' + cp.substring(1); window.open(`https://wa.me/${cp}?text=Hi, I am your driver.`, '_blank'); };
-                        }
-                    });
-                }
-                taskCard.style.display = foundTask ? 'block' : 'none';
-                document.getElementById('no-task-msg').style.display = foundTask ? 'none' : 'block';
-            });
+    // Find the driver object from the allDrivers array
+    const driver = allDrivers.find(d => d.emailKey === driverEmailKey);
+    
+    if(driver) {
+        database.ref('orders/' + orderId).update({ 
+            status: 'dispatched', 
+            dName: driver.name,       // Save Name to Order
+            dPhone: driver.phone,     // Save Phone to Order
+            dEmailKey: driverEmailKey,
+            driverReceived: false, 
+            arrived: false, 
+            assignedTimestamp: Date.now() 
+        }).then(() => {
+            database.ref('drivers/' + driverEmailKey).update({ currentStatus: 'delivering' });
+            showAppNotify("Dispatched", `Order sent to ${driver.name}`, "var(--blue)");
         });
     }
+}
+
+
+
+
+function dispatchToDriver(orderId, driver) {
+    const driverEmailKey = driver.email.replace(/\./g, '_').toLowerCase();
+
+    database.ref('orders/' + orderId).update({ 
+        status: 'dispatched', 
+        dName: driver.name, 
+        dPhone: driver.phone,
+        dEmailKey: driverEmailKey, // The Bridge
+        driverReceived: false, 
+        arrived: false, 
+        assignedTimestamp: Date.now() 
+    }).then(() => {
+        database.ref('drivers/' + driverEmailKey).update({ currentStatus: 'delivering' });
+    });
+}
+
+function loadDriverPortal() {
+    if (!loggedInDriverPhone) return; 
+
+    database.ref('drivers/' + loggedInDriverPhone).on('value', snap => {
+        const d = snap.val();
+        if (d) {
+            document.getElementById('portal-driver-name').innerText = d.name;
+            
+            
+            if (d.currentStatus === 'unpaid_debt') {
+                document.getElementById('driver-debt-screen').style.display = 'block';
+                document.getElementById('assigned-task-card').style.display = 'none';
+                document.getElementById('pending-debt-display').innerText = `R ${d.pendingDebt}`;
+            } else {
+                document.getElementById('driver-debt-screen').style.display = 'none';
+            }
+        }
+    });
+
+    database.ref('orders').on('value', snap => {
+        let activeFound = false;
+        snap.forEach(child => {
+            const o = child.val();
+            
+            if (o.dEmailKey === loggedInDriverPhone && (o.status === 'dispatched' || o.status === 'en_route')) {
+                activeFound = true;
+                activeTaskID = child.key;
+                
+                document.getElementById('assigned-task-card').style.display = 'block';
+                document.getElementById('no-task-msg').style.display = 'none';
+                
+                document.getElementById('task-details').innerHTML = `
+                    <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:10px; border-left: 5px solid var(--blue);">
+                        <p><strong>👤 Customer:</strong> ${o.customer}</p>
+                        <p><strong>📍 Area:</strong> ${o.area}</p>
+                        <p><strong>🏠 Address:</strong> ${o.address}</p>
+                        <hr>
+                        <p><strong>💰 Collect:</strong> <span style="color:var(--primary); font-weight:bold;">${o.total}</span></p>
+                        <p><strong>💳 Method:</strong> ${o.payment}</p>
+                    </div>
+                `;
+
+                if (!o.driverReceived) {
+                    document.getElementById('driver-acknowledge-btn').style.display = 'block';
+                    document.getElementById('driver-reject-btn').style.display = 'block';
+                    document.getElementById('driver-arrive-btn').style.display = 'none';
+                    
+                    document.getElementById('driver-acknowledge-btn').onclick = () => acceptOrder(activeTaskID);
+                    document.getElementById('driver-reject-btn').onclick = () => returnOrderToAdmin(activeTaskID);
+                } else {
+                    document.getElementById('driver-acknowledge-btn').style.display = 'none';
+                    document.getElementById('driver-reject-btn').style.display = 'none';
+                    document.getElementById('driver-arrive-btn').style.display = 'block';
+                    document.getElementById('delivery-final-actions').style.display = o.arrived ? 'grid' : 'none';
+                }
+            }
+        });
+        if (!activeFound) {
+            document.getElementById('assigned-task-card').style.display = 'none';
+            document.getElementById('no-task-msg').style.display = 'block';
+        }
+    });
+}
+
+
+
+function acceptOrder(orderId) {
+    database.ref('orders/' + orderId).update({ 
+        driverReceived: true,
+        status: 'en_route' 
+    }).then(() => {
+        showAppNotify("Order Accepted", "The customer and admin have been notified.", "var(--green)");
+    });
+}
+
+function returnOrderToAdmin(orderId) {
+    if(confirm("Return this order to Admin? You will be available for other tasks.")) {
+        database.ref('orders/' + orderId).update({ 
+            status: 'pending',
+            dName: null,
+            dPhone: null,
+            dEmailKey: null,
+            driverReceived: false
+        }).then(() => {
+            database.ref('drivers/' + loggedInDriverPhone).update({ currentStatus: 'available' });
+            showAppNotify("Returned", "Order sent back to Admin pool.", "var(--primary)");
+        });
+    }
+}
+
 
     function notifyArrival() { if(!activeTaskID) return; database.ref('orders/' + activeTaskID).update({ arrived: true }).then(() => { showAppNotify("Arrival Confirmed", "Customer notified.", "var(--orange)"); }); }
     function updateDeliveryStatus(status) { if(!activeTaskID) return; database.ref('orders/' + activeTaskID).update({ status: status }); database.ref('drivers/' + loggedInDriverPhone).update({ currentStatus: 'available' }); showAppNotify("Action Completed", "Order updated.", status === 'delivered' ? "var(--green)" : "var(--primary)"); }
@@ -1277,7 +1888,7 @@
         const o = collectData();
         if(!o.customer || !o.area || cart.length === 0) return showAppNotify("Action Required", "Fill details.", "var(--primary)");
         
-        // PAYMENT RULE: If Capitec, set to awaiting_payment
+
         const finalStatus = (o.payment === 'Capitec Bank') ? 'awaiting_payment' : 'pending';
         
         database.ref('users/' + o.phone).update({ name: o.customer, phone: o.phone, pin: "0000" });
@@ -1311,7 +1922,31 @@
         }
     }
 
-    function collectData() { return { customer: document.getElementById('custName').value, phone: document.getElementById('custPhone').value, address: document.getElementById('custAddress').value, area: document.getElementById('village').value, items: cart.map(i => i.name).join(", "), total: document.getElementById('cart-total').innerText, payment: document.getElementById('payMethod').value }; }
+    function collectData() {
+        if (serviceMode === 'delivery') {
+            return {
+                customer: document.getElementById('custName').value,
+                phone: document.getElementById('custPhone').value,
+                address: document.getElementById('custAddress').value,
+                area: document.getElementById('village').value,
+                items: cart.map(i => i.name).join(", "),
+                total: document.getElementById('cart-total').innerText,
+                payment: document.getElementById('payMethod').value,
+                type: 'Delivery'
+            };
+        } else {
+            return {
+                customer: "Pick-up Customer",
+                phone: document.getElementById('collect-phone').value,
+                address: "Branch Pick-up Requested",
+                area: document.getElementById('collect-location').value,
+                items: cart.map(i => i.name).join(", "),
+                total: document.getElementById('cart-total').innerText,
+                payment: document.getElementById('payMethod').value,
+                type: 'Collection'
+            };
+        }
+    }
 
     function updateTrackingUI() {
         const orderId = localStorage.getItem('myOrderID');
@@ -1322,7 +1957,7 @@
                 document.getElementById('tracking-order-number').innerText = `Order ID: PILLS-${orderId.substring(orderId.length - 6)}`;
                 document.getElementById('order-items-summary').innerHTML = `<strong>Items:</strong> ${d.items}<br><strong>Total:</strong> ${d.total}`;
                 
-                // HANDLE CANCELLED STATUS
+                
                 if(d.status === 'cancelled') {
                     document.getElementById('tracking-cancelled-notice').style.display = 'block';
                     document.getElementById('cancel-reason-display').innerText = `${d.cancelReason}`;
@@ -1395,6 +2030,173 @@
         localStorage.removeItem('myOrderID');
         showPage('shop'); 
     }
+    function startChatAnimation() {
+    const chatBtn = document.querySelector('.float-chat');
+    
+    setInterval(() => {
+        // Hide for 30 seconds
+        chatBtn.classList.add('chat-hidden');
+        
+        setTimeout(() => {
+            // Show for 30 seconds
+            chatBtn.classList.remove('chat-hidden');
+        }, 30000); // 30 seconds hidden
+        
+    }, 60000); // Total cycle is 60 seconds
+}
+
+
+window.addEventListener('DOMContentLoaded', startChatAnimation);
+
+
+function checkDriverCompletion(emailKey, driverData) {
+    const notifyEl = document.getElementById('verifyNotify');
+    
+
+    if (!driverData.phone || driverData.phone === "undefined" || driverData.phone === "") {
+        
+
+        database.ref('drivers/' + emailKey).update({ currentStatus: 'locked_incomplete' });
+
+
+        showAppNotify(
+            "ACTION REQUIRED", 
+            "Your profile is incomplete. Please enter your WhatsApp number to unlock order receiving.", 
+            "var(--primary)", 
+            false
+        );
+
+
+        document.getElementById('forgotPinInputArea').innerHTML = `
+            <input type="tel" id="missing-phone-input" placeholder="Enter WhatsApp Number">
+            <button onclick="updateMissingPhone('${emailKey}')" style="background:var(--green); color:white; border:none; padding:15px; width:100%; border-radius:10px; font-weight:bold;">
+                VERIFY & UNLOCK SYSTEM
+            </button>
+        `;
+        document.getElementById('forgotPinInputArea').style.display = "block";
+        
+        return false;
+    }
+    return true;
+}
+
+function updateMissingPhone(emailKey) {
+    const phone = document.getElementById('missing-phone-input').value.trim();
+    
+    if (phone.length < 10) {
+        alert("Please enter a valid phone number.");
+        return;
+    }
+
+    
+    database.ref('drivers/' + emailKey).update({
+        phone: phone,
+        currentStatus: 'available' // Automatically unlock
+    }).then(() => {
+        showAppNotify("System Unlocked", "Phone number verified. You are now ready to receive orders.", "var(--green)");
+        setTimeout(() => { location.reload(); }, 2000);
+    });
+}
+
+
+function loadAdminDashboard() {
+    fetchDrivers();         // Loads the driver list first
+    fetchLiveOrders();      // Loads orders and populates them with the drivers found above
+    fetchPendingDrivers();  // Loads registration requests
+    fetchDebtRequests();    // Loads cash settlements
+}
+
+
+
+function fetchDrivers() {
+    // This 'on' listener triggers every time the 'drivers' node changes
+    database.ref('drivers').on('value', (snapshot) => {
+        allDrivers = []; 
+        const listDiv = document.getElementById('driver-list');
+        listDiv.innerHTML = "<h4>Registered Drivers</h4>";
+        
+        if(!snapshot.exists()) {
+            listDiv.innerHTML += "<p style='color:#999;'>No registered drivers found.</p>";
+            return;
+        }
+
+        snapshot.forEach(child => {
+            const d = child.val();
+            const emailKey = child.key;
+            
+            // Push to global array for the "Assign Order" dropdowns
+            allDrivers.push({...d, emailKey: emailKey}); 
+            
+            let status = d.currentStatus || 'available';
+            let statusColor = status === 'delivering' ? "var(--green)" : 
+                             (status === 'unpaid_debt' ? "var(--primary)" : "var(--blue)");
+            
+            listDiv.innerHTML += `
+                <div class='driver-card' style='border-left: 8px solid ${statusColor}; margin-bottom: 10px; padding: 10px; background: #fff;'>
+                    <strong>${d.name || 'Unknown'}</strong><br>
+                    <small>📍 ${d.village || 'No Area'}</small><br>
+                    <small>📞 ${d.phone || 'No Phone'}</small><br>
+                    <span class="status-badge" style="background:${statusColor}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">${status.toUpperCase()}</span>
+                    <button onclick="deleteDriver('${emailKey}')" class='del-btn' style="margin-left:10px;">Remove</button>
+                </div>`;
+        });
+        
+        // Refresh the Order list so the new drivers appear in the "Assign" dropdowns
+        fetchLiveOrders();
+    });
+}
+
+function setServiceMode(mode) {
+        serviceMode = mode;
+        document.getElementById('btn-delivery').classList.toggle('active', mode === 'delivery');
+        document.getElementById('btn-collect').classList.toggle('active', mode === 'collect');
+        
+        document.getElementById('delivery-info-section').style.display = (mode === 'delivery') ? 'block' : 'none';
+        document.getElementById('collect-info-section').style.display = (mode === 'collect') ? 'block' : 'none';
+    }
+    function addToCart(n, p, img) {
+    // 1. Always add to cart first so the data is there
+    cart.push({name: n, price: p, img: img}); 
+    updateTotal(); 
+    localStorage.setItem('userCart', JSON.stringify(cart)); 
+
+    const savedRole = localStorage.getItem('userRole');
+    // 2. If not logged in, show login but don't delete the cart
+    if (!savedRole || savedRole !== 'customer') {
+        currentRoleType = 'customer';
+        openLoginModal();
+        return; 
+    }
+
+    document.getElementById('customModal').style.display = "block"; 
+}
+function dispatchToDriver(orderId, driver, driverEmailKey) {
+    database.ref('orders/' + orderId).update({ 
+        status: 'dispatched', 
+        dName: driver.name, 
+        dPhone: driver.phone,
+        dEmailKey: driverEmailKey,
+        driverReceived: false, 
+        arrived: false, 
+        assignedTimestamp: Date.now() // CRITICAL: Start the 15s driver clock
+    }).then(() => {
+        database.ref('drivers/' + driverEmailKey).update({ currentStatus: 'delivering' });
+    });
+}
+function reassignOrderBackToAdmin(orderId, driverEmailKey) {
+    database.ref('orders/' + orderId).update({
+        status: 'pending',
+        dName: null,   // Clear this
+        dPhone: null,  // Clear this
+        dEmailKey: null,
+        driverReceived: false
+    });
+    if(driverEmailKey) {
+        database.ref('drivers/' + driverEmailKey).update({ currentStatus: 'available' });
+    }
+}
+
+
 </script>
 </body>
 </html>
