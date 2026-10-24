@@ -264,6 +264,18 @@
 </head>
 <body onload="checkAutoLogin()">
 
+  <!-- GLOBAL CONFIRMATION MODAL -->
+<div id="appConfirmModal" class="modal" style="z-index: 20010;">
+    <div class="modal-content">
+        <h3 id="appConfirmTitle" style="color: var(--primary); margin-top: 0;">Confirmation</h3>
+        <p id="appConfirmMessage" style="font-size: 14px; color: #444; margin: 15px 0;"></p>
+        <div style="display: flex; gap: 10px;">
+            <button id="appConfirmYesBtn" style="background: var(--green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold;">YES</button>
+            <button onclick="closeAppConfirm()" style="background: #eee; color: #333; border: none; padding: 12px; border-radius: 8px; font-weight: bold;">CANCEL</button>
+        </div>
+    </div>
+</div>
+
 <div id="verifyNotify">
     <div style="display:flex; align-items:center; gap:15px; margin-bottom: 15px;">
         <div id="notifyIcon" style="background:var(--primary); color:white; width:45px; height:45px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size: 24px;">🔔</div>
@@ -744,9 +756,12 @@
 
 
         
-        <button id="requestPinBtn" class="modal-btn" style="background:var(--green);" onclick="submitRegistration()">Register & Verify</button>
+                <button id="requestPinBtn" class="modal-btn" style="background:var(--green);" onclick="submitRegistration()">Register & Verify</button>
         <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeRegisterModal()">Cancel</button>
-        <!-- CUSTOMER LOCKOUT / FINE LOCKOUT SCREEN -->
+    </div>
+</div>
+
+<!-- CUSTOMER LOCKOUT / FINE LOCKOUT SCREEN (MOVED OUTSIDE MODAL) -->
 <div id="customer-lockout-screen" class="container" style="display:none; max-width: 500px; margin: 30px auto;">
     <div class="debt-alert" style="border-color: var(--primary); background: #fff5f5;">
         <h2 style="color: var(--primary); margin-top:0;">🛑 ACCOUNT TEMPORARILY SUSPENDED</h2>
@@ -1053,10 +1068,9 @@ function submitDriverFailedDelivery() {
 }
 
 
-// --- CUSTOMER ACTIONS WHEN SUSPENDED ---
 function submitCustomerAppeal() {
     const reason = document.getElementById('cust-appeal-reason').value.trim();
-    if(!reason) return alert("Please type your clear reason first.");
+    if(!reason) return showAppNotify("Error", "Please type your clear reason first.", "var(--primary)");
     
     const userEmailKey = localStorage.getItem('customerEmailKey');
     if(!userEmailKey) return;
@@ -1066,10 +1080,11 @@ function submitCustomerAppeal() {
         disputeType: 'review_pending',
         submittedReason: reason
     }).then(() => {
-        alert("Your explanation has been submitted safely. Admin panel will review your dispute timeline now.");
-        location.reload();
+        showAppNotify("Submitted", "Your explanation has been submitted safely. Admin panel will review your dispute timeline now.", "var(--green)");
+        setTimeout(() => { location.reload(); }, 2500);
     });
 }
+
 
 function handleFinePopUpload(input) {
     if (input.files && input.files[0]) {
@@ -1091,46 +1106,138 @@ function handleFinePopUpload(input) {
 function evaluateAccountSecurity(callback) {
     const role = localStorage.getItem('userRole');
     const userEmailKey = localStorage.getItem('customerEmailKey');
+    const lockoutScreen = document.getElementById('customer-lockout-screen');
 
+    // ONLY evaluate customer lockout if the current active role is 'customer'
     if (role === 'customer' && userEmailKey) {
         database.ref('users/' + userEmailKey).once('value', snap => {
             const u = snap.val();
             if (u && u.accountStatus === 'suspended') {
-                // Hide all standard pages
+                // 1. Hide normal navigation & shop pages for the suspended customer
                 const allPages = ['shop-page', 'checkout-page', 'admin-page', 'tracking-page', 'driver-page', 'footer-controls'];
                 allPages.forEach(p => { 
-                    if (document.getElementById(p)) document.getElementById(p).style.display = 'none'; 
+                    const el = document.getElementById(p);
+                    if (el) el.style.display = 'none'; 
                 });
                 
-                const lockoutScreen = document.getElementById('customer-lockout-screen');
-                if (lockoutScreen) lockoutScreen.style.display = 'block';
-                
-                if (u.disputeType === 'review_pending') {
-                    lockoutScreen.innerHTML = `
-                        <div class="debt-alert" style="border-color: var(--orange);">
-                            <h3>⏳ APPEAL UNDER REVIEW</h3>
-                            <p>Your explanation has been recorded. Management is reviewing the details.</p>
-                            <blockquote style="background:#fff; padding:10px; border-radius:6px; font-style:italic;">"${u.submittedReason}"</blockquote>
-                        </div>`;
-                } else if (u.disputeType === 'fine_uploaded') {
-                    lockoutScreen.innerHTML = `
-                        <div class="debt-alert" style="border-color: var(--green);">
-                            <h3>✅ PROOF EN ROUTE</h3>
-                            <p>Your fine proof is being verified. Account access will unlock shortly.</p>
-                        </div>`;
+                // 2. Display Lockout Screen
+                if (lockoutScreen) {
+                    lockoutScreen.style.display = 'block';
+                    
+                    // Render status based on dispute type
+                    if (u.disputeType === 'review_pending') {
+                        lockoutScreen.querySelector('.debt-alert').innerHTML = `
+                            <h3 style="color: var(--orange); margin-top:0;">⏳ APPEAL UNDER REVIEW</h3>
+                            <p style="font-size: 14px; color: #444;">Your explanation has been recorded. Management is reviewing the details.</p>
+                            <blockquote style="background:#fff; padding:15px; border-radius:8px; font-style:italic; border-left: 4px solid var(--orange); text-align: left; margin: 15px 0;">
+                                "${u.submittedReason || ''}"
+                            </blockquote>`;
+                    } else if (u.disputeType === 'fine_uploaded') {
+                        lockoutScreen.querySelector('.debt-alert').innerHTML = `
+                            <h3 style="color: var(--green); margin-top:0;">✅ PROOF EN ROUTE</h3>
+                            <p style="font-size: 14px; color: #444;">Your fine proof is being verified. Account access will unlock shortly.</p>`;
+                    } else {
+                        // DEFAULT PASSIVE LOCKOUT STATE (Shows Options First)
+                        lockoutScreen.querySelector('.debt-alert').innerHTML = `
+                            <h2 style="color: var(--primary); margin-top:0;">🛑 ACCOUNT TEMPORARILY SUSPENDED</h2>
+                            <p style="font-size: 14px; color: #444;">Your last order was flagged as <strong>NOT DELIVERED</strong>. To reactivate your account, please settle the fine or submit an appeal to management.</p>
+                            
+                            <div class="balance-box" style="margin: 20px 0;">
+                                <span style="font-size: 14px; color: #666; font-weight: bold;">UNBRICK RECOVERY FEE</span>
+                                <div class="debt-amount" style="font-size: 2.5rem; color: var(--primary);">R 100.00</div>
+                            </div>
+
+                            <!-- OPTION A: Appeal Reason -->
+                            <div style="background: white; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: left; margin-bottom: 15px;">
+                                <strong style="color: var(--blue);">Option 1: Submit Appeal</strong>
+                                <p style="font-size: 12px; color:#666; margin: 5px 0 10px 0;">Provide a valid reason why you didn't receive the order if it wasn't your fault.</p>
+                                <textarea id="cust-appeal-reason" placeholder="Type your detailed explanation here..." style="width:100%; height: 80px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: sans-serif; resize: none;"></textarea>
+                                <button onclick="submitCustomerAppeal()" style="background: var(--blue); color: white; margin-top: 10px; padding: 10px; font-size: 14px; border: none; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer;">SUBMIT EXPLANATION FOR REVIEW</button>
+                            </div>
+
+                            <!-- OPTION B: Pay Fine -->
+                            <div style="background: white; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: left;">
+                                <strong style="color: var(--green);">Option 2: Pay R100 Automatic Unlock Fine</strong>
+                                <p style="font-size: 12px; color:#666; margin: 5px 0 10px 0;">Settle payment using banking information below and drop proof file.</p>
+                                <div style="background: #f9f9f9; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; border-left: 3px solid var(--green);">
+                                    Bank: <strong>Capitec Bank</strong><br>
+                                    Account: <strong>2033037351</strong><br>
+                                    Reference: <strong>Fine + Your Name</strong>
+                                </div>
+                                <input type="file" id="cust-fine-upload" accept="image/*" style="display:none" onchange="handleFinePopUpload(this)">
+                                <button onclick="document.getElementById('cust-fine-upload').click()" style="background: var(--green); color: white; padding: 12px; font-size: 14px; border: none; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer;">UPLOAD R100 SETTLEMENT SLIP</button>
+                            </div>`;
+                    }
                 }
-                return; // Stop further page rendering
+                return;
             } else {
-                if (document.getElementById('customer-lockout-screen')) {
-                    document.getElementById('customer-lockout-screen').style.display = 'none';
-                }
-                if (callback) callback();
+                if (lockoutScreen) lockoutScreen.style.display = 'none';
+                if (typeof callback === 'function') callback();
             }
         });
     } else {
-        if (callback) callback();
+        if (lockoutScreen) lockoutScreen.style.display = 'none';
+        if (typeof callback === 'function') callback();
     }
 }
+
+
+
+
+function showPage(page) {
+    evaluateAccountSecurity(() => {
+        localStorage.setItem('lastPageVisited', page);
+
+        // Hide all pages
+        const allPages = ['shop-page', 'checkout-page', 'admin-page', 'tracking-page', 'driver-page'];
+        allPages.forEach(p => {
+            const el = document.getElementById(p);
+            if (el) el.style.display = 'none';
+        });
+
+        // Show target page
+        const targetPage = document.getElementById(page + '-page');
+        if (targetPage) targetPage.style.display = 'block';
+
+        // Update active nav tab
+        document.querySelectorAll('.nav-tabs .tab').forEach(tab => {
+            tab.classList.remove('active-tab');
+        });
+
+        if (page === 'shop') {
+            const btn = document.getElementById('tab-shop-btn');
+            if (btn) btn.classList.add('active-tab');
+        } else if (page === 'checkout') {
+            const btn = document.getElementById('tab-check-btn');
+            if (btn) btn.classList.add('active-tab');
+        } else if (page === 'tracking') {
+            const btn = document.getElementById('tab-track-btn');
+            if (btn) btn.classList.add('active-tab');
+        }
+
+        // Special page loads
+        if (page === 'admin') {
+            loadAdminDashboard();
+        } else if (page === 'driver') {
+            loadDriverPortal();
+        } else if (page === 'tracking') {
+            updateTrackingUI();
+        }
+
+        // Footer visibility for checkout
+        if (page === 'checkout') {
+            const footer = document.getElementById('footer-controls');
+            if (footer) footer.style.display = 'block';
+            updateCartUI();
+        } else {
+            const footer = document.getElementById('footer-controls');
+            if (footer) footer.style.display = 'none';
+        }
+        
+        toggleMenuUI();
+    });
+}
+
 
 
 // --- ADMIN DISPUTES ENGINE LISTENER ---
@@ -1190,27 +1297,36 @@ function fetchBannedAndLockoutManagement() {
 
 function resolveLockoutDispute(userKey, decision) {
     if(decision === 'unlock') {
-        if(confirm("Unlock account immediately? This profile can menu browse and place new delivery orders again.")) {
-            database.ref('users/' + userKey).update({
-                accountStatus: 'active',
-                disputeType: null,
-                lockoutReason: null,
-                submittedReason: null,
-                fineProofSlip: null
-            }).then(() => {
-                showAppNotify("Account Unlocked", "System user status is back to normal.", "var(--green)");
-            });
-        }
+        showAppConfirm(
+            "Unlock Account?", 
+            "Unlock account immediately? This profile can menu browse and place new delivery orders again.", 
+            () => {
+                database.ref('users/' + userKey).update({
+                    accountStatus: 'active',
+                    disputeType: null,
+                    lockoutReason: null,
+                    submittedReason: null,
+                    fineProofSlip: null
+                }).then(() => {
+                    showAppNotify("Account Unlocked", "System user status is back to normal.", "var(--green)");
+                });
+            }
+        );
     } else {
-        if(confirm("Confirm rejection? This maintains account suspension until further action.")) {
-            database.ref('users/' + userKey).update({
-                disputeType: 'pending_reason', // Resets them back to pay fine route
-                submittedReason: null,
-                fineProofSlip: null
-            });
-        }
+        showAppConfirm(
+            "Confirm Rejection?", 
+            "Confirm rejection? This maintains account suspension until further action.", 
+            () => {
+                database.ref('users/' + userKey).update({
+                    disputeType: 'pending_reason',
+                    submittedReason: null,
+                    fineProofSlip: null
+                });
+            }
+        );
     }
 }
+
 
     function fetchDebtRequests() {
     const div = document.getElementById('debt-clearance-list');
@@ -2861,6 +2977,27 @@ function setServiceMode(mode) {
         if(btnCollect) btnCollect.classList.add('active');
     }
 }
+  let pendingConfirmCallback = null;
+
+function showAppConfirm(title, message, onConfirm) {
+    document.getElementById('appConfirmTitle').innerText = title;
+    document.getElementById('appConfirmMessage').innerText = message;
+    pendingConfirmCallback = onConfirm;
+    document.getElementById('appConfirmModal').style.display = 'block';
+}
+
+function closeAppConfirm() {
+    document.getElementById('appConfirmModal').style.display = 'none';
+    pendingConfirmCallback = null;
+}
+
+document.getElementById('appConfirmYesBtn').addEventListener('click', () => {
+    if (typeof pendingConfirmCallback === 'function') {
+        pendingConfirmCallback();
+    }
+    closeAppConfirm();
+});
+
 function reassignOrderBackToAdmin(orderId, driverEmailKey) {
     database.ref('orders/' + orderId).update({
         status: 'pending',
