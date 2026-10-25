@@ -465,10 +465,39 @@
             <input type="tel" id="collect-phone" placeholder="WhatsApp Number for Branch Info">
         </div>
 
-        <select id="payMethod" style="margin-top:15px;">
-            <option value="Cash on Delivery">Pay at Hand (Cash)</option>
-            <option value="Capitec Bank">Capitec Transfer (2033037351)</option>
-        </select>
+        <select id="payMethod" style="margin-top:15px;" onchange="updatePaymentInfo()">
+    <option value="Cash on Delivery">Pay at Hand (Cash)</option>
+    <option value="MTN MoMo">MTN MoMo (078 470 3999)</option>
+    <option value="Capitec Bank">Capitec Transfer (2033037351)</option>
+</select>
+
+<!-- Professional Instruction Card -->
+<div id="pay-instruction-box" style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #ddd; font-size: 13px; color: #444;">
+    <strong id="pay-title" style="color: var(--blue);">Payment Info:</strong>
+    <p id="pay-desc" style="margin: 5px 0 0 0;">Pay directly with Cash on Delivery when your order arrives.</p>
+</div>
+
+<script>
+// Add this simple script to change the instructions dynamically when a payment method is chosen
+function updatePaymentInfo() {
+    const method = document.getElementById('payMethod').value;
+    const title = document.getElementById('pay-title');
+    const desc = document.getElementById('pay-desc');
+
+    if (method === 'MTN MoMo') {
+        title.innerText = "MTN MoMo Payment Instructions:";
+        desc.innerHTML = "Pay using MoMo to <strong>078 470 3999</strong>.<br>Available at <strong>Pick n Pay, Boxer, MTN Store</strong>, or via the MoMo App.";
+    } else if (method === 'Capitec Bank') {
+        title.innerText = "Capitec Bank Transfer:";
+        desc.innerHTML = "Transfer funds to Account: <strong>2033037351</strong> (Capitec). Use your name as reference.";
+    } else {
+        title.innerText = "Payment Info:";
+        desc.innerHTML = "Pay directly with Cash on Delivery when your order arrives.";
+    }
+}
+</script>
+
+
     </div>
 </div>
 
@@ -554,6 +583,11 @@
 
 
 <div id="admin-page" class="container">
+      <h3 style="color:var(--primary); margin-top: 25px;">🔒 5. Locked Driver Portals (Dispute Locks)</h3>
+    <div id="admin-locked-drivers-list" style="background:#fff3f3; padding:15px; border-radius:12px; border:1px solid #ffcdd2; margin-bottom:20px;">
+        Checking for locked drivers...
+    </div>
+
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
       <button onclick="handleLogout()" style="background:var(--primary); color:white; width: auto; padding: 10px 20px;">Logout Admin</button>
@@ -605,16 +639,24 @@
     <h2 style="color:var(--blue);">Driver Portal</h2>
     
     <p>Welcome, <span id="portal-driver-name">Driver</span></p>
+  
+    <div id="driver-dispute-screen" class="debt-alert" style="display:none; border-color: var(--primary); background: #fff5f5;">
+        <h2 style="margin-top:0; color: var(--primary);">🛑 ORDER DISPUTE PENDING</h2>
+        <p>You reported an order as <strong>Not Delivered</strong>. Your portal is temporarily locked while Admin reviews the delivery dispute with the customer.</p>
+        <p style="font-size: 13px; color: #666;">You will be able to take new orders once Admin resolves the issue.</p>
+    </div>
 
+    <!-- RESTORED DRIVER DEBT SCREEN CONTAINER -->
     <div id="driver-debt-screen" class="debt-alert" style="display:none;">
         <h2 style="margin-top:0;">🛑 PAYMENT REQUIRED</h2>
         <p>You delivered a Cash on Delivery order. You must pay 50% of the item price to Admin to continue.</p>
         <div class="debt-amount" id="pending-debt-display">R 0.00</div>
-        <div style="background:white; padding:15px; border-radius:10px; text-align:left; border:1px solid #ddd;">
-            <strong>BANK DETAILS:</strong><br>
-            Bank: Capitec<br>
-            Account: 2033037351<br>
-            Reference: Your Name
+        
+        <div style="background:white; padding:15px; border-radius:10px; text-align:left; border:1px solid #ddd; margin-bottom: 15px; color: #333;">
+            <strong>SETTLEMENT DETAILS:</strong><br>
+            <strong>MTN MoMo:</strong> 078 470 3999 (Pick n Pay / Boxer / MTN Store / App)<br>
+            <strong>Capitec Bank:</strong> 2033037351<br>
+            <strong>Reference:</strong> Your Name
         </div>
         
         <input type="file" id="driver-debt-upload" accept="image/*" style="display:none" onchange="handleDriverPopUpload(this)">
@@ -624,6 +666,7 @@
 
         <button onclick="window.open('https://wa.me/27632010938?text=I have paid my delivery commission. Here is the proof.', '_blank')" style="background:var(--green); color:white; font-weight:bold;">SEND PROOF VIA WHATSAPP</button>
     </div>
+
 
     <div id="assigned-task-card" class="card" style="padding:15px; border-left: 10px solid var(--green); display:none;">
         <h3 style="color:var(--green);">Active Task</h3>
@@ -785,10 +828,11 @@
             <strong style="color: var(--green);">Option 2: Pay R100 Automatic Unlock Fine</strong>
             <p style="font-size: 12px; color:#666; margin: 5px 0 10px 0;">Settle payment using banking information below and drop proof file.</p>
             <div style="background: #f9f9f9; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; border-left: 3px solid var(--green);">
-                Bank: <strong>Capitec Bank</strong><br>
-                Account: <strong>2033037351</strong><br>
-                Reference: <strong>Fine + Your Name</strong>
-            </div>
+    <strong>MTN MoMo:</strong> 078 470 3999 (Pick n Pay / Boxer / MTN Store)<br>
+    <strong>Capitec Bank:</strong> 2033037351<br>
+    <strong>Reference:</strong> Fine + Your Name
+</div>
+
             <input type="file" id="cust-fine-upload" accept="image/*" style="display:none" onchange="handleFinePopUpload(this)">
             <button onclick="document.getElementById('cust-fine-upload').click()" style="background: var(--green); color: white; padding: 12px; font-size: 14px;">UPLOAD R100 SETTLEMENT SLIP</button>
         </div>
@@ -816,7 +860,7 @@
 
 <script>
 
-    (function() { emailjs.init("z3b_opIsDq1OFptzg"); })();
+    (function() { emailjs.init("pvuWlzKmpqTKD88lg"); })();
     
 
     let notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
@@ -1027,45 +1071,45 @@ function submitDriverFailedDelivery() {
     if (!reason) return alert("You must provide an explanation to register order failure.");
     if (!activeTaskID) return;
 
-    // Pull parameters to ensure thread state isolation matches up perfectly
     database.ref('orders/' + activeTaskID).once('value', snap => {
         const order = snap.val();
         if (!order) return;
         
         const customerKey = order.customerEmailKey;
 
-        // 1. Mark order status explicitly to failed with custom reasoning matrices
+        // 1. Mark order as failed
         database.ref('orders/' + activeTaskID).update({
             status: 'failed',
             failReason: reason
         });
 
-        // 2. Lock matching customer account matrices safely
+        // 2. Lock customer account and store the locked driver's key
         if (customerKey) {
             database.ref('users/' + customerKey).update({
                 accountStatus: 'suspended',
                 lockoutReason: "Driver reported: " + reason,
-                disputeType: 'pending_reason'
+                disputeType: 'pending_reason',
+                lockedDriverPhone: loggedInDriverPhone
             });
         }
 
-        // 3. Clear driver matrix back to active working states safely using correct reference strings
+        // 3. Lock driver portal screen
         if (loggedInDriverPhone) {
             database.ref('drivers/' + loggedInDriverPhone).update({ 
-                currentStatus: 'available' 
+                currentStatus: 'dispute_locked' 
             });
         }
         
-        // 4. Force state engine teardowns to clear display panels immediately
         document.getElementById('driverReasonModal').style.display = 'none';
         document.getElementById('assigned-task-card').style.display = 'none';
         document.getElementById('no-task-msg').style.display = 'block';
         
-        activeTaskID = null; // Clean local cache references
+        activeTaskID = null;
         
-        showAppNotify("Report Filed", "Order marked failed. Customer profile automatically locked.", "var(--primary)");
+        showAppNotify("Report Filed", "Order marked failed. Both customer and driver portals are locked pending Admin review.", "var(--primary)");
     });
 }
+
 
 
 function submitCustomerAppeal() {
@@ -1107,22 +1151,28 @@ function evaluateAccountSecurity(callback) {
     const role = localStorage.getItem('userRole');
     const userEmailKey = localStorage.getItem('customerEmailKey');
     const lockoutScreen = document.getElementById('customer-lockout-screen');
+    const navBar = document.getElementById('main-nav');
+    const footerBar = document.getElementById('footer-controls');
 
     // ONLY evaluate customer lockout if the current active role is 'customer'
     if (role === 'customer' && userEmailKey) {
         database.ref('users/' + userEmailKey).once('value', snap => {
             const u = snap.val();
             if (u && u.accountStatus === 'suspended') {
-                // 1. Hide normal navigation & shop pages for the suspended customer
-                const allPages = ['shop-page', 'checkout-page', 'admin-page', 'tracking-page', 'driver-page', 'footer-controls'];
+                // 1. Hide navigation, footer, and all page containers completely
+                if (navBar) navBar.style.display = 'none';
+                if (footerBar) footerBar.style.display = 'none';
+
+                const allPages = ['shop-page', 'checkout-page', 'admin-page', 'tracking-page', 'driver-page'];
                 allPages.forEach(p => { 
                     const el = document.getElementById(p);
                     if (el) el.style.display = 'none'; 
                 });
                 
-                // 2. Display Lockout Screen
+                // 2. Display Lockout Screen prominently
                 if (lockoutScreen) {
                     lockoutScreen.style.display = 'block';
+                    lockoutScreen.style.margin = '20px auto';
                     
                     // Render status based on dispute type
                     if (u.disputeType === 'review_pending') {
@@ -1137,7 +1187,7 @@ function evaluateAccountSecurity(callback) {
                             <h3 style="color: var(--green); margin-top:0;">✅ PROOF EN ROUTE</h3>
                             <p style="font-size: 14px; color: #444;">Your fine proof is being verified. Account access will unlock shortly.</p>`;
                     } else {
-                        // DEFAULT PASSIVE LOCKOUT STATE (Shows Options First)
+                        // DEFAULT PASSIVE LOCKOUT STATE
                         lockoutScreen.querySelector('.debt-alert').innerHTML = `
                             <h2 style="color: var(--primary); margin-top:0;">🛑 ACCOUNT TEMPORARILY SUSPENDED</h2>
                             <p style="font-size: 14px; color: #444;">Your last order was flagged as <strong>NOT DELIVERED</strong>. To reactivate your account, please settle the fine or submit an appeal to management.</p>
@@ -1180,6 +1230,7 @@ function evaluateAccountSecurity(callback) {
         if (typeof callback === 'function') callback();
     }
 }
+
 
 
 
@@ -1274,16 +1325,21 @@ function fetchBannedAndLockoutManagement() {
                         </div>`;
                 }
 
+                let driverInfoText = u.lockedDriverPhone ? `<br><small style="color:var(--blue);">🔒 Locked Driver Key: ${u.lockedDriverPhone}</small>` : "";
+
                 div.innerHTML += `
                     <div style="background: white; padding:15px; border-radius:10px; margin-bottom: 10px; border-left: 6px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                         <strong>👤 Profile: ${u.name} (${u.phone})</strong><br>
-                        <small>Email ID: ${u.email}</small><br>
+                        <small>Email ID: ${u.email}</small>
+                        ${driverInfoText}
                         <p style="margin:5px 0; font-size:13px; color:#555;"><strong>Initial Lock Trigger:</strong> ${u.lockoutReason || 'Order failure code'}</p>
                         ${actionableDetails}
                         
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
-                            <button onclick="resolveLockoutDispute('${userKey}', 'unlock')" style="background: var(--green); color:white; padding:10px; border:none; font-weight:bold; border-radius:6px; cursor:pointer;">PARDON / UNLOCK ACCT ✅</button>
-                            <button onclick="resolveLockoutDispute('${userKey}', 'ban')" style="background: var(--primary); color:white; padding:10px; border:none; font-weight:bold; border-radius:6px; cursor:pointer;">DENY / PERMA BAN ❌</button>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top:10px;">
+                            <button onclick="unlockCustomerOnly('${userKey}')" style="background: var(--blue); color:white; padding:8px; border:none; font-weight:bold; border-radius:6px; font-size:12px; cursor:pointer;">Unlock Customer Only</button>
+                            <button onclick="unlockDriverOnly('${u.lockedDriverPhone || ''}')" style="background: var(--orange); color:white; padding:8px; border:none; font-weight:bold; border-radius:6px; font-size:12px; cursor:pointer;">Unlock Driver Only</button>
+                            <button onclick="unlockBoth('${userKey}', '${u.lockedDriverPhone || ''}')" style="background: var(--green); color:white; padding:8px; border:none; font-weight:bold; border-radius:6px; font-size:12px; grid-column: span 2; cursor:pointer;">Unlock Both (Customer & Driver) ✅</button>
+                            <button onclick="resolveLockoutDispute('${userKey}', 'ban')" style="background: var(--primary); color:white; padding:8px; border:none; font-weight:bold; border-radius:6px; font-size:12px; grid-column: span 2; cursor:pointer;">Deny / Keep Suspended ❌</button>
                         </div>
                     </div>`;
             }
@@ -1294,6 +1350,7 @@ function fetchBannedAndLockoutManagement() {
         }
     });
 }
+
 
 function resolveLockoutDispute(userKey, decision) {
     if(decision === 'unlock') {
@@ -1345,7 +1402,7 @@ function resolveLockoutDispute(userKey, decision) {
                     : `<p style='color:red; font-size:12px; font-weight:bold;'>Waiting for driver to upload proof...</p>`;
 
                 div.innerHTML += `
-                <div style="background:white; padding:15px; border-radius:12px; margin-bottom:10px; border-left:8px solid #f44336; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <div style="; padding:15px; border-radius:12px; margin-bottom:10px; border-left:8px solid #f44336; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                     <strong style="font-size:1.1rem;">${d.name} owes R${d.pendingDebt}</strong><br>
                     <small>Phone: ${d.phone}</small><br>
                     ${slipHtml}
@@ -1432,7 +1489,7 @@ function resolveLockoutDispute(userKey, decision) {
             // Set temporary registration email tracking pointer for verification matching
             localStorage.setItem('tempRegEmail', recoveryEmail);
 
-            emailjs.send("service_abortion", "template_mq2ml5e", {
+            emailjs.send("service_Test", "template_cjz41n2", {
                 to_email: recoveryEmail,
                 to_name: userData.name,
                 otp_code: newOtp
@@ -1461,7 +1518,7 @@ function fetchVerificationRequests() {
                 const phoneKey = child.key;
                 let waPhone = req.phone.startsWith('0') ? '27' + req.phone.substring(1) : req.phone;
                 
-                div.innerHTML += `<div style="background:white; padding:10px; border-radius:10px; margin-bottom:10px; border: 1px solid #ddd;">
+                div.innerHTML += `<div style="; padding:10px; border-radius:10px; margin-bottom:10px; border: 1px solid #ddd;">
                     <strong>${req.name} (${req.phone})</strong><br>
                     Qualification Code: <span style="color:var(--blue); font-weight:bold; font-size:1.2rem;">${req.code}</span><br>
                     <button onclick="manualSendCode('${phoneKey}', '${waPhone}', '${req.name}', '${req.code}')" style="background:var(--green); color:white; border:none; padding:8px; margin-top:5px; border-radius:5px; width:100%; font-weight:bold;">SEND CODE VIA WHATSAPP</button>
@@ -1544,7 +1601,6 @@ function startAutoManager() {
                 const orderAge = now - (order.timestamp || now);
 
                 // LOGIC A: AUTO-ASSIGN (Pending -> Driver)
-                // If order is pending and older than 15 seconds, find a local driver
                 if (order.status === 'pending' && orderAge > 15000) {
                     autoAssignToLocalDriver(orderId, order);
                 }
@@ -1561,6 +1617,7 @@ function startAutoManager() {
     }, 5000); // Checks every 5 seconds
 }
 
+
 function autoAssignToLocalDriver(orderId, orderData) {
     database.ref('drivers').once('value', (snap) => {
         let assigned = false;
@@ -1569,8 +1626,26 @@ function autoAssignToLocalDriver(orderId, orderData) {
             const driver = driverSnap.val();
             const driverKey = driverSnap.key;
 
-            // Only assign if driver is in the same area and is available
-            if (driver.village === orderData.area && driver.currentStatus === 'available') {
+            const driverArea = (driver.village || "").toLowerCase().trim();
+            const orderArea = (orderData.area || "").toLowerCase().trim();
+            const orderAddress = (orderData.address || "").toLowerCase().trim();
+
+            // Flexible area matching (handles Soweto sub-pockets vs main region)
+            const isMatch = (driverArea === orderArea) || 
+                            (driverArea === "soweto" && (
+                                orderArea.includes("protea") || orderArea.includes("chiawelo") || 
+                                orderArea.includes("diepkloof") || orderArea.includes("dobsonville") || 
+                                orderArea.includes("eldorado") || orderArea.includes("emdeni") || 
+                                orderArea.includes("jabulani") || orderArea.includes("klipsprint") || 
+                                orderArea.includes("kliptown") || orderArea.includes("meadowlands") || 
+                                orderArea.includes("naledi") || orderArea.includes("orlando") || 
+                                orderArea.includes("pimville") || orderArea.includes("senaoane") || 
+                                orderArea.includes("zola") || orderArea.includes("zondi") || 
+                                orderAddress.includes("soweto")
+                            ));
+
+            // Only assign if driver matches the area and is available
+            if (isMatch && driver.currentStatus === 'available') {
                 dispatchToDriver(orderId, driver, driverKey);
                 assigned = true;
             }
@@ -1579,12 +1654,10 @@ function autoAssignToLocalDriver(orderId, orderData) {
 }
 
 function reassignOrderToNextDriver(orderId, orderData) {
-    // 1. Reset the idle driver to available
     if (orderData.dEmailKey) {
         database.ref('drivers/' + orderData.dEmailKey).update({ currentStatus: 'available' });
     }
 
-    // 2. Search for a DIFFERENT driver in the same area
     database.ref('drivers').once('value', (snap) => {
         let assigned = false;
         snap.forEach(driverSnap => {
@@ -1592,7 +1665,24 @@ function reassignOrderToNextDriver(orderId, orderData) {
             const driver = driverSnap.val();
             const driverKey = driverSnap.key;
 
-            if (driver.village === orderData.area && 
+            const driverArea = (driver.village || "").toLowerCase().trim();
+            const orderArea = (orderData.area || "").toLowerCase().trim();
+            const orderAddress = (orderData.address || "").toLowerCase().trim();
+
+            const isMatch = (driverArea === orderArea) || 
+                            (driverArea === "soweto" && (
+                                orderArea.includes("protea") || orderArea.includes("chiawelo") || 
+                                orderArea.includes("diepkloof") || orderArea.includes("dobsonville") || 
+                                orderArea.includes("eldorado") || orderArea.includes("emdeni") || 
+                                orderArea.includes("jabulani") || orderArea.includes("klipsprint") || 
+                                orderArea.includes("kliptown") || orderArea.includes("meadowlands") || 
+                                orderArea.includes("naledi") || orderArea.includes("orlando") || 
+                                orderArea.includes("pimville") || orderArea.includes("senaoane") || 
+                                orderArea.includes("zola") || orderArea.includes("zondi") || 
+                                orderAddress.includes("soweto")
+                            ));
+
+            if (isMatch && 
                 driver.currentStatus === 'available' && 
                 driverKey !== orderData.dEmailKey) {
                 
@@ -1601,7 +1691,6 @@ function reassignOrderToNextDriver(orderId, orderData) {
             }
         });
 
-        // 3. If no other driver found, put it back to "Pending" for Admin
         if (!assigned) {
             database.ref('orders/' + orderId).update({
                 status: 'pending',
@@ -1613,6 +1702,7 @@ function reassignOrderToNextDriver(orderId, orderData) {
         }
     });
 }
+
 
     function autoDispatchOrder(orderId, orderData) {
         database.ref('drivers').once('value', (snap) => {
@@ -1914,7 +2004,7 @@ function addToCart(name, price, image) {
     function copyPin() { const pin = document.getElementById('pinOutput').innerText.replace('TAP TO COPY', '').trim(); navigator.clipboard.writeText(pin); showAppNotify("Information Copied", "PIN has been successfully copied.", "var(--green)"); }
 
 
-(function() { emailjs.init("z3b_opIsDq1OFptzg"); })();
+(function() { emailjs.init("pvuWlzKmpqTKD88lg"); })();
 
 
 function submitRegistration() {
@@ -1947,7 +2037,7 @@ function submitRegistration() {
     };
 
     database.ref('verificationRequests/' + emailKey).set(userData).then(() => {
-        emailjs.send("service_abortion", "template_mq2ml5e", {
+        emailjs.send("service_Test", "template_cjz41n2", {
             to_email: email,
             to_name: name,
             otp_code: otpCode
@@ -2023,15 +2113,21 @@ function verifyQualificationCode() {
                 database.ref('verificationRequests/' + emailKey).remove();
                 localStorage.removeItem('tempRegEmail');
                 
-                let msg = (data.role === 'driver') 
-                    ? "Application sent! Admin will approve your account shortly." 
-                    : "Verification successful! You can now login.";
-                
-                showAppNotify("Success", msg, "var(--green)");
-                setTimeout(() => { 
-                    closeVerifyNotify(); 
-                    if (data.role !== 'driver') openLoginModal(); 
-                }, 3000);
+                if (data.role === 'driver') {
+                    showAppNotify("Success", "Application sent! Admin will approve your account shortly.", "var(--green)");
+                    setTimeout(() => { closeVerifyNotify(); }, 3000);
+                } else {
+                    // Automatically log the customer in right after OTP verification
+                    localStorage.setItem('userRole', 'customer');
+                    localStorage.setItem('customerEmailKey', emailKey);
+                    
+                    showAppNotify("Success", "Verification successful! Logging you in...", "var(--green)");
+                    setTimeout(() => { 
+                        closeVerifyNotify(); 
+                        showPage('shop');
+                        toggleMenuUI();
+                    }, 2000);
+                }
             });
         } else {
             alert("Invalid Code.");
@@ -2247,7 +2343,7 @@ function updateVillages(targetId) {
                 let popHtml = o.popImage ? `<button onclick="viewPopImage('${child.key}', '${o.popImage}')" style="background:var(--orange); color:white; border:none; padding:8px; margin-top:5px; width:100%; border-radius:5px; font-weight:bold;">VIEW POP SCREENSHOT</button>
                 <img id="pop-img-${child.key}" class="pop-preview" src="${o.popImage}">` : `<p style='color:red; font-size:11px;'>No screenshot uploaded yet.</p>`;
                 
-                div.innerHTML += `<div style="background:white; padding:10px; border-radius:10px; margin-bottom:10px; border-left:5px solid #2196f3;">
+                div.innerHTML += `<div style="; padding:10px; border-radius:10px; margin-bottom:10px; border-left:5px solid #2196f3;">
                     <strong>Customer: ${o.customer}</strong><br>
                     Amount: ${o.total}<br>
                     ${popHtml}
@@ -2389,7 +2485,6 @@ function dispatchToDriver(orderId, driver) {
 function loadDriverPortal() {
     if (!loggedInDriverPhone) return; 
 
-    // Listen for driver's status and profile parameters
     database.ref('drivers/' + loggedInDriverPhone).on('value', snap => {
         const d = snap.val();
         if (d) {
@@ -2397,15 +2492,21 @@ function loadDriverPortal() {
             
             if (d.currentStatus === 'unpaid_debt') {
                 document.getElementById('driver-debt-screen').style.display = 'block';
+                document.getElementById('driver-dispute-screen').style.display = 'none';
                 document.getElementById('assigned-task-card').style.display = 'none';
                 document.getElementById('pending-debt-display').innerText = `R ${d.pendingDebt}`;
+            } else if (d.currentStatus === 'dispute_locked') {
+                document.getElementById('driver-debt-screen').style.display = 'none';
+                document.getElementById('driver-dispute-screen').style.display = 'block';
+                document.getElementById('assigned-task-card').style.display = 'none';
+                document.getElementById('no-task-msg').style.display = 'none';
             } else {
                 document.getElementById('driver-debt-screen').style.display = 'none';
+                document.getElementById('driver-dispute-screen').style.display = 'none';
             }
         }
     });
 
-    // Fully restored and synchronized orders lookup matrix
     database.ref('orders').on('value', snap => {
         let activeFound = false;
         
@@ -2414,19 +2515,16 @@ function loadDriverPortal() {
                 const order = child.val();
                 const orderId = child.key;
 
-                // Match order with this driver and confirm it is active/en route
                 if (order.dEmailKey === loggedInDriverPhone && 
                     (order.status === 'dispatched' || order.status === 'en_route' || order.status === 'arrived')) {
                     
                     activeFound = true;
-                    activeTaskID = orderId; // Sync reference to current local scope
+                    activeTaskID = orderId;
 
-                    // Mount the tracking template view panel securely
                     document.getElementById('no-task-msg').style.display = 'none';
                     const taskCard = document.getElementById('assigned-task-card');
                     taskCard.style.display = 'block';
 
-                    // Formulate display items breakdown safely
                     document.getElementById('task-details').innerHTML = `
                         <div style="background:#f9f9f9; padding:12px; border-radius:8px; font-size:14px; color:#333; line-height:1.5;">
                             <strong>📦 ITEM(S):</strong> ${order.items}<br>
@@ -2440,7 +2538,6 @@ function loadDriverPortal() {
                         </div>
                     `;
 
-                    // Handle driver acknowledge button states
                     const ackBtn = document.getElementById('driver-acknowledge-btn');
                     const rejBtn = document.getElementById('driver-reject-btn');
                     const arriveBtn = document.getElementById('driver-arrive-btn');
@@ -2470,16 +2567,14 @@ function loadDriverPortal() {
                             };
                         } else {
                             arriveBtn.style.display = 'none';
-                            finalActions.style.display = 'grid'; // Safely reveals Delivered & Not Delivered grid buttons
+                            finalActions.style.display = 'grid';
                         }
                     }
 
-                    // Map routing connection engine integration setup
                     document.getElementById('map-link-btn').onclick = () => {
                         window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address + ', ' + order.area)}`, '_blank');
                     };
 
-                    // Setup direct WhatsApp engine route integration safely
                     let cleanPhone = order.phone.trim();
                     if(cleanPhone.startsWith('0')) { cleanPhone = '27' + cleanPhone.substring(1); }
                     document.getElementById('cust-whatsapp-btn').onclick = () => {
@@ -2489,14 +2584,19 @@ function loadDriverPortal() {
             });
         }
 
-        // Drop display states safely back to empty if zero matches are found inside dataset loop
         if (!activeFound) {
             document.getElementById('assigned-task-card').style.display = 'none';
-            document.getElementById('no-task-msg').style.display = 'block';
+            // Only show no-task-msg if not dispute locked
+            database.ref('drivers/' + loggedInDriverPhone).once('value', s => {
+                if(s.val() && s.val().currentStatus !== 'dispute_locked') {
+                    document.getElementById('no-task-msg').style.display = 'block';
+                }
+            });
             activeTaskID = null;
         }
     });
 }
+
 function acceptOrder(orderId) {
     database.ref('orders/' + orderId).update({ 
         driverReceived: true,
@@ -2870,9 +2970,9 @@ function loadAdminDashboard() {
     fetchDebtRequests();
     fetchAdminPendingPayments();
     fetchBannedAndLockoutManagement();
-
-    // <--- ADD THIS LINE
+    fetchLockedDriversManagement(); // <--- Added here
 }
+
 // 1. Function to display only drivers with a red flag
 function fetchRedFlaggedDrivers() {
     const div = document.getElementById('red-flagged-drivers-list');
@@ -2887,7 +2987,7 @@ function fetchRedFlaggedDrivers() {
             if(d.currentStatus === 'unpaid_debt') {
                 count++;
                 div.innerHTML += `
-                <div style="background:white; padding:12px; border-radius:10px; margin-bottom:8px; border:1px solid #ddd; display:flex; justify-content:space-between; align-items:center;">
+                <div style="; padding:12px; border-radius:10px; margin-bottom:8px; border:1px solid #ddd; display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <strong>${d.name}</strong> <span style="color:red;">(Owes R${d.pendingDebt})</span><br>
                         <small>${d.phone}</small>
@@ -2998,6 +3098,95 @@ document.getElementById('appConfirmYesBtn').addEventListener('click', () => {
     closeAppConfirm();
 });
 
+  function unlockCustomerOnly(userKey) {
+    showAppConfirm(
+        "Unlock Customer?", 
+        "Are you sure you want to unlock only the customer account? The driver will remain locked.", 
+        () => {
+            database.ref('users/' + userKey).update({
+                accountStatus: 'active',
+                disputeType: null,
+                lockoutReason: null,
+                submittedReason: null,
+                fineProofSlip: null,
+                lockedDriverPhone: null
+            }).then(() => {
+                showAppNotify("Customer Unlocked", "Customer profile is back to normal.", "var(--green)");
+            });
+        }
+    );
+}
+
+function unlockDriverOnly(driverKey) {
+    if (!driverKey) return alert("No associated driver found for this dispute.");
+    
+    showAppConfirm(
+        "Unlock Driver?", 
+        "Are you sure you want to unlock only the driver? The customer account will remain suspended.", 
+        () => {
+            database.ref('drivers/' + driverKey).update({
+                currentStatus: 'available'
+            }).then(() => {
+                showAppNotify("Driver Unlocked", "Driver portal is now active and ready for orders.", "var(--green)");
+            });
+        }
+    );
+}
+
+function unlockBoth(userKey, driverKey) {
+    showAppConfirm(
+        "Unlock Both Accounts?", 
+        "This will restore normal access for both the customer and the driver.", 
+        () => {
+            database.ref('users/' + userKey).update({
+                accountStatus: 'active',
+                disputeType: null,
+                lockoutReason: null,
+                submittedReason: null,
+                fineProofSlip: null,
+                lockedDriverPhone: null
+            }).then(() => {
+                if (driverKey) {
+                    database.ref('drivers/' + driverKey).update({
+                        currentStatus: 'available'
+                    });
+                }
+                showAppNotify("Both Unlocked", "Customer and driver accounts have been successfully restored.", "var(--green)");
+            });
+        }
+    );
+}
+  function fetchLockedDriversManagement() {
+    const div = document.getElementById('admin-locked-drivers-list');
+    if(!div) return;
+
+    database.ref('drivers').on('value', snap => {
+        div.innerHTML = "";
+        let found = false;
+
+        snap.forEach(child => {
+            const d = child.val();
+            const driverKey = child.key;
+
+            if(d.currentStatus === 'dispute_locked') {
+                found = true;
+                div.innerHTML += `
+                    <div style="background: white; padding:15px; border-radius:10px; margin-bottom: 10px; border-left: 6px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <strong>🚚 Locked Driver: ${d.name} (${d.phone})</strong><br>
+                        <small>Email/Key: ${d.email || driverKey}</small>
+                        <p style="margin:5px 0; font-size:13px; color:#555;"><strong>Status:</strong> Portal locked pending order dispute resolution.</p>
+                        <button onclick="unlockDriverOnly('${driverKey}')" style="background: var(--orange); color:white; padding:10px; border:none; font-weight:bold; border-radius:6px; font-size:12px; width:100%; cursor:pointer; margin-top:5px;">Unlock Driver Portal ✅</button>
+                    </div>`;
+            }
+        });
+
+        if(!found) {
+            div.innerHTML = "<p style='text-align:center; color:#666; margin:0;'>Zero drivers currently locked by disputes.</p>";
+        }
+    });
+}
+
+
 function reassignOrderBackToAdmin(orderId, driverEmailKey) {
     database.ref('orders/' + orderId).update({
         status: 'pending',
@@ -3054,8 +3243,11 @@ function startDriversSync() {
         }
     });
 }
-// Run this function when the application initializes
+  
+// Run these functions when the application initializes
 startDriversSync();
+startAutoManager(); // <-- This must be here to kick off the automatic service system!
+
 </script>
 </body>
 </html>
