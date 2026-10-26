@@ -583,12 +583,7 @@ function updatePaymentInfo() {
 
 
 <div id="admin-page" class="container">
-      <h3 style="color:var(--primary); margin-top: 25px;">🔒 5. Locked Driver Portals (Dispute Locks)</h3>
-    <div id="admin-locked-drivers-list" style="background:#fff3f3; padding:15px; border-radius:12px; border:1px solid #ffcdd2; margin-bottom:20px;">
-        Checking for locked drivers...
-    </div>
-
-
+      
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
       <button onclick="handleLogout()" style="background:var(--primary); color:white; width: auto; padding: 10px 20px;">Logout Admin</button>
     </div>
@@ -719,22 +714,26 @@ function updatePaymentInfo() {
     </div>
 </div>
 
-<div id="loginModal" class="modal">
+<<div id="loginModal" class="modal">
     <div class="modal-content">
         <h3 id="loginTitle">Portal Login</h3>
         <input type="email" id="loginEmailInput" placeholder="Enter Email Address">
         <input type="password" id="loginPinInput" placeholder="Enter PIN">
         <button class="modal-btn" onclick="checkAdminLogin()">Login Securely</button>
         
-        <div id="customerRegArea" style="display:none; border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
-            <p>Don't have a PIN?</p>
-            <button class="modal-btn" style="background:var(--blue);" onclick="openRegisterModal()">Register for Account</button>
+        <!-- Registration Block for Customers -->
+        <div id="customerRegArea" style="display:none; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+            <p style="margin-bottom: 8px; color: #555; font-size: 14px;">Don't have an account?</p>
+            <button class="modal-btn" style="background: var(--blue); color: white; margin-top: 0;" onclick="openRegisterModal()">
+                Create New Account / Register
+            </button>
         </div>
         
         <span class="forgot-link" onclick="forgotPin()">Forgot PIN / Password?</span>
         <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeLoginModal()">Cancel</button>
     </div>
 </div>
+
 
 
 <div id="registerModal" class="modal">
@@ -1932,9 +1931,12 @@ function handleLogout() {
 function addToCart(name, price, image) {
     const userEmailKey = localStorage.getItem('customerEmailKey');
     
-    // Force Login if not registered
+    // Force Login / Register if not registered
     if (!userEmailKey) {
         currentRoleType = 'customer';
+        document.getElementById('loginTitle').innerText = "Customer Login";
+        // Ensure the registration button section is visible
+        document.getElementById('customerRegArea').style.display = "block";
         openLoginModal();
         return;
     }
@@ -1942,14 +1944,14 @@ function addToCart(name, price, image) {
     cart.push({ name: name, price: price, img: image });
     updateTotal();
     
-    // Store the first item's image as the main display thumbnail for tracking
-    if(cart.length === 1) {
+    if (cart.length === 1) {
         localStorage.setItem('lastCartThumb', image);
     }
     
     localStorage.setItem('userCart', JSON.stringify(cart));
     document.getElementById('customModal').style.display = "block";
 }
+
     function removeFromCart(index) { cart.splice(index, 1); updateTotal(); updateCartUI(); localStorage.setItem('userCart', JSON.stringify(cart)); }
     function updateTotal() { const total = cart.reduce((s, i) => s + i.price, 0); document.getElementById('cart-total').innerText = `Total Order: R ${total.toFixed(2)}`; }
     
