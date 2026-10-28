@@ -332,7 +332,18 @@
 <header>
     <h1 onclick="handleAdminClick('SA')" style="cursor:pointer;">SA Abortion Pills Delivery</h1>
     <p>Fast Delivery to Villages & Cities</p>
+
+    <!-- PERMANENT PWA & SHARE BUTTONS -->
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px; padding: 0 10px;">
+        <button id="permanent-install-btn" style="background: #ffffff; color: var(--primary); border: none; padding: 8px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            📲 Install App
+        </button>
+        <button onclick="shareAppWithFriends()" style="background: var(--green); color: #ffffff; border: none; padding: 8px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            🔗 Share App
+        </button>
+    </div>
 </header>
+
 <a href="https://wa.me/27632010938?text=Hi, I need help with my order." class="float-chat" target="_blank">💬</a>
 
 <div class="nav-tabs" id="main-nav">
@@ -3637,33 +3648,60 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Handle Custom Install Banner
 let deferredInstallPrompt = null;
 
+// Catch the browser install event
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
   
+  // Show bottom banner
   const banner = document.getElementById('install-banner');
-  if (banner) {
-    banner.style.display = 'block';
-  }
+  if (banner) banner.style.display = 'block';
 });
 
+// Trigger install prompt whenever user clicks ANY install button
+async function triggerPWAInstall() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    console.log('Install outcome:', outcome);
+    deferredInstallPrompt = null;
+    
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.style.display = 'none';
+  } else {
+    // If prompt was already used or browser blocked it, guide the user
+    alert("To install this app on your phone:\n\n1. Tap your browser menu (3 dots top right)\n2. Tap 'Add to Home Screen' or 'Install App'.");
+  }
+}
+
+// Hook up event listeners
 document.addEventListener('DOMContentLoaded', () => {
   const installBtn = document.getElementById('install-btn');
-  if (installBtn) {
-    installBtn.addEventListener('click', async () => {
-      if (deferredInstallPrompt) {
-        deferredInstallPrompt.prompt();
-        const { outcome } = await deferredInstallPrompt.userChoice;
-        console.log('Install outcome:', outcome);
-        deferredInstallPrompt = null;
-        document.getElementById('install-banner').style.display = 'none';
-      }
-    });
-  }
+  const permBtn = document.getElementById('permanent-install-btn');
+  
+  if (installBtn) installBtn.addEventListener('click', triggerPWAInstall);
+  if (permBtn) permBtn.addEventListener('click', triggerPWAInstall);
 });
+
+// Share App Feature for Customers
+function shareAppWithFriends() {
+  const shareData = {
+    title: 'SA Abortion Pills Delivery',
+    text: 'Order fast delivery directly using our mobile app:',
+    url: window.location.href
+  };
+
+  if (navigator.share) {
+    navigator.share(shareData).catch((err) => console.log('Error sharing:', err));
+  } else {
+    // Fallback if Native Web Share is not supported
+    navigator.clipboard.writeText(window.location.href);
+    alert("App link copied to clipboard! You can now paste and send it to your friends on WhatsApp.");
+  }
+}
+
 
 
 
