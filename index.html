@@ -385,6 +385,7 @@
     </div>
 
 
+
 <div id="checkout-page" class="container" style="display:none;">
     <div class="card" style="padding:15px;">
         <h3 style="color:var(--primary); margin-top:0;">🛒 Your Selection</h3>
@@ -398,80 +399,91 @@
             <button id="btn-collect" class="toggle-btn" onclick="setServiceMode('collect')">🏢 Collect Order</button>
         </div>
 
+        <!-- 1. DOOR-TO-DOOR DELIVERY SECTION -->
+        <div id="delivery-info-section">
+            <p style="font-size: 13px; color: #666; font-weight: 500; margin-bottom: 12px;">Enter your details for fast door-to-door delivery.</p>
+            
+            <input type="text" id="custName" placeholder="Your Full Name">
+            <input type="tel" id="custPhone" placeholder="WhatsApp Number">
+            
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">PROVINCE</label>
+            <select id="province" onchange="updateVillages('village')">
+                <option value="">-- Choose Province --</option>
+                <option value="Gauteng">Gauteng</option>
+                <option value="North West">North West</option>
+                <option value="Free State">Free State</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="KZN">KZN</option>
+            </select>
+            
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">MAIN REGION / SUBURB</label>
+            <select id="village" onchange="toggleSowetoExtensions('village', 'soweto-ext-group')">
+                <option value="">-- Area --</option>
+            </select>
+            
+            <!-- DYNAMIC SOWETO EXTENSION MATRIX CONTAINER -->
+            <div id="soweto-ext-group" style="display: none; background: #fdfdfd; border: 1px dashed var(--orange); padding: 12px; border-radius: 8px; margin-top: 10px;">
+                <label style="font-size: 11px; font-weight: bold; color: var(--orange); display: block; margin-bottom: 5px;">SOWETO SUB-ZONE / EXTENSION / PHASE</label>
+                <select id="soweto-pocket">
+                    <option value="">-- Choose Specific Sub-Area --</option>
+                    <option value="Protea Glen East">Protea Glen East</option>
+                    <option value="Protea Glen North">Protea Glen North</option>
+                    <option value="Protea Glen West">Protea Glen West</option>
+                    <option value="Protea Glen Ext 1-4">Protea Glen Ext 1-4</option>
+                    <option value="Protea Glen Ext 11-20">Protea Glen Ext 11-20</option>
+                    <option value="Protea Glen Ext 24-40">Protea Glen Ext 24-40</option>
+                    <option value="Chiawelo (Ext 1, 2, 3, 5)">Chiawelo (Ext 1, 2, 3, 5)</option>
+                    <option value="Diepkloof Zones 1-6">Diepkloof Zones 1-6</option>
+                    <option value="Diepkloof Extension">Diepkloof Extension</option>
+                    <option value="Dobsonville (Ext, Gardens, Zones)">Dobsonville (Ext, Gardens, Zones)</option>
+                    <option value="Eldorado Park (Extensions 1-9)">Eldorado Park (Extensions 1-9)</option>
+                    <option value="Emdeni (Ext, Link)">Emdeni (Ext, Link)</option>
+                    <option value="Jabulani">Jabulani</option>
+                    <option value="Klipsprint / Kliptown">Klipsprint / Kliptown</option>
+                    <option value="Meadowlands Zones 1-10">Meadowlands Zones 1-10</option>
+                    <option value="Naledi (Ext)">Naledi (Ext)</option>
+                    <option value="Orlando East / West">Orlando East / West</option>
+                    <option value="Pimville Zones 1-7">Pimville Zones 1-7</option>
+                    <option value="Senaoane">Senaoane</option>
+                </select>
+            </div>
+            
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">STREET ADDRESS / HOUSE NUMBER</label>
+            <input type="text" id="custAddress" placeholder="e.g. House 4522, Makhaya Street">
+        </div>
 
-        <!-- REPLACEMENT FOR CHECKOUT PAGE LOCATION FIELDS -->
-<div id="delivery-info-section">
-    <p style="font-size: 13px; color: #666; font-weight: 500; margin-bottom: 12px;">Enter your details for fast door-to-door delivery.</p>
-    
-    <input type="text" id="custName" placeholder="Your Full Name">
-    <input type="tel" id="custPhone" placeholder="WhatsApp Number">
-    
-    <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">PROVINCE</label>
-    <select id="province" onchange="updateVillages('village')">
-        <option value="">-- Choose Province --</option>
-        <option value="Gauteng">Gauteng</option>
-        <option value="North West">North West</option>
-        <option value="Free State">Free State</option>
-        <option value="Western Cape">Western Cape</option>
-        <option value="KZN">KZN</option>
-    </select>
-    
-    <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">MAIN REGION / SUBURB</label>
-    <select id="village" onchange="toggleSowetoExtensions('village', 'soweto-ext-group')">
-        <option value="">-- Area --</option>
-    </select>
-    
-    <!-- DYNAMIC SOWETO EXTENSION MATRIX CONTAINER -->
-    <div id="soweto-ext-group" style="display: none; background: #fdfdfd; border: 1px dashed var(--orange); padding: 12px; border-radius: 8px; margin-top: 10px;">
-        <label style="font-size: 11px; font-weight: bold; color: var(--orange); display: block; margin-bottom: 5px;">SOWETO SUB-ZONE / EXTENSION / PHASE</label>
-        <select id="soweto-pocket">
-            <option value="">-- Choose Specific Sub-Area --</option>
-            <option value="Protea Glen East">Protea Glen East</option>
-            <option value="Protea Glen North">Protea Glen North</option>
-            <option value="Protea Glen West">Protea Glen West</option>
-            <option value="Protea Glen Ext 1-4">Protea Glen Ext 1-4</option>
-            <option value="Protea Glen Ext 11-20">Protea Glen Ext 11-20</option>
-            <option value="Protea Glen Ext 24-40">Protea Glen Ext 24-40</option>
-            <option value="Chiawelo (Ext 1, 2, 3, 5)">Chiawelo (Ext 1, 2, 3, 5)</option>
-            <option value="Diepkloof Zones 1-6">Diepkloof Zones 1-6</option>
-            <option value="Diepkloof Extension">Diepkloof Extension</option>
-            <option value="Dobsonville (Ext, Gardens, Zones)">Dobsonville (Ext, Gardens, Zones)</option>
-            <option value="Eldorado Park (Extensions 1-9)">Eldorado Park (Extensions 1-9)</option>
-            <option value="Emdeni (Ext, Link)">Emdeni (Ext, Link)</option>
-            <option value="Jabulani">Jabulani</option>
-            <option value="Klipsprint / Kliptown">Klipsprint / Kliptown</option>
-            <option value="Meadowlands Zones 1-10">Meadowlands Zones 1-10</option>
-            <option value="Naledi (Ext)">Naledi (Ext)</option>
-            <option value="Orlando East / West">Orlando East / West</option>
-            <option value="Pimville Zones 1-7">Pimville Zones 1-7</option>
-            <option value="Senaoane">Senaoane</option>
-            <option value="Zola Phases 1-3">Zola Phases 1-3</option>
-            <option value="Zondi">Zondi</option>
-        </select>
-    </div>
-    
-    <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">STREET ADDRESS / HOUSE OR STAND NUMBER</label>
-    <input type="text" id="custAddress" placeholder="e.g. House 4522, Makhaya Street">
-</div>
-
-
-
+        <!-- 2. BRANCH COLLECTION SECTION -->
         <div id="collect-info-section" style="display:none;">
             <div class="info-box">
                 <strong style="color:var(--blue);">Branch Pick-up</strong><br>
-                Please enter your current location/suburb. Our Admin will send you the nearest branches where you can collect your order safely.
+                Choose your region and select the nearest sub-branch point below for collection.
             </div>
-            <input type="text" id="collect-location" placeholder="Enter your current Suburb/City">
-            <input type="tel" id="collect-phone" placeholder="WhatsApp Number for Branch Info">
+            
+            <input type="text" id="collect-name" placeholder="Full Name">
+            <input type="tel" id="collect-phone" placeholder="WhatsApp Number">
+            
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">REGION / CITY</label>
+            <select id="collect-city" onchange="updateCollectionBranches()">
+                <option value="">-- Select Your Region --</option>
+                <option value="Soweto">Soweto</option>
+                <option value="Johannesburg">Johannesburg CBD</option>
+                <option value="Roodepoort">Roodepoort</option>
+                <option value="Pretoria">Pretoria</option>
+            </select>
+
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">SELECT PICKUP BRANCH / MALL</label>
+            <select id="collect-branch-select">
+                <option value="">-- Choose City First --</option>
+            </select>
         </div>
 
         <select id="payMethod" style="margin-top:15px;" onchange="updatePaymentInfo()">
-    <option value="Cash on Delivery">Pay at Hand (Cash)</option>
-    <option value="MTN MoMo">MTN MoMo (078 470 3999)</option>
-    <option value="Capitec Bank">Capitec Transfer (2033037351)</option>
-</select>
-
-<!-- Professional Instruction Card -->
+            <option value="Cash on Delivery">Pay at Hand (Cash)</option>
+            <option value="MTN MoMo">MTN MoMo (078 470 3999)</option>
+            <option value="Capitec Bank">Capitec Transfer (2033037351)</option>
+        </select>
+    </div>
+  <!-- Professional Instruction Card -->
 <div id="pay-instruction-box" style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #ddd; font-size: 13px; color: #444;">
     <strong id="pay-title" style="color: var(--blue);">Payment Info:</strong>
     <p id="pay-desc" style="margin: 5px 0 0 0;">Pay directly with Cash on Delivery when your order arrives.</p>
@@ -496,10 +508,8 @@ function updatePaymentInfo() {
     }
 }
 </script>
-
-
-    </div>
 </div>
+  
 
 <div id="tracking-page" class="container" style="display:none;">
     <!-- STATE A: No Order Found -->
@@ -714,7 +724,7 @@ function updatePaymentInfo() {
     </div>
 </div>
 
-<<div id="loginModal" class="modal">
+<div id="loginModal" class="modal">
     <div class="modal-content">
         <h3 id="loginTitle">Portal Login</h3>
         <input type="email" id="loginEmailInput" placeholder="Enter Email Address">
@@ -737,71 +747,86 @@ function updatePaymentInfo() {
 
 
 <div id="registerModal" class="modal">
-    <div class="modal-content">
-        <h3 id="regTitle">Join SA Pills</h3>
-        <p id="regInfo" style="font-size:13px; color:#666;">Enter your details to create an account.</p>
+    <div class="modal-content" style="max-height: 85vh; overflow-y: auto; text-align: left;">
+        <h3 id="regTitle" style="color: var(--primary); margin-top: 0; text-align: center;">Join SA Pills</h3>
+        <p id="regInfo" style="font-size: 13px; color: #666; text-align: center; margin-bottom: 15px;">Enter your details to create an account.</p>
         
         <input type="text" id="reg-user-name" placeholder="Full Name">
         <input type="email" id="reg-user-email" placeholder="Email Address (Primary Login)">
         <input type="tel" id="reg-user-phone" placeholder="Phone Number (Verification Required)">
         <input type="password" id="reg-user-pass" placeholder="Create a 4-Digit PIN">
 
-        <!-- Inside <div id="registerModal"> ... REPLACE the second location block with this: -->
-<div id="register-location-info-section">
-    <p style="font-size: 13px; color: #666; font-weight: 500; margin-bottom: 12px;">Enter your operational location details below:</p>
-    
-    <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">PROVINCE</label>
-    <select id="regProvince" onchange="updateVillages('regVillage')">
-        <option value="">-- Choose Province --</option>
-        <option value="Gauteng">Gauteng</option>
-        <option value="North West">North West</option>
-        <option value="Free State">Free State</option>
-        <option value="Western Cape">Western Cape</option>
-        <option value="KZN">KZN</option>
-    </select>
-    
-    <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">MAIN REGION / SUBURB</label>
-    <select id="regVillage" onchange="toggleSowetoExtensions('regVillage', 'reg-soweto-ext-group')">
-        <option value="">-- Area --</option>
-    </select>
-    
-    <!-- DYNAMIC SOWETO EXTENSION MATRIX CONTAINER FOR REGISTRATION -->
-    <div id="reg-soweto-ext-group" style="display: none; background: #fdfdfd; border: 1px dashed var(--orange); padding: 12px; border-radius: 8px; margin-top: 10px;">
-        <label style="font-size: 11px; font-weight: bold; color: var(--orange); display: block; margin-bottom: 5px;">SOWETO SUB-ZONE / EXTENSION / PHASE</label>
-        <select id="reg-soweto-pocket">
-            <option value="">-- Choose Specific Sub-Area --</option>
-            <option value="Protea Glen East">Protea Glen East</option>
-            <option value="Protea Glen North">Protea Glen North</option>
-            <option value="Protea Glen West">Protea Glen West</option>
-            <option value="Protea Glen Ext 1-4">Protea Glen Ext 1-4</option>
-            <option value="Protea Glen Ext 11-20">Protea Glen Ext 11-20</option>
-            <option value="Protea Glen Ext 24-40">Protea Glen Ext 24-40</option>
-            <option value="Chiawelo (Ext 1, 2, 3, 5)">Chiawelo (Ext 1, 2, 3, 5)</option>
-            <option value="Diepkloof Zones 1-6">Diepkloof Zones 1-6</option>
-            <option value="Diepkloof Extension">Diepkloof Extension</option>
-            <option value="Dobsonville (Ext, Gardens, Zones)">Dobsonville (Ext, Gardens, Zones)</option>
-            <option value="Eldorado Park (Extensions 1-9)">Eldorado Park (Extensions 1-9)</option>
-            <option value="Emdeni (Ext, Link)">Emdeni (Ext, Link)</option>
-            <option value="Jabulani">Jabulani</option>
-            <option value="Klipsprint / Kliptown">Klipsprint / Kliptown</option>
-            <option value="Meadowlands Zones 1-10">Meadowlands Zones 1-10</option>
-            <option value="Naledi (Ext)">Naledi (Ext)</option>
-            <option value="Orlando East / West">Orlando East / West</option>
-            <option value="Pimville Zones 1-7">Pimville Zones 1-7</option>
-            <option value="Senaoane">Senaoane</option>
-            <option value="Zola Phases 1-3">Zola Phases 1-3</option>
-            <option value="Zondi">Zondi</option>
-        </select>
+        <!-- DRIVER CAPABILITY & BRANCH COLLECTION SELECTION -->
+                <!-- DRIVER / AGENT MODE SELECTION -->
+        <div id="driver-registration-options" style="display:none; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px;">
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-bottom: 5px;">DRIVER / AGENT MODE</label>
+            <select id="driverServiceRole" onchange="toggleDriverModeFields()">
+                <option value="delivery">Delivery Driver (Door-to-Door)</option>
+                <option value="branch_collection">Branch Collection Point / Agent</option>
+            </select>
+        </div>
+
+        <!-- LOCATION INFORMATION (Province & City must be chosen first) -->
+        <div id="register-location-info-section" style="margin-top: 10px;">
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">PROVINCE</label>
+            <select id="regProvince" onchange="updateVillages('regVillage')">
+                <option value="">-- Choose Province --</option>
+                <option value="Gauteng">Gauteng</option>
+                <option value="North West">North West</option>
+                <option value="Free State">Free State</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="KZN">KZN</option>
+            </select>
+            
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-top: 10px;">PRIMARY VILLAGE / CITY / AREA</label>
+            <select id="regVillage" onchange="toggleSowetoExtensions('regVillage', 'reg-soweto-ext-group')">
+                <option value="">-- Area --</option>
+            </select>
+            
+            <!-- DYNAMIC SUB-AREA MATRIX (For Delivery Drivers) -->
+            <div id="reg-soweto-ext-group" style="display: none; background: #fdfdfd; border: 1px dashed var(--orange); padding: 12px; border-radius: 8px; margin-top: 10px;">
+                <label style="font-size: 11px; font-weight: bold; color: var(--orange); display: block; margin-bottom: 8px;">
+                    SELECT ALL OPERATING SUB-AREAS (Check multiple)
+                </label>
+                <div id="sub-places-checkbox-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 150px; overflow-y: auto; text-align: left; font-size: 13px;"></div>
+            </div>
+        </div>
+
+        <!-- BRANCH PICKUP POINT (Appears below and stays disabled until city is selected) -->
+        <div id="branch-name-group" style="display:none; background: #fdfdfd; border: 1px dashed var(--blue); padding: 12px; border-radius: 8px; margin-top: 10px;">
+            <label style="font-size: 12px; font-weight: bold; color: var(--blue); display: block; margin-bottom: 5px;">SELECT BRANCH PICKUP POINT</label>
+            <select id="regBranchName" disabled>
+                <option value="">-- Choose Province & City First --</option>
+            </select>
+        </div>
+
+            
+            <!-- DYNAMIC MULTI-SUB-AREA SELECTION MATRIX -->
+<div id="reg-soweto-ext-group" style="display: none; background: #fdfdfd; border: 1px dashed var(--orange); padding: 12px; border-radius: 8px; margin-top: 10px;">
+    <label style="font-size: 11px; font-weight: bold; color: var(--orange); display: block; margin-bottom: 8px;">
+        SELECT ALL OPERATING SUB-AREAS (Check multiple)
+    </label>
+    <div id="sub-places-checkbox-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 150px; overflow-y: auto; text-align: left; font-size: 13px;">
+        <label><input type="checkbox" name="subPlace" value="Protea Glen"> Protea Glen</label>
+        <label><input type="checkbox" name="subPlace" value="Chiawelo"> Chiawelo</label>
+        <label><input type="checkbox" name="subPlace" value="Bara / Diepkloof"> Bara / Diepkloof</label>
+        <label><input type="checkbox" name="subPlace" value="Lenasia"> Lenasia</label>
+        <label><input type="checkbox" name="subPlace" value="Roodepoort"> Roodepoort</label>
+        <label><input type="checkbox" name="subPlace" value="JHB CBD"> JHB CBD</label>
+        <label><input type="checkbox" name="subPlace" value="Dobsonville"> Dobsonville</label>
+        <label><input type="checkbox" name="subPlace" value="Eldorado Park"> Eldorado Park</label>
+        <label><input type="checkbox" name="subPlace" value="Meadowlands"> Meadowlands</label>
+        <label><input type="checkbox" name="subPlace" value="Orlando East/West"> Orlando</label>
     </div>
 </div>
 
 
-
-        
-                <button id="requestPinBtn" class="modal-btn" style="background:var(--green);" onclick="submitRegistration()">Register & Verify</button>
-        <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeRegisterModal()">Cancel</button>
+        <button id="requestPinBtn" class="modal-btn" style="background:var(--green); margin-top: 15px;" onclick="submitRegistration()">Register & Verify</button>
+        <button class="modal-btn" style="background:#eee; color:#333; margin-top: 5px;" onclick="closeRegisterModal()">Cancel</button>
     </div>
 </div>
+
+
 
 <!-- CUSTOMER LOCKOUT / FINE LOCKOUT SCREEN (MOVED OUTSIDE MODAL) -->
 <div id="customer-lockout-screen" class="container" style="display:none; max-width: 500px; margin: 30px auto;">
@@ -905,20 +930,129 @@ function handleAdminClick(key) {
         }
     }, { once: true });
     
-    // Dynamic visibility parser engine for handling localized zones
+    // CENTRALIZED LOCATION MATRIX FOR ALL TOWNS & CITIES
+const locationDataMatrix = {
+    "Soweto": {
+        subPlaces: ["Protea Glen", "Chiawelo", "Bara / Diepkloof", "Lenasia", "Roodepoort", "JHB CBD", "Dobsonville", "Eldorado Park", "Meadowlands", "Orlando East/West", "Jabulani", "Pimville", "Zola", "Naledi"],
+        branches: ["Protea Glen Mall", "Bara Taxi Rank", "Diepkloof Square Mall", "Jabulani Mall", "Maponya Mall", "Lenasia Trade Route Mall", "Johannesburg Park Station / CBD"]
+    },
+    "Johannesburg": {
+        subPlaces: ["JHB CBD", "Braamfontein", "Fordsburg", "Newtown", "Marshalltown", "Jeppestown", "Hillbrow", "Yeoville"],
+        branches: ["Johannesburg Park Station / CBD", "Carlton Centre", "Bree Taxi Rank", "MTN Noord Taxi Rank"]
+    },
+    "Roodepoort": {
+        subPlaces: ["Florida", "Horizon View", "Wilropark", "Ruimsig", "Witpoortjie", "Helderkruin", "Dobsonville Border"],
+        branches: ["Westgate Shopping Centre", "Clearwater Mall", "Roodepoort Plaza"]
+    },
+    "Thokoza": {
+        subPlaces: ["Thokoza Extension 1", "Thokoza Extension 2", "Thokoza Extension 3", "Phola Park", "Mzimhlophe Thokoza", "Skateland Zone"],
+        branches: ["Thokoza Shopping Centre", "Khumalo Street Main Stand", "Natalspruit Hospital Gate"]
+    },
+    "Katlehong": {
+        subPlaces: ["Siluma View", "Moleleki", "Ramokonopi", "Motsamai", "Kweshine", "Tshongweni"],
+        branches: ["Sam Ntuli Mall", "Sontonga Mall", "Katlehong Station"]
+    },
+    "Tembisa": {
+        subPlaces: ["Winnie Mandela", "Phomolong", "Oakmoor", "Birch Acres Border", "Kempton Park Border", "Esangweni"],
+        branches: ["Phumulani Mall", "Tembisa Mall", "Esangweni Taxi Rank"]
+    },
+    "Alexandra": {
+        subPlaces: ["East Bank", "West Bank", "Far East Bank", "Tsutsumani", "Pan Africa Zone"],
+        branches: ["Pan Africa Shopping Centre", "Alex Mall"]
+    },
+    "Sandton": {
+        subPlaces: ["Sandton CBD", "Bryanston", "Morningside", "Woodmead", "Rivonia", "Wendywood"],
+        branches: ["Sandton City Mall", "Woodmead Retail Park"]
+    },
+    "Pretoria": {
+        subPlaces: ["Pretoria Central", "Arcadia", "Sunnyside", "Hatfield", "Garsfontein", "Centurion"],
+        branches: ["Pretoria Station Rank", "Menlyn Park Shopping Centre", "Wonderpark Mall"]
+    },
+    "Mamelodi": {
+        subPlaces: ["Mamelodi East", "Mamelodi West", "Mahube Valley", "Nellmapius", "Eersterust"],
+        branches: ["Mams Mall", "Denlyn Shopping Centre"]
+    },
+    "Rustenburg": {
+        subPlaces: ["Rustenburg CBD", "TLhabane", "Boitekong", "Marikana", "Phokeng", "Geelhoutpark"],
+        branches: ["Rustenburg Mall", "Waterfall Mall", "TLhabane Square"]
+    },
+    "Durban": {
+        subPlaces: ["Durban CBD", "Umlazi", "Chatsworth", "Phoenix", "Pinetown", "Umhlanga"],
+        branches: ["Workshop Shopping Centre CBD", "Galleria Mall", "Gateway Theatre of Shopping", "Umlazi Mega City"]
+    },
+    "Bloemfontein": {
+        subPlaces: ["Bloemfontein CBD", "Mangaung", "Heidedal", "Langenhovenpark", "Botshabelo"],
+        branches: ["Middestad Mall CBD", "Loch Logan Waterfront", "Twin City Mangaung"]
+    }
+};
+
 function toggleSowetoExtensions(parentSelectId, targetGroupContainerId) {
-    const primaryAreaValue = document.getElementById(parentSelectId).value;
+    const selectedArea = document.getElementById(parentSelectId).value;
     const extensionContainer = document.getElementById(targetGroupContainerId);
-    
-    if (primaryAreaValue === "Soweto") {
-        extensionContainer.style.display = "block";
+    const checkboxGrid = document.getElementById('sub-places-checkbox-grid');
+    const branchSelect = document.getElementById('regBranchName');
+    const driverRole = document.getElementById('driverServiceRole') ? document.getElementById('driverServiceRole').value : 'delivery';
+
+    // 1. Manage sub-areas for delivery drivers
+    if (driverRole !== 'branch_collection') {
+        if (selectedArea && locationDataMatrix[selectedArea] && locationDataMatrix[selectedArea].subPlaces) {
+            const areaData = locationDataMatrix[selectedArea];
+            if (checkboxGrid) {
+                checkboxGrid.innerHTML = "";
+                areaData.subPlaces.forEach(sub => {
+                    const label = document.createElement('label');
+                    label.style.display = "flex";
+                    label.style.alignItems = "center";
+                    label.style.gap = "5px";
+                    label.innerHTML = `<input type="checkbox" name="subPlace" value="${sub}"> ${sub}`;
+                    checkboxGrid.appendChild(label);
+                });
+            }
+            extensionContainer.style.display = "block";
+        } else if (selectedArea) {
+            if (checkboxGrid) {
+                checkboxGrid.innerHTML = `
+                    <label style="grid-column: span 2;">
+                        <input type="checkbox" name="subPlace" value="${selectedArea} Central" checked> ${selectedArea} Central / Main Zone
+                    </label>`;
+            }
+            extensionContainer.style.display = "block";
+        } else {
+            extensionContainer.style.display = "none";
+        }
     } else {
-        extensionContainer.style.display = "none";
-        // Reset sub-selection when not Soweto
-        const subSelect = extensionContainer.querySelector('select');
-        if (subSelect) subSelect.value = "";
+        if (extensionContainer) extensionContainer.style.display = 'none';
+    }
+
+    // 2. Populate Branch Selection Dropdown dynamically based on selected city/area
+    if (branchSelect) {
+        branchSelect.innerHTML = '<option value="">-- Choose Branch Mall / Rank --</option>';
+        
+        let branchList = [];
+        if (selectedArea && locationDataMatrix[selectedArea] && locationDataMatrix[selectedArea].branches) {
+            branchList = locationDataMatrix[selectedArea].branches;
+            branchSelect.disabled = false; // Enable dropdown once city is chosen
+        } else if (selectedArea) {
+            branchList = [
+                `${selectedArea} Central Branch`,
+                `${selectedArea} Main Taxi Rank Desk`,
+                `${selectedArea} Express Collection Point`
+            ];
+            branchSelect.disabled = false; // Enable dropdown once city is chosen
+        } else {
+            branchSelect.innerHTML = '<option value="">-- Choose Province & City First --</option>';
+            branchSelect.disabled = true; // Keep disabled if no city is selected
+        }
+
+        branchList.forEach(branch => {
+            const opt = document.createElement('option');
+            opt.value = branch;
+            opt.innerText = branch;
+            branchSelect.appendChild(opt);
+        });
     }
 }
+
 
 // Modify your existing order configuration logic script inside orderViaApp()
 function getCompiledAddress() {
@@ -1615,21 +1749,25 @@ function startAutoManager() {
         });
     }, 5000); // Checks every 5 seconds
 }
-
-
 function autoAssignToLocalDriver(orderId, orderData) {
+    if (orderData.type === 'collect' || (orderData.address && orderData.address.includes('Branch Pick-up'))) {
+        return; 
+    }
+
     database.ref('drivers').once('value', (snap) => {
         let assigned = false;
         snap.forEach(driverSnap => {
             if (assigned) return; 
             const driver = driverSnap.val();
-            const driverKey = driverSnap.key;
+            
+            // Skip branch collection agents from receiving delivery orders
+            if (driver.driverMode === 'branch_collection') return;
 
             const driverArea = (driver.village || "").toLowerCase().trim();
             const orderArea = (orderData.area || "").toLowerCase().trim();
             const orderAddress = (orderData.address || "").toLowerCase().trim();
 
-            // Flexible area matching (handles Soweto sub-pockets vs main region)
+            // Robust multi-zone matching for Soweto & surrounding regions
             const isMatch = (driverArea === orderArea) || 
                             (driverArea === "soweto" && (
                                 orderArea.includes("protea") || orderArea.includes("chiawelo") || 
@@ -1643,19 +1781,23 @@ function autoAssignToLocalDriver(orderId, orderData) {
                                 orderAddress.includes("soweto")
                             ));
 
-            // Only assign if driver matches the area and is available
             if (isMatch && driver.currentStatus === 'available') {
-                dispatchToDriver(orderId, driver, driverKey);
+                dispatchToDriver(orderId, driver, driverSnap.key);
                 assigned = true;
             }
         });
     });
 }
 
+
+
+
 function reassignOrderToNextDriver(orderId, orderData) {
-    if (orderData.dEmailKey) {
-        database.ref('drivers/' + orderData.dEmailKey).update({ currentStatus: 'available' });
+    if (orderData.serviceMode === 'collect' || (orderData.address && orderData.address.includes('Branch Pick-up'))) {
+        return;
     }
+
+    const oldDriverKey = orderData.dEmailKey;
 
     database.ref('drivers').once('value', (snap) => {
         let assigned = false;
@@ -1683,12 +1825,17 @@ function reassignOrderToNextDriver(orderId, orderData) {
 
             if (isMatch && 
                 driver.currentStatus === 'available' && 
-                driverKey !== orderData.dEmailKey) {
+                driverKey !== oldDriverKey) {
                 
                 dispatchToDriver(orderId, driver, driverKey);
                 assigned = true;
             }
         });
+
+        // 🔑 FIX: Always free up the old driver back to 'available' status when switching/reassigning
+        if (oldDriverKey) {
+            database.ref('drivers/' + oldDriverKey).update({ currentStatus: 'available' });
+        }
 
         if (!assigned) {
             database.ref('orders/' + orderId).update({
@@ -1701,6 +1848,7 @@ function reassignOrderToNextDriver(orderId, orderData) {
         }
     });
 }
+
 
 
     function autoDispatchOrder(orderId, orderData) {
@@ -1732,18 +1880,7 @@ function reassignOrderToNextDriver(orderId, orderData) {
         database.ref('drivers/' + driverEmailKey).update({ currentStatus: 'delivering' });
     });
 }
-    function reassignOrderBackToAdmin(orderId, driverPhone) {
-        database.ref('orders/' + orderId).update({
-            status: 'pending',
-            dName: null,
-            dPhone: null,
-            driverReceived: false,
-            assignedTimestamp: null
-        });
-        if(driverPhone) {
-            database.ref('drivers/' + driverPhone).update({ currentStatus: 'available' });
-        }
-    }
+    
 
     function verifyAge() { 
     sessionStorage.setItem('ageVerified', 'true');
@@ -2009,52 +2146,8 @@ function addToCart(name, price, image) {
 (function() { emailjs.init("pvuWlzKmpqTKD88lg"); })();
 
 
-function submitRegistration() {
-    const name = document.getElementById('reg-user-name').value.trim();
-    const email = document.getElementById('reg-user-email').value.trim().toLowerCase();
-    const phone = document.getElementById('reg-user-phone').value.trim();
-    const pin = document.getElementById('reg-user-pass').value.trim();
-    const province = document.getElementById('regProvince').value;
-    const city = document.getElementById('regVillage').value;
-    const subPocket = document.getElementById('reg-soweto-pocket').value;
 
-    if (!name || !email || !phone || !pin) {
-        return alert("Please fill in all fields.");
-    }
 
-    const emailKey = email.replace(/\./g, '_'); 
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    const userData = {
-        name: name,
-        email: email,
-        phone: phone,
-        pin: pin,
-        province: province,
-        city: city,
-        subPocket: subPocket,
-        code: otpCode, 
-        role: currentRoleType,
-        timestamp: Date.now()
-    };
-
-    database.ref('verificationRequests/' + emailKey).set(userData).then(() => {
-        emailjs.send("service_Test", "template_cjz41n2", {
-            to_email: email,
-            to_name: name,
-            otp_code: otpCode
-        }).then(() => {
-            document.getElementById('registerModal').style.display = "none";
-            localStorage.setItem('tempRegEmail', email); 
-            showAppNotify("Check Your Email", "We sent a 6-digit code to " + email, "var(--blue)", false);
-            document.getElementById('otpVerifyArea').style.display = "block";
-        }).catch(err => {
-            alert("Email failed to send. Check your EmailJS configuration.");
-        });
-    });
-}
-
-// --- ADMIN & LOGGED PORTAL SYSTEM DISPATCH ENGINE ---
 function checkAdminLogin() {
     const emailInput = document.getElementById('loginEmailInput').value.trim().toLowerCase();
     const pin = document.getElementById('loginPinInput').value.trim();
@@ -2067,7 +2160,8 @@ function checkAdminLogin() {
         return;
     }
 
-    const emailKey = emailInput.replace(/\./g, '_');
+    // Normalized to lowercase to prevent device switching mismatches
+    const emailKey = emailInput.replace(/\./g, '_').toLowerCase();
     const path = (currentRoleType === 'driver') ? 'drivers/' : 'users/';
     
     database.ref(path + emailKey).once('value', (snap) => {
@@ -2089,6 +2183,7 @@ function checkAdminLogin() {
     });
 }
 
+
 function verifyQualificationCode() {
     const enteredCode = document.getElementById('otpCodeInput').value.trim();
     const email = localStorage.getItem('tempRegEmail'); 
@@ -2102,13 +2197,15 @@ function verifyQualificationCode() {
             const path = (data.role === 'driver') ? 'pendingDrivers/' : 'users/';
             
             database.ref(path + emailKey).set({
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
-                pin: data.pin,
-                province: data.province,
-                village: data.city,
+                name: data.name || "",
+                email: data.email || email,
+                phone: data.phone || "",
+                pin: data.pin || "0000",
+                province: data.province || "",
+                village: data.village || "", // Fixed: Changed from data.city to data.village
                 subPocket: data.subPocket || "",
+                driverMode: data.driverMode || "delivery",
+                branchName: data.branchName || "",
                 accountStatus: 'available',
                 joinedDate: Date.now()
             }).then(() => {
@@ -2119,7 +2216,6 @@ function verifyQualificationCode() {
                     showAppNotify("Success", "Application sent! Admin will approve your account shortly.", "var(--green)");
                     setTimeout(() => { closeVerifyNotify(); }, 3000);
                 } else {
-                    // Automatically log the customer in right after OTP verification
                     localStorage.setItem('userRole', 'customer');
                     localStorage.setItem('customerEmailKey', emailKey);
                     
@@ -2130,12 +2226,15 @@ function verifyQualificationCode() {
                         toggleMenuUI();
                     }, 2000);
                 }
+            }).catch(err => {
+                alert("Database write error: " + err.message);
             });
         } else {
-            alert("Invalid Code.");
+            alert("Invalid Code. Please check the code and try again.");
         }
     });
 }
+
 
 
 
@@ -2204,15 +2303,15 @@ function updateVillages(targetId) {
     let areas = [];
     
     if (province === "Gauteng") { 
-        areas = ["Alexandra", "Diepsloot", "Ennerdale", "Johannesburg", "Lenasia (Lenz)", "Midrand", "Modderfontein", "Orange Farm", "Randburg", "Roodepoort", "Sandton", "Soweto", "Alberton", "Bedfordview", "Benoni", "Boksburg", "Brakpan", "Clayville", "Daveyton", "Devon", "Duduza", "Dunnottar", "Edenvale", "Germiston", "Isando", "Katlehong", "Kempton Park", "KwaThema", "Nigel", "Reiger Park", "Springs", "Tembisa", "Thokoza", "Tsakane", "Vosloorus", "Wattville", "Atteridgeville", "Bronberg", "Bronkhorstspruit", "Centurion", "Cullinan", "Ekangala", "Ga-Rankuwa", "Hammanskraal", "Irene", "Mabopane", "Mamelodi", "Pretoria", "Rayton", "Refilwe", "Soshanguve", "Winterveld", "Zithobeni"];
+        areas = ["Alexandra", "Diepsloot", "Ennerdale", "Johannesburg", "Katlehong", "Kempton Park", "Lenasia (Lenz)", "Midrand", "Modderfontein", "Orange Farm", "Randburg", "Roodepoort", "Sandton", "Soweto", "Tembisa", "Thokoza", "Vosloorus", "Centurion", "Pretoria", "Mamelodi", "Soshanguve"];
     } else if (province === "North West") { 
-        areas = ["Bloemhof", "Brits", "Christiana", "Coligny", "Delareyville", "Ganyesa", "Groot Marico", "Hartbeespoort", "Jan Kempdorp", "Klerksdorp", "Koster", "Lichtenburg", "Mahikeng", "Mogwase", "Mooinooi", "Orkney", "Ottosdal", "Potchefstroom", "Reivilo", "Rustenburg", "Sannieshof", "Schweizer-Reneke", "Stella", "Stilfontein", "Swartruggens", "Taung", "Ventersdorp", "Vryburg", "Wolmaransstad", "Zeerust"];
+        areas = ["Brits", "Hartbeespoort", "Klerksdorp", "Lichtenburg", "Mahikeng", "Potchefstroom", "Rustenburg", "Vryburg"];
     } else if (province === "Free State") { 
-        areas = ["Bloemfontein", "Heidedal", "Langenhovenpark", "Welkom", "Kroonstad", "Bethlehem", "Phuthaditjhaba", "Sasolburg", "Parys", "Winburg", "Jagersfontein", "Virginia"];
+        areas = ["Bloemfontein", "Bethlehem", "Kroonstad", "Phuthaditjhaba", "Sasolburg", "Welkom"];
     } else if (province === "Western Cape") { 
-        areas = ["Bellville", "Durbanville", "Parow", "Goodwood", "Brackenfell", "Kraaifontein", "Kuils River", "Rondebosch", "Claremont", "Newlands", "Constantia", "Wynberg", "Plumstead", "Kenilworth", "Simon’s Town", "Fish Hoek", "Muizenberg", "Noordhoek", "Kommetjie", "Scarborough", "Somerset West", "Strand", "Gordon’s Bay", "Camps Bay", "Hout Bay", "Sea Point", "Green Point", "Llandudno", "Milnerton", "Table View", "Bloubergstrand", "Melkbosstrand", "Atlantis", "Athlone", "Mitchells Plain", "Khayelitsha", "Gugulethu", "Langa", "Nyanga", "Delft"];
+        areas = ["Cape Town CBD", "Bellville", "Mitchells Plain", "Khayelitsha", "George", "Paarl", "Somerset West"];
     } else if (province === "KZN") { 
-        areas = ["Durban", "Amanzimtoti", "Chatsworth", "Hillcrest", "Kloof", "Pinetown", "Phoenix", "Umhlanga", "Umlazi", "Verulam", "Westville", "Tongaat", "Kingsburgh", "Port Shepstone", "Margate", "Scottburgh", "Harding", "Hibberdene", "Pennington", "Port Edward", "Southbroom", "Umzinto", "Shelly Beach", "KwaDukuza (Stanger)", "Ballito", "Mandeni", "Salt Rock", "Maphumulo", "Shakaskraal", "Pietermaritzburg", "Howick", "Hilton", "Richmond", "Mooi River", "Wartburg", "Dalton", "Ixopo", "Kokstad", "Underberg", "Himeville", "Bulwer", "Umzimkhulu", "Newcastle", "Dannhauser", "Charlestown", "Madadeni", "Ladysmith", "Estcourt", "Bergville", "Colenso", "Winterton", "Dundee", "Greytown", "Nquthu", "Pomeroy", "Glencoe", "Ulundi", "Vryheid", "Nongoma", "Pongola", "Paulpietersburg", "Richards Bay", "Empangeni", "Eshowe", "Melmoth", "Mtunzini", "Mkuze", "St Lucia", "Hluhluwe", "Mtubatuba", "Jozini"]; 
+        areas = ["Durban", "Pietermaritzburg", "Phoenix", "Pinetown", "Richards Bay", "Umhlanga", "Umlazi"]; 
     }
     
     areas.sort().forEach(a => { 
@@ -2221,7 +2320,11 @@ function updateVillages(targetId) {
         o.innerText = a; 
         select.appendChild(o); 
     });
+
+    // Reset sub-places and branch selection when changing province
+    toggleSowetoExtensions(targetId, targetId === 'regVillage' ? 'reg-soweto-ext-group' : 'soweto-ext-group');
 }
+
 
 
     function saveDriver() {
@@ -2277,43 +2380,70 @@ function updateVillages(targetId) {
             // SECTION: PENDING ORDERS
             if(o.status === 'pending') {
                 hasNew = true;
-                let driverOptions = `<option value="">-- Select Professional Driver --</option>`;
-                allDrivers.forEach(dr => {
-                    if(dr.currentStatus === 'available') {
-                        // Use emailKey as the value for dispatching
-                        const emailKey = dr.email.replace(/\./g, '_').toLowerCase();
-                        driverOptions += `<option value="${emailKey}">${dr.name} (${dr.village})</option>`;
-                    }
-                });
+                
+                // Check if this order is a Branch Collection type
+                const isCollection = o.type === 'collect' || (o.address && o.address.includes('Branch Pick-up'));
+                
+                let actionAreaHtml = "";
+                
+                                                // Inside fetchLiveOrders() where 'isCollection' is handled:
+if (isCollection) {
+    let branchName = o.address ? o.address.replace('Branch Pickup:', '').trim() : 'Standard Branch';
+    let agentInfo = o.dName ? `${o.dName} (${o.dPhone})` : 'Unassigned';
+
+    actionAreaHtml = `
+        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; border: 1px solid #2196f3; margin-top: 10px; text-align: left;">
+            <strong style="color: var(--blue);">🏢 Branch Pickup Requested:</strong>
+            <div style="font-size: 14px; font-weight: bold; color: #333; margin: 4px 0;">📍 ${branchName}</div>
+            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">Assigned Agent: ${agentInfo}</div>
+            
+            <button onclick="markOrderCompleted('${orderId}')" style="background: var(--green); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; width: 100%; margin-bottom: 6px; cursor: pointer;">
+                MARK COLLECTION COMPLETE ✅
+            </button>
+        </div>`;
+}
+
+
+ else {
+                    // Change this block inside fetchLiveOrders()
+let driverOptions = `<option value="">-- Select Professional Driver --</option>`;
+allDrivers.forEach(dr => {
+    // Allow selecting drivers who are available OR currently delivering if you want to reassign
+    if(dr.currentStatus === 'available' || dr.currentStatus === 'delivering') {
+        const emailKey = dr.emailKey; // Use synced emailKey directly
+        driverOptions += `<option value="${emailKey}">${dr.name} (${dr.village}) - [${dr.currentStatus}]</option>`;
+    }
+});
+
+
+                    actionAreaHtml = `
+                        <div class="assign-area">
+                            <label>Assign to Driver:</label>
+                            <select id="select-${orderId}">${driverOptions}</select>
+                            <button onclick="dispatchSpecificOrder('${orderId}')" style="background:var(--blue); color:white; font-weight:bold; margin-top:5px;">DISPATCH ORDER</button>
+                        </div>`;
+                }
 
                 orderDiv.innerHTML += `
                 <div class="order-card" style="border-left: 10px solid var(--primary); padding: 20px;">
                     <h3 style="margin-top:0; color:var(--primary);">Order #${orderId.substring(orderId.length - 6)}</h3>
                     <p><strong>👤 Name:</strong> ${o.customer}</p>
-                    <p><strong>📍 Address:</strong> ${o.address}, ${o.area}</p>
+                    <p><strong>📍 Address / Info:</strong> ${o.address}, ${o.area}</p>
                     <p><strong>📞 Phone:</strong> ${o.phone}</p>
                     <div style="background:#f9f9f9; padding:10px; border-radius:8px; margin:10px 0;">
                         <p><strong>📦 Order Details:</strong> ${o.items}</p>
                         <p><strong>💵 Total Price:</strong> <span style="font-size:1.2rem; color:var(--blue);">${o.total}</span></p>
                     </div>
                     
-                            <div class="assign-area">
-        <label>Assign to Driver:</label>
-        <select id="select-${orderId}">${driverOptions}</select>
-        <button onclick="dispatchSpecificOrder('${orderId}')" style="background:var(--blue); color:white; font-weight:bold; margin-top:5px;">DISPATCH ORDER</button>
-    </div>
+                    ${actionAreaHtml}
 
-    <!-- 👉 PASTE THIS DELETE BUTTON HERE -->
-    <button onclick="deleteOrder('${orderId}')" style="background: #fee; color: #c00; border: 1px solid #fcc; padding: 8px; width: 100%; margin-top: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-        🗑️ DELETE SPAM ORDER
-    </button>
-
-</div>
-
-</div>`;
+                    <button onclick="deleteOrder('${orderId}')" style="background: #fee; color: #c00; border: 1px solid #fcc; padding: 8px; width: 100%; margin-top: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                        🗑️ DELETE SPAM ORDER
+                    </button>
+                </div>`;
             } 
             
-            // SECTION: ACTIVE DELIVERIES (The fix for "undefined")
+            // SECTION: ACTIVE DELIVERIES
             else if (o.status === 'dispatched' || o.status === 'en_route') {
                 hasActive = true;
                 const driverName = o.dName || "Unknown Driver";
@@ -2334,6 +2464,29 @@ function updateVillages(targetId) {
         if(!hasActive) activeDiv.innerHTML = "<p style='text-align:center; color:#999;'>No active deliveries en route.</p>";
     });
 }
+
+  function markOrderCompleted(orderId) {
+    database.ref('orders/' + orderId).once('value', snap => {
+        const order = snap.val();
+        if (!order) return;
+
+        let cleanTotal = (order.total || "0").replace(/[^0-9.]/g, '');
+        let debt = (parseFloat(cleanTotal) / 2).toFixed(2);
+
+        database.ref('orders/' + orderId).update({ status: 'delivered' }).then(() => {
+            // Apply 50% commission lock to the assigned branch agent if assigned
+            if (order.dEmailKey) {
+                database.ref('drivers/' + order.dEmailKey).update({
+                    currentStatus: 'unpaid_debt',
+                    pendingDebt: debt
+                });
+            }
+            showAppNotify("Collection Complete", "Order marked delivered & commission lock applied to Agent.", "var(--green)");
+        });
+    });
+}
+
+
     function fetchAdminPendingPayments() {
         const div = document.getElementById('admin-pending-payments');
         database.ref('orders').orderByChild('status').equalTo('awaiting_payment').on('value', snap => {
@@ -2435,29 +2588,30 @@ function updateVillages(targetId) {
     }
 
         function deleteOrder(id) {
-        database.ref('orders/' + id).once('value', (snap) => {
-            const data = snap.val();
-            if (data && data.dPhone) { 
-                database.ref('drivers/' + data.dPhone).update({ currentStatus: 'available' }); 
-            }
-            database.ref('orders/' + id).remove().then(() => {
-                showAppNotify("Order Deleted", "Spam order has been permanently removed.", "var(--primary)");
-            });
+    database.ref('orders/' + id).once('value', (snap) => {
+        const data = snap.val();
+        // 🔑 FIX: Use dEmailKey to correctly target the driver's database record
+        if (data && data.dEmailKey) { 
+            database.ref('drivers/' + data.dEmailKey).update({ currentStatus: 'available' }); 
+        }
+        database.ref('orders/' + id).remove().then(() => {
+            showAppNotify("Order Deleted", "Spam order has been permanently removed.", "var(--primary)");
         });
-    }
+    });
+}
+
 
 function dispatchSpecificOrder(orderId) {
     const driverEmailKey = document.getElementById('select-' + orderId).value;
     if(!driverEmailKey) return alert("Please select a driver first.");
 
-    // Find the driver object from the allDrivers array
     const driver = allDrivers.find(d => d.emailKey === driverEmailKey);
     
     if(driver) {
         database.ref('orders/' + orderId).update({ 
             status: 'dispatched', 
-            dName: driver.name,       // Save Name to Order
-            dPhone: driver.phone,     // Save Phone to Order
+            dName: driver.name, 
+            dPhone: driver.phone,
             dEmailKey: driverEmailKey,
             driverReceived: false, 
             arrived: false, 
@@ -2468,6 +2622,7 @@ function dispatchSpecificOrder(orderId) {
         });
     }
 }
+
 function dispatchToDriver(orderId, driver) {
     const driverEmailKey = driver.email.replace(/\./g, '_').toLowerCase();
 
@@ -2487,15 +2642,20 @@ function dispatchToDriver(orderId, driver) {
 function loadDriverPortal() {
     if (!loggedInDriverPhone) return; 
 
+    let isBranchAgent = false;
+
     database.ref('drivers/' + loggedInDriverPhone).on('value', snap => {
         const d = snap.val();
         if (d) {
-            document.getElementById('portal-driver-name').innerText = d.name;
+            document.getElementById('portal-driver-name').innerText = `${d.name} (${d.driverMode === 'branch_collection' ? 'Branch Agent' : 'Driver'})`;
+            isBranchAgent = (d.driverMode === 'branch_collection');
             
+            // 🔑 FIX: Handle both unpaid debt and dispute lockout states correctly on the driver UI
             if (d.currentStatus === 'unpaid_debt') {
                 document.getElementById('driver-debt-screen').style.display = 'block';
                 document.getElementById('driver-dispute-screen').style.display = 'none';
                 document.getElementById('assigned-task-card').style.display = 'none';
+                document.getElementById('no-task-msg').style.display = 'none';
                 document.getElementById('pending-debt-display').innerText = `R ${d.pendingDebt}`;
             } else if (d.currentStatus === 'dispute_locked') {
                 document.getElementById('driver-debt-screen').style.display = 'none';
@@ -2512,92 +2672,134 @@ function loadDriverPortal() {
     database.ref('orders').on('value', snap => {
         let activeFound = false;
         
-        if (snap.exists()) {
-            snap.forEach(child => {
-                const order = child.val();
-                const orderId = child.key;
+        // Skip task rendering if driver is locked in a dispute
+        database.ref('drivers/' + loggedInDriverPhone).once('value', driverSnap => {
+            const driverInfo = driverSnap.val();
+            if (driverInfo && driverInfo.currentStatus === 'dispute_locked') {
+                return; // Exit early so active tasks don't override the dispute screen
+            }
 
-                if (order.dEmailKey === loggedInDriverPhone && 
-                    (order.status === 'dispatched' || order.status === 'en_route' || order.status === 'arrived')) {
-                    
-                    activeFound = true;
-                    activeTaskID = orderId;
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    const order = child.val();
+                    const orderId = child.key;
 
-                    document.getElementById('no-task-msg').style.display = 'none';
-                    const taskCard = document.getElementById('assigned-task-card');
-                    taskCard.style.display = 'block';
+                    const isAssignedToMe = (order.dEmailKey === loggedInDriverPhone);
+                    const isCollectionTask = isAssignedToMe && (order.type === 'collect' || order.type === 'Collection') && order.status !== 'delivered';
+                    const isDeliveryTask = isAssignedToMe && (order.status === 'dispatched' || order.status === 'en_route' || order.status === 'arrived');
 
-                    document.getElementById('task-details').innerHTML = `
-                        <div style="background:#f9f9f9; padding:12px; border-radius:8px; font-size:14px; color:#333; line-height:1.5;">
-                            <strong>📦 ITEM(S):</strong> ${order.items}<br>
-                            <strong>💵 CASH TO COLLECT:</strong> <span style="color:var(--blue); font-weight:bold;">${order.total}</span><br>
-                            <strong>💳 METHOD:</strong> ${order.payment || 'Cash on Delivery'}<br><br>
-                            <hr style="border:0; border-top:1px solid #ddd;">
-                            <strong>👤 CUSTOMER:</strong> ${order.customer}<br>
-                            <strong>📞 PHONE:</strong> ${order.phone}<br>
-                            <strong>📍 DELIVERY AREA:</strong> ${order.area}<br>
-                            <strong>🏠 HOME ADDRESS:</strong> ${order.address}
-                        </div>
-                    `;
+                    if (isCollectionTask || isDeliveryTask) {
+                        activeFound = true;
+                        activeTaskID = orderId;
 
-                    const ackBtn = document.getElementById('driver-acknowledge-btn');
-                    const rejBtn = document.getElementById('driver-reject-btn');
-                    const arriveBtn = document.getElementById('driver-arrive-btn');
-                    const finalActions = document.getElementById('delivery-final-actions');
+                        document.getElementById('no-task-msg').style.display = 'none';
+                        const taskCard = document.getElementById('assigned-task-card');
+                        taskCard.style.display = 'block';
 
-                    if (!order.driverReceived) {
-                        ackBtn.style.display = 'block';
-                        rejBtn.style.display = 'block';
-                        arriveBtn.style.display = 'none';
-                        finalActions.style.display = 'none';
+                        let taskHeader = isCollectionTask ? '<h3 style="color:var(--blue);">🏢 Branch Collection Task</h3>' : '<h3 style="color:var(--green);">Active Delivery Task</h3>';
 
-                        ackBtn.onclick = () => {
-                            database.ref('orders/' + orderId).update({ driverReceived: true, status: 'en_route' });
-                        };
-                        rejBtn.onclick = () => {
-                            reassignOrderBackToAdmin(orderId, loggedInDriverPhone);
-                        };
-                    } else {
-                        ackBtn.style.display = 'none';
-                        rejBtn.style.display = 'none';
-                        
-                        if (!order.arrived) {
-                            arriveBtn.style.display = 'block';
-                            finalActions.style.display = 'none';
-                            arriveBtn.onclick = () => {
-                                database.ref('orders/' + orderId).update({ arrived: true, status: 'arrived' });
-                            };
-                        } else {
+                        document.getElementById('task-details').innerHTML = `
+                            ${taskHeader}
+                            <div style="background:#f9f9f9; padding:12px; border-radius:8px; font-size:14px; color:#333; line-height:1.5;">
+                                <strong>📦 ITEM(S):</strong> ${order.items}<br>
+                                <strong>💵 TOTAL PRICE:</strong> <span style="color:var(--blue); font-weight:bold;">${order.total}</span><br>
+                                <strong>💳 PAYMENT METHOD:</strong> ${order.payment || 'Cash on Delivery'}<br><br>
+                                <hr style="border:0; border-top:1px solid #ddd;">
+                                <strong>👤 CUSTOMER:</strong> ${order.customer}<br>
+                                <strong>📞 CUSTOMER PHONE:</strong> ${order.phone}<br>
+                                <strong>📍 PICKUP / BRANCH:</strong> ${order.address}
+                            </div>
+                        `;
+
+                        const ackBtn = document.getElementById('driver-acknowledge-btn');
+                        const rejBtn = document.getElementById('driver-reject-btn');
+                        const arriveBtn = document.getElementById('driver-arrive-btn');
+                        const finalActions = document.getElementById('delivery-final-actions');
+
+                        if (isCollectionTask) {
+                            ackBtn.style.display = 'none';
+                            rejBtn.style.display = 'none';
                             arriveBtn.style.display = 'none';
-                            finalActions.style.display = 'grid';
+                            finalActions.style.display = 'block';
+                            finalActions.innerHTML = `
+                                <button class="btn-delivered" style="width:100%; background:var(--green); color:white; padding:15px; font-weight:bold; border-radius:8px;" onclick="completeBranchCollection('${orderId}')">
+                                    MARK COLLECTION COMPLETE ✅
+                                </button>
+                            `;
+                        } else {
+                            if (!order.driverReceived) {
+                                ackBtn.style.display = 'block';
+                                rejBtn.style.display = 'block';
+                                arriveBtn.style.display = 'none';
+                                finalActions.style.display = 'none';
+
+                                ackBtn.onclick = () => {
+                                    database.ref('orders/' + orderId).update({ driverReceived: true, status: 'en_route' });
+                                };
+                            } else {
+                                ackBtn.style.display = 'none';
+                                rejBtn.style.display = 'none';
+                                
+                                if (!order.arrived) {
+                                    arriveBtn.style.display = 'block';
+                                    finalActions.style.display = 'none';
+                                    arriveBtn.onclick = () => {
+                                        database.ref('orders/' + orderId).update({ arrived: true, status: 'arrived' });
+                                    };
+                                } else {
+                                    arriveBtn.style.display = 'none';
+                                    finalActions.style.display = 'grid';
+                                    finalActions.innerHTML = `
+                                        <button class="btn-delivered" onclick="processDriverDelivery('delivered')">✅ DELIVERED</button>
+                                        <button class="btn-failed" onclick="processDriverDelivery('failed')">❌ NOT DELIVERED</button>
+                                    `;
+                                }
+                            }
                         }
+
+                        let cleanPhone = order.phone.trim();
+                        if(cleanPhone.startsWith('0')) { cleanPhone = '27' + cleanPhone.substring(1); }
+                        document.getElementById('cust-whatsapp-btn').onclick = () => {
+                            window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent('Hello ' + order.customer + ', regarding your order at SA Pills branch.')}`, '_blank');
+                        };
                     }
+                });
+            }
 
-                    document.getElementById('map-link-btn').onclick = () => {
-                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address + ', ' + order.area)}`, '_blank');
-                    };
-
-                    let cleanPhone = order.phone.trim();
-                    if(cleanPhone.startsWith('0')) { cleanPhone = '27' + cleanPhone.substring(1); }
-                    document.getElementById('cust-whatsapp-btn').onclick = () => {
-                        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent('Hello ' + order.customer + ', this is your delivery driver from SA Pills.')}`, '_blank');
-                    };
-                }
-            });
-        }
-
-        if (!activeFound) {
-            document.getElementById('assigned-task-card').style.display = 'none';
-            // Only show no-task-msg if not dispute locked
-            database.ref('drivers/' + loggedInDriverPhone).once('value', s => {
-                if(s.val() && s.val().currentStatus !== 'dispute_locked') {
-                    document.getElementById('no-task-msg').style.display = 'block';
-                }
-            });
-            activeTaskID = null;
-        }
+            if (!activeFound && driverInfo && driverInfo.currentStatus !== 'dispute_locked' && driverInfo.currentStatus !== 'unpaid_debt') {
+                document.getElementById('assigned-task-card').style.display = 'none';
+                document.getElementById('no-task-msg').style.display = 'block';
+                activeTaskID = null;
+            }
+        });
     });
 }
+
+
+function completeBranchCollection(orderId) {
+    database.ref('orders/' + orderId).once('value', snap => {
+        const order = snap.val();
+        if (!order) return;
+
+        // Clean price string and calculate 50% debt commission
+        let cleanTotal = (order.total || "0").replace(/[^0-9.]/g, '');
+        let debt = (parseFloat(cleanTotal) / 2).toFixed(2);
+
+        // Update order to delivered and lock agent portal with debt balance
+        database.ref('orders/' + orderId).update({ status: 'delivered' }).then(() => {
+            if (loggedInDriverPhone) {
+                database.ref('drivers/' + loggedInDriverPhone).update({
+                    currentStatus: 'unpaid_debt',
+                    pendingDebt: debt
+                });
+            }
+            showAppNotify("Collection Complete", `Order finished! Settle R${debt} commission fee to unlock portal.`, "var(--primary)");
+        });
+    });
+}
+
+
+                    
 
 function acceptOrder(orderId) {
     database.ref('orders/' + orderId).update({ 
@@ -2669,6 +2871,21 @@ function returnOrderToAdmin(orderId) {
     });
 }
 
+function updateCollectionBranches() {
+    const city = document.getElementById('collect-city').value;
+    const branchSelect = document.getElementById('collect-branch-select');
+    branchSelect.innerHTML = '<option value="">-- Choose Pickup Branch --</option>';
+
+    if (locationDataMatrix[city] && locationDataMatrix[city].branches) {
+        locationDataMatrix[city].branches.forEach(branch => {
+            const opt = document.createElement('option');
+            opt.value = branch;
+            opt.innerText = branch;
+            branchSelect.appendChild(opt);
+        });
+    }
+}
+
 function orderViaApp() {
     const userEmailKey = localStorage.getItem('customerEmailKey');
     if (!userEmailKey) {
@@ -2677,45 +2894,92 @@ function orderViaApp() {
         return;
     }
 
-    const name = document.getElementById('custName').value.trim();
-    const phone = document.getElementById('custPhone').value.trim();
-    const street = document.getElementById('custAddress').value.trim();
-    const payment = document.getElementById('payMethod').value;
-    const addressDetails = getCompiledAddress();
-    const totalAmount = document.getElementById('cart-total').innerText;
+    let customerName = "";
+    let customerPhone = "";
+    let selectedArea = "";
+    let fullAddressString = "";
+    let assignedBranchAgentKey = null;
+    let assignedBranchAgentPhone = null;
+    let assignedBranchAgentName = null;
 
-    if (!name || !phone || !street) {
-        alert("Please confirm your name, WhatsApp number, and delivery street address before ordering.");
-        return;
+    if (currentServiceMode === 'delivery') {
+        customerName = document.getElementById('custName').value.trim();
+        customerPhone = document.getElementById('custPhone').value.trim();
+        const addressData = getCompiledAddress();
+        selectedArea = addressData.baseArea;
+        fullAddressString = addressData.fullString;
+
+        if (!customerName || !customerPhone || !document.getElementById('custAddress').value.trim()) {
+            alert("Please complete all delivery address fields.");
+            return;
+        }
+
+        saveAndPushOrder();
+    } else {
+        customerName = document.getElementById('collect-name').value.trim();
+        customerPhone = document.getElementById('collect-phone').value.trim();
+        const chosenBranch = document.getElementById('collect-branch-select').value;
+        selectedArea = document.getElementById('collect-city').value;
+        fullAddressString = `Branch Pickup: ${chosenBranch}`;
+
+        if (!customerName || !customerPhone || !chosenBranch) {
+            alert("Please choose a pickup branch and provide your phone number.");
+            return;
+        }
+
+                // AUTO-MATCH: Find registered Branch Agent with flexible matching
+        database.ref('drivers').once('value', (snap) => {
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    const agent = child.val();
+                    if (agent.driverMode === 'branch_collection') {
+                        const agentBranch = (agent.branchName || "").toLowerCase().trim();
+                        const targetBranch = chosenBranch.toLowerCase().trim();
+                        
+                        if (agentBranch === targetBranch || agentBranch.includes(targetBranch) || targetBranch.includes(agentBranch)) {
+                            assignedBranchAgentKey = child.key;
+                            assignedBranchAgentPhone = agent.phone;
+                            assignedBranchAgentName = agent.name;
+                        }
+                    }
+                });
+            }
+            saveAndPushOrder();
+        });
+
     }
 
-        const itemNames = cart.map(item => item.name).join(', '); // Formats to: "2 Months Pills"
+    function saveAndPushOrder() {
+        const totalAmount = document.getElementById('cart-total').innerText;
+        const itemNames = cart.map(item => item.name).join(', ');
 
-    const orderPayload = {
-        customer: name,
-        phone: phone,
-        customerEmailKey: userEmailKey,
-        area: addressDetails.baseArea,
-        address: addressDetails.fullString,
-        payment: payment,
-        items: itemNames, // Uses formatted clean text
-        total: totalAmount,
-        status: 'pending',
-        timestamp: Date.now()
-    };
+        const orderPayload = {
+            customer: customerName,
+            phone: customerPhone,
+            customerEmailKey: userEmailKey,
+            area: selectedArea,
+            address: fullAddressString,
+            payment: document.getElementById('payMethod').value,
+            items: itemNames,
+            total: totalAmount,
+            status: 'pending',
+            type: currentServiceMode,
+            dEmailKey: assignedBranchAgentKey || null,
+            dName: assignedBranchAgentName || null,
+            dPhone: assignedBranchAgentPhone || null,
+            timestamp: Date.now()
+        };
 
-
-    database.ref('orders').push(orderPayload).then((snapshot) => {
-        const newOrderId = snapshot.key;
-        localStorage.setItem('myOrderID', newOrderId);
-        cart = [];
-        localStorage.removeItem('userCart');
-        updateTotal();
-        showPage('tracking');
-        showAppNotify("Order Placed!", "Your order is now being verified by dispatch admin.", "var(--green)");
-    });
+        database.ref('orders').push(orderPayload).then((snapshot) => {
+            localStorage.setItem('myOrderID', snapshot.key);
+            cart = [];
+            localStorage.removeItem('userCart');
+            updateTotal();
+            showPage('tracking');
+            showAppNotify("Order Placed!", "Your collection order has been sent to the branch.", "var(--green)");
+        });
+    }
 }
-
 
     function collectData() {
     const totalEl = document.getElementById('cart-total');
@@ -2782,35 +3046,24 @@ function orderViaApp() {
     database.ref('orders/' + orderId).on('value', (snap) => {
         const o = snap.val();
         
-        // Safety lock: Ensure the order exists and actually belongs to this logged-in profile
         if (!o || o.customerEmailKey !== userEmailKey) { 
             showNoOrderView(); 
             return; 
         }
 
-        // Handle Completed Order View for this customer exclusively
         if (o.status === 'delivered') {
-            // Detach this real-time database listener safely
             database.ref('orders/' + orderId).off();
-            
-            // Hide normal tracking layout and trigger the customized success view
             document.getElementById('tracking-content').style.display = 'none';
             document.getElementById('no-order-view').style.display = 'none';
             document.getElementById('order-complete-view').style.display = 'block';
-            
-            // Wait 8 seconds, then transition to "No active order found"
             setTimeout(() => {
-                // Clear the local token mapping so tracking checks interpret it as clear
                 localStorage.removeItem('myOrderID');
-                
-                // Toggle the views smoothly
                 document.getElementById('order-complete-view').style.display = 'none';
                 showNoOrderView();
-            }, 8000); // 8000 milliseconds = 8 seconds
+            }, 8000);
             return;
         }
 
-        // If order cancelled or failed, drop tracking cleanly
         if (o.status === 'cancelled' || o.status === 'failed') {
             database.ref('orders/' + orderId).off();
             localStorage.removeItem('myOrderID');
@@ -2818,7 +3071,6 @@ function orderViaApp() {
             return;
         }
 
-        // Normal Live Tracking State Management
         document.getElementById('no-order-view').style.display = 'none';
         document.getElementById('order-complete-view').style.display = 'none';
         document.getElementById('tracking-content').style.display = 'block';
@@ -2828,30 +3080,75 @@ function orderViaApp() {
         document.getElementById('track-item-names').innerText = o.items || "Processing...";
         document.getElementById('track-total-price').innerText = o.total || "R 0.00";
         
-        let progressPercent = 10;
-        let humanStatusText = "Processing Order...";
+        // 👈 HANDLE BRANCH COLLECTION UI VS DELIVERY UI
+        const driverInfoBox = document.getElementById('driver-info');
         
-        if (o.status === 'awaiting_payment') {
-            progressPercent = 15;
-            humanStatusText = "Awaiting Verification...";
-        } else if (o.status === 'dispatched') {
-            progressPercent = 40;
-            humanStatusText = "Driver Dispatched";
-        } else if (o.status === 'en_route') {
-            progressPercent = 75;
-            humanStatusText = "Order En Route";
-        }
-        
-        document.getElementById('progress-line').style.width = progressPercent + "%";
-        document.getElementById('status-text').innerText = "Status: " + humanStatusText;
+                        if (o.type === 'collect' || (o.address && o.address.includes('Branch Pick-up'))) {
+            document.getElementById('progress-line').style.width = "60%";
+            document.getElementById('status-text').innerText = "Status: READY FOR BRANCH COLLECTION";
+            
+            let branchName = o.address ? o.address.replace('Branch Pickup:', '').trim() : 'Local Branch';
+            let agentPhone = o.dPhone ? (o.dPhone.startsWith('0') ? '27' + o.dPhone.substring(1) : o.dPhone) : '27632010938';
+            let agentName = o.dName || 'Branch Manager';
 
-        if (o.dName && o.dPhone) {
-            document.getElementById('driver-info').style.display = 'block';
-            document.getElementById('assigned-driver-name').innerText = o.name || o.dName;
-            document.getElementById('assigned-driver-phone-display').innerText = o.dPhone;
-            document.getElementById('cust-to-driver-wa').href = `https://wa.me/${o.dPhone.startsWith('0') ? '27' + o.dPhone.substring(1) : o.dPhone}?text=Hi, tracking my delivery order.`;
-        } else {
-            document.getElementById('driver-info').style.display = 'none';
+            driverInfoBox.style.display = 'block';
+            driverInfoBox.innerHTML = `
+                <div style="text-align: left;">
+                    <strong style="color: var(--blue); font-size: 1.1rem;">🏢 Designated Pickup Branch</strong>
+                    <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin: 8px 0; border: 1px solid #2196f3;">
+                        <span style="font-weight: bold; color: var(--blue); font-size: 1.05rem;">📍 ${branchName}</span><br>
+                        <small style="color: #555;">Agent: <strong>${agentName}</strong> (${o.dPhone || 'Main Admin'})</small>
+                    </div>
+                    <p style="font-size: 13px; color: #555; margin: 8px 0;">Your package details have been sent to this branch. Present your Order ID when arriving.</p>
+                    <a href="https://wa.me/${agentPhone}?text=${encodeURIComponent('Hi ' + agentName + ', I am coming to collect Order #' + orderId.substring(orderId.length - 6) + ' at ' + branchName)}" target="_blank" style="text-decoration: none;">
+                        <button class="whatsapp-btn" style="width:100%; margin-top: 5px;">💬 Chat / Notify Branch Agent</button>
+                    </a>
+                </div>`;
+        }
+
+ else {
+            // Normal Delivery Tracking UI
+            let progressPercent = 10;
+            let humanStatusText = "Processing Order...";
+            
+            if (o.status === 'awaiting_payment') {
+                progressPercent = 15;
+                humanStatusText = "Awaiting Verification...";
+            } else if (o.status === 'dispatched') {
+                progressPercent = 40;
+                humanStatusText = "Driver Dispatched";
+            } else if (o.status === 'en_route') {
+                progressPercent = 75;
+                humanStatusText = "Order En Route";
+            }
+            
+            document.getElementById('progress-line').style.width = progressPercent + "%";
+            document.getElementById('status-text').innerText = "Status: " + humanStatusText;
+
+            if (o.dName && o.dPhone) {
+                driverInfoBox.style.display = 'block';
+                driverInfoBox.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="background: var(--blue); color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">🚚</div>
+                            <div>
+                                <small style="color: #666;">Your Driver</small><br>
+                                <strong id="assigned-driver-name" style="font-size: 1.1rem;">${o.dName}</strong>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <small style="color: #666;">Driver No.</small><br>
+                            <strong id="assigned-driver-phone-display" style="color: var(--blue); font-size: 1.1rem;">${o.dPhone}</strong>
+                        </div>
+                    </div>
+                    <a id="cust-to-driver-wa" href="https://wa.me/${o.dPhone.startsWith('0') ? '27' + o.dPhone.substring(1) : o.dPhone}?text=Hi, tracking my delivery order." target="_blank" style="text-decoration: none;">
+                        <button class="whatsapp-btn" style="width:100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span>💬 WhatsApp Driver</span>
+                        </button>
+                    </a>`;
+            } else {
+                driverInfoBox.style.display = 'none';
+            }
         }
 
         if (o.arrived) {
@@ -2861,6 +3158,7 @@ function orderViaApp() {
         }
     });
 }
+
 function showNoOrderView() {
     document.getElementById('tracking-content').style.display = 'none';
     document.getElementById('order-complete-view').style.display = 'none';
@@ -3020,14 +3318,13 @@ function removeRedFlag(emailKey) {
     }
 }
 function fetchDrivers() {
-    // This 'on' listener triggers every time the 'drivers' node changes
     database.ref('drivers').on('value', (snapshot) => {
         allDrivers = []; 
         const listDiv = document.getElementById('driver-list');
-        listDiv.innerHTML = "<h4>Registered Drivers</h4>";
+        listDiv.innerHTML = "<h4>Registered Drivers & Agents</h4>";
         
         if(!snapshot.exists()) {
-            listDiv.innerHTML += "<p style='color:#999;'>No registered drivers found.</p>";
+            listDiv.innerHTML += "<p style='color:#999;'>No registered personnel found.</p>";
             return;
         }
 
@@ -3035,29 +3332,44 @@ function fetchDrivers() {
             const d = child.val();
             const emailKey = child.key;
             
-            // Push to global array for the "Assign Order" dropdowns
-            allDrivers.push({...d, emailKey: emailKey}); 
+            if (d.driverMode !== 'branch_collection') {
+                allDrivers.push({...d, emailKey: emailKey}); 
+            }
             
             let status = d.currentStatus || 'available';
-            let statusColor = status === 'delivering' ? "var(--green)" : 
-                             (status === 'unpaid_debt' ? "var(--primary)" : "var(--blue)");
+            
+            // Dynamic color mapping based on status
+            let badgeBg = 'var(--green)'; // Default available
+            if (status === 'delivering') badgeBg = 'var(--orange)';
+            else if (status === 'unpaid_debt' || status === 'dispute_locked') badgeBg = 'var(--primary)';
+            
+            // Render both Branch Agent badge and live status badge
+            let roleBadge = '';
+            if (d.driverMode === 'branch_collection') {
+                roleBadge = `
+                    <span class="status-badge" style="background:var(--blue); color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-right: 4px;">BRANCH AGENT</span>
+                    <span class="status-badge" style="background:${badgeBg}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">${status.replace('_', ' ').toUpperCase()}</span>
+                `;
+            } else {
+                roleBadge = `
+                    <span class="status-badge" style="background:${badgeBg}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">${status.replace('_', ' ').toUpperCase()}</span>
+                `;
+            }
             
             listDiv.innerHTML += `
-                <div class='driver-card' style='border-left: 8px solid ${statusColor}; margin-bottom: 10px; padding: 10px; background: #fff;'>
+                <div class='driver-card' style='border-left: 8px solid var(--primary); margin-bottom: 10px; padding: 10px; background: #fff;'>
                     <strong>${d.name || 'Unknown'}</strong><br>
                     <small>📍 ${d.village || 'No Area'}</small><br>
                     <small>📞 ${d.phone || 'No Phone'}</small><br>
-                    <span class="status-badge" style="background:${statusColor}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">${status.toUpperCase()}</span>
+                    ${roleBadge}
                     <button onclick="deleteDriver('${emailKey}')" class='del-btn' style="margin-left:10px;">Remove</button>
                 </div>`;
         });
         
-        // Refresh the Order list so the new drivers appear in the "Assign" dropdowns
         fetchLiveOrders();
     });
 }
 
-let serviceMode = 'delivery'; // Default to delivery
 
 function setServiceMode(mode) {
     currentServiceMode = mode; // Updates global state instantly
@@ -3192,15 +3504,18 @@ function unlockBoth(userKey, driverKey) {
 function reassignOrderBackToAdmin(orderId, driverEmailKey) {
     database.ref('orders/' + orderId).update({
         status: 'pending',
-        dName: null,   // Clear this
-        dPhone: null,  // Clear this
+        dName: null,
+        dPhone: null,
         dEmailKey: null,
         driverReceived: false
+    }).then(() => {
+        if(driverEmailKey) {
+            // Force status back to available so they appear in dispatch again
+            database.ref('drivers/' + driverEmailKey).update({ currentStatus: 'available' });
+        }
     });
-    if(driverEmailKey) {
-        database.ref('drivers/' + driverEmailKey).update({ currentStatus: 'available' });
-    }
 }
+
 async function canPlaceNewOrder() {
     const existingOrderId = localStorage.getItem('myOrderID');
     
@@ -3225,6 +3540,96 @@ async function canPlaceNewOrder() {
     }
     return true;
 }
+  function toggleDriverModeFields() {
+    const roleMode = document.getElementById('driverServiceRole').value;
+    const branchGroup = document.getElementById('branch-name-group');
+    const subAreaGroup = document.getElementById('reg-soweto-ext-group');
+
+    if (roleMode === 'branch_collection') {
+        if(branchGroup) branchGroup.style.display = 'block';
+        if(subAreaGroup) subAreaGroup.style.display = 'none';
+    } else {
+        if(branchGroup) branchGroup.style.display = 'none';
+    }
+}
+
+// Update openRegisterModal to show/hide the driver mode options
+function openRegisterModal() { 
+    document.getElementById('loginModal').style.display = "none"; 
+    document.getElementById('registerModal').style.display = "block"; 
+    
+    const driverOptionsDiv = document.getElementById('driver-registration-options');
+    
+    if(currentRoleType === 'customer') {
+        document.getElementById('regTitle').innerText = "Customer Registration";
+        document.getElementById('regInfo').innerText = "Create a PIN to track your future orders easily.";
+        if(driverOptionsDiv) driverOptionsDiv.style.display = 'none';
+    } else {
+        document.getElementById('regTitle').innerText = "Driver / Branch Agent Registration";
+        document.getElementById('regInfo').innerText = "Register your delivery area or branch collection point.";
+        if(driverOptionsDiv) driverOptionsDiv.style.display = 'block';
+    }
+}
+
+// Update submitRegistration to include driver type and branch data
+function submitRegistration() {
+    const name = document.getElementById('reg-user-name').value.trim();
+    const email = document.getElementById('reg-user-email').value.trim().toLowerCase(); // Ensure lowercase
+    const phone = document.getElementById('reg-user-phone').value.trim();
+    const pin = document.getElementById('reg-user-pass').value.trim();
+    const province = document.getElementById('regProvince').value;
+    const city = document.getElementById('regVillage').value;
+    
+    const selectedSubPlaces = Array.from(document.querySelectorAll('input[name="subPlace"]:checked'))
+                                   .map(cb => cb.value);
+
+    let driverMode = 'delivery';
+    let branchName = '';
+    
+    if (currentRoleType === 'driver') {
+        driverMode = document.getElementById('driverServiceRole').value;
+        branchName = document.getElementById('regBranchName').value;
+    }
+
+    if (!name || !email || !phone || !pin) {
+        return alert("Please fill in all required fields.");
+    }
+
+    const emailKey = email.replace(/\./g, '_').toLowerCase(); // Added .toLowerCase() here
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const userData = {
+        name: name,
+        email: email,
+        phone: phone,
+        pin: pin,
+        province: province,
+        village: city,
+        subPocket: selectedSubPlaces.join(', '),
+        driverMode: driverMode,
+        branchName: branchName,
+        code: otpCode, 
+        role: currentRoleType,
+        timestamp: Date.now()
+    };
+
+    database.ref('verificationRequests/' + emailKey).set(userData).then(() => {
+        emailjs.send("service_Test", "template_cjz41n2", {
+            to_email: email,
+            to_name: name,
+            otp_code: otpCode
+        }).then(() => {
+            document.getElementById('registerModal').style.display = "none";
+            localStorage.setItem('tempRegEmail', email); 
+            showAppNotify("Check Your Email", "We sent a 6-digit code to " + email, "var(--blue)", false);
+            document.getElementById('otpVerifyArea').style.display = "block";
+        }).catch(err => {
+            alert("Email failed to send. Check your EmailJS configuration.");
+        });
+    });
+}
+
+
 // Add this inside your script area to keep the allDrivers array synced
 function startDriversSync() {
     database.ref('drivers').on('value', (snap) => {
