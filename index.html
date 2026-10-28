@@ -3650,40 +3650,48 @@ if ('serviceWorker' in navigator) {
 
 let deferredInstallPrompt = null;
 
-// Catch the browser install event
+// Capture the Chrome browser install event as early as possible
 window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent Chrome 67 and earlier from automatically showing the prompt
   e.preventDefault();
+  // Stash the event so it can be triggered later.
   deferredInstallPrompt = e;
   
-  // Show bottom banner
+  // Show your bottom install banner dynamically
   const banner = document.getElementById('install-banner');
   if (banner) banner.style.display = 'block';
 });
 
-// Trigger install prompt whenever user clicks ANY install button
+// Function called when pressing "Install App" or "INSTALL NOW"
 async function triggerPWAInstall() {
   if (deferredInstallPrompt) {
+    // Show the native Chrome "Add to Home screen" prompt
     deferredInstallPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
     const { outcome } = await deferredInstallPrompt.userChoice;
-    console.log('Install outcome:', outcome);
+    console.log(`User response to the install prompt: ${outcome}`);
+    
+    // We've used the prompt, and can't use it again; throw it away
     deferredInstallPrompt = null;
     
+    // Hide the custom banner
     const banner = document.getElementById('install-banner');
     if (banner) banner.style.display = 'none';
   } else {
-    // If prompt was already used or browser blocked it, guide the user
-    alert("To install this app on your phone:\n\n1. Tap your browser menu (3 dots top right)\n2. Tap 'Add to Home Screen' or 'Install App'.");
+    // If the browser already installed it or hasn't fired beforeinstallprompt yet
+    alert("The app prompt is preparing or the app is already installed on your home screen.");
   }
 }
 
-// Hook up event listeners
-document.addEventListener('DOMContentLoaded', () => {
-  const installBtn = document.getElementById('install-btn');
-  const permBtn = document.getElementById('permanent-install-btn');
-  
-  if (installBtn) installBtn.addEventListener('click', triggerPWAInstall);
-  if (permBtn) permBtn.addEventListener('click', triggerPWAInstall);
+// Track when app is successfully installed
+window.addEventListener('appinstalled', () => {
+  console.log('PWA was installed successfully');
+  deferredInstallPrompt = null;
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
 });
+
 
 // Share App Feature for Customers
 function shareAppWithFriends() {
