@@ -334,14 +334,16 @@
     <p>Fast Delivery to Villages & Cities</p>
 
     <!-- PERMANENT PWA & SHARE BUTTONS -->
-    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px; padding: 0 10px;">
-        <button id="permanent-install-btn" style="background: #ffffff; color: var(--primary); border: none; padding: 8px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-            📲 Install App
-        </button>
-        <button onclick="shareAppWithFriends()" style="background: var(--green); color: #ffffff; border: none; padding: 8px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-            🔗 Share App
-        </button>
-    </div>
+    <!-- Cleaned Header Buttons -->
+<div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px; padding: 0 10px;">
+    <button id="permanent-install-btn" onclick="triggerPWAInstall()" style="background: #ffffff; color: var(--primary); border: none; padding: 8px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: inline-flex; align-items: center; gap: 5px;">
+        📥 Install App
+    </button>
+    <button onclick="shareAppWithFriends()" style="background: var(--green); color: #ffffff; border: none; padding: 8px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: inline-flex; align-items: center; gap: 5px;">
+        📢 Share App
+    </button>
+</div>
+
 </header>
 
 <a href="https://wa.me/27632010938?text=Hi, I need help with my order." class="float-chat" target="_blank">💬</a>
@@ -3650,47 +3652,49 @@ if ('serviceWorker' in navigator) {
 
 let deferredInstallPrompt = null;
 
-// Capture the Chrome browser install event as early as possible
+// 1. Capture Chrome's native installation event automatically
 window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent Chrome 67 and earlier from automatically showing the prompt
+  // Prevent Chrome from automatically showing the banner too early
   e.preventDefault();
-  // Stash the event so it can be triggered later.
+  // Save the event so it can be triggered by your buttons later
   deferredInstallPrompt = e;
   
-  // Show your bottom install banner dynamically
+  // Optionally show your custom install banner if you want
   const banner = document.getElementById('install-banner');
   if (banner) banner.style.display = 'block';
 });
 
-// Function called when pressing "Install App" or "INSTALL NOW"
+// 2. Function linked to your "Install App" buttons
 async function triggerPWAInstall() {
   if (deferredInstallPrompt) {
-    // Show the native Chrome "Add to Home screen" prompt
+    // Show Chrome's native "Add to Home Screen" prompt directly
     deferredInstallPrompt.prompt();
     
-    // Wait for the user to respond to the prompt
+    // Wait for the user's choice
     const { outcome } = await deferredInstallPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
+    console.log(`User install choice: ${outcome}`);
     
-    // We've used the prompt, and can't use it again; throw it away
+    // Clear the prompt variable since it can only be used once
     deferredInstallPrompt = null;
     
-    // Hide the custom banner
+    // Hide your custom banner if visible
     const banner = document.getElementById('install-banner');
     if (banner) banner.style.display = 'none';
   } else {
-    // If the browser already installed it or hasn't fired beforeinstallprompt yet
-    alert("The app prompt is preparing or the app is already installed on your home screen.");
+    // Helpful guidance if the prompt hasn't fired yet or is already installed
+    alert("To install this app, tap your browser's 3-dot menu (⋮) at the top right and select 'Add to Home screen' or 'Install App'.");
   }
 }
+  
 
-// Track when app is successfully installed
+// 3. Listen for successful installation
 window.addEventListener('appinstalled', () => {
-  console.log('PWA was installed successfully');
+  console.log('PWA installed successfully');
   deferredInstallPrompt = null;
   const banner = document.getElementById('install-banner');
   if (banner) banner.style.display = 'none';
 });
+
 
 
 // Share App Feature for Customers
