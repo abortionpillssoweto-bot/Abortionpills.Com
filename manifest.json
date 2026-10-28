@@ -1,0 +1,20 @@
+{
+  "name": "SA Abortion Pills Delivery",
+  "short_name": "SA Pills",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#e41e26",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
