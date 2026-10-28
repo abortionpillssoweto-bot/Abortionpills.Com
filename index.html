@@ -13,7 +13,7 @@
     
     <link rel="apple-touch-icon" href="https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg">
     
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22SA%20Abortion%20Pills%22,%22short_name%22:%22SA%20Pills%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#ffffff%22,%22theme_color%22:%22#e41e26%22,%22icons%22:[{%22src%22:%22https://i.ibb.co/5Hk2xDP/FB-IMG-1649676834315.jpg%22,%22sizes%22:%22192x192%22,%22type%22:%22image/jpg%22}]}">
+    <link rel="manifest" href="manifest.json">
 
     <style>
         :root { --primary: #e41e26; --blue: #00529B; --green: #25D366; --dark: #222;--orange: #ff9800;--bg-gray: #f8f9fa; }
@@ -3628,6 +3628,43 @@ function submitRegistration() {
         });
     });
 }
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch(err => console.log('SW Registration Failed:', err));
+  });
+}
+
+// Handle Custom Install Banner
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  
+  const banner = document.getElementById('install-banner');
+  if (banner) {
+    banner.style.display = 'block';
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const installBtn = document.getElementById('install-btn');
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        console.log('Install outcome:', outcome);
+        deferredInstallPrompt = null;
+        document.getElementById('install-banner').style.display = 'none';
+      }
+    });
+  }
+});
+
 
 
 // Add this inside your script area to keep the allDrivers array synced
