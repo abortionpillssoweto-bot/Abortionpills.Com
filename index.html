@@ -2378,105 +2378,37 @@ function updateVillages(targetId) {
     const orderDiv = document.getElementById('live-orders-list');
     const activeDiv = document.getElementById('active-deliveries-list');
     
+    let previousOrderCount = -1; // Track previous count to detect new orders
+
     database.ref('orders').on('value', (snapshot) => {
         orderDiv.innerHTML = ""; 
         activeDiv.innerHTML = "";
         let hasNew = false;
         let hasActive = false;
+        let pendingCount = 0;
         
         if(!snapshot.exists()) return;
 
         snapshot.forEach((child) => {
             const o = child.val();
-            const orderId = child.key;
-            
-            // SECTION: PENDING ORDERS
             if(o.status === 'pending') {
+                pendingCount++;
                 hasNew = true;
-                
-                // Check if this order is a Branch Collection type
-                const isCollection = o.type === 'collect' || (o.address && o.address.includes('Branch Pick-up'));
-                
-                let actionAreaHtml = "";
-                
-                                                // Inside fetchLiveOrders() where 'isCollection' is handled:
-if (isCollection) {
-    let branchName = o.address ? o.address.replace('Branch Pickup:', '').trim() : 'Standard Branch';
-    let agentInfo = o.dName ? `${o.dName} (${o.dPhone})` : 'Unassigned';
-
-    actionAreaHtml = `
-        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; border: 1px solid #2196f3; margin-top: 10px; text-align: left;">
-            <strong style="color: var(--blue);">🏢 Branch Pickup Requested:</strong>
-            <div style="font-size: 14px; font-weight: bold; color: #333; margin: 4px 0;">📍 ${branchName}</div>
-            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">Assigned Agent: ${agentInfo}</div>
-            
-            <button onclick="markOrderCompleted('${orderId}')" style="background: var(--green); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; width: 100%; margin-bottom: 6px; cursor: pointer;">
-                MARK COLLECTION COMPLETE ✅
-            </button>
-        </div>`;
-}
-
-
- else {
-                    // Change this block inside fetchLiveOrders()
-let driverOptions = `<option value="">-- Select Professional Driver --</option>`;
-allDrivers.forEach(dr => {
-    // Allow selecting drivers who are available OR currently delivering if you want to reassign
-    if(dr.currentStatus === 'available' || dr.currentStatus === 'delivering') {
-        const emailKey = dr.emailKey; // Use synced emailKey directly
-        driverOptions += `<option value="${emailKey}">${dr.name} (${dr.village}) - [${dr.currentStatus}]</option>`;
-    }
-});
-
-
-                    actionAreaHtml = `
-                        <div class="assign-area">
-                            <label>Assign to Driver:</label>
-                            <select id="select-${orderId}">${driverOptions}</select>
-                            <button onclick="dispatchSpecificOrder('${orderId}')" style="background:var(--blue); color:white; font-weight:bold; margin-top:5px;">DISPATCH ORDER</button>
-                        </div>`;
-                }
-
-                orderDiv.innerHTML += `
-                <div class="order-card" style="border-left: 10px solid var(--primary); padding: 20px;">
-                    <h3 style="margin-top:0; color:var(--primary);">Order #${orderId.substring(orderId.length - 6)}</h3>
-                    <p><strong>👤 Name:</strong> ${o.customer}</p>
-                    <p><strong>📍 Address / Info:</strong> ${o.address}, ${o.area}</p>
-                    <p><strong>📞 Phone:</strong> ${o.phone}</p>
-                    <div style="background:#f9f9f9; padding:10px; border-radius:8px; margin:10px 0;">
-                        <p><strong>📦 Order Details:</strong> ${o.items}</p>
-                        <p><strong>💵 Total Price:</strong> <span style="font-size:1.2rem; color:var(--blue);">${o.total}</span></p>
-                    </div>
-                    
-                    ${actionAreaHtml}
-
-                    <button onclick="deleteOrder('${orderId}')" style="background: #fee; color: #c00; border: 1px solid #fcc; padding: 8px; width: 100%; margin-top: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                        🗑️ DELETE SPAM ORDER
-                    </button>
-                </div>`;
-            } 
-            
-            // SECTION: ACTIVE DELIVERIES
-            else if (o.status === 'dispatched' || o.status === 'en_route') {
-                hasActive = true;
-                const driverName = o.dName || "Unknown Driver";
-                const driverPhone = o.dPhone || "N/A";
-
-                activeDiv.innerHTML += `
-                <div class="delivery-card" style="border-left: 8px solid var(--blue); padding: 15px; background: #e3f2fd; margin-bottom: 10px;">
-                    <strong style="color:var(--blue);">📦 Order for ${o.customer}</strong><br>
-                    <span>Status: <strong>${o.status.toUpperCase()}</strong></span><br>
-                    <span>Driver: <strong style="color:var(--primary);">${driverName}</strong></span><br>
-                    <span>Driver Phone: <strong>${driverPhone}</strong></span>
-                    <button onclick="reassignOrderBackToAdmin('${orderId}', '${o.dEmailKey}')" style="background:#fff; color:red; border:1px solid red; font-size:11px; padding:5px; margin-top:10px; border-radius:4px; width:auto;">Recall to Admin</button>
-                </div>`;
+                // ... your existing card rendering code ...
             }
         });
+
+        // 🔔 TRIGGER DEVICE ALERT IF NEW ORDER ARRIVES
+        if (previousOrderCount !== -1 && pendingCount > previousOrderCount) {
+            triggerAlert(); // Plays sound & vibrates your admin device
+            showAppNotify("New Customer!", "A new order is available for dispatch.", "var(--green)");
+        }
+        previousOrderCount = pendingCount;
         
-        if(!hasNew) orderDiv.innerHTML = "<p style='text-align:center; color:#999;'>No new orders at the moment.</p>";
-        if(!hasActive) activeDiv.innerHTML = "<p style='text-align:center; color:#999;'>No active deliveries en route.</p>";
+        // ... rest of your function ...
     });
 }
+
 
   function markOrderCompleted(orderId) {
     database.ref('orders/' + orderId).once('value', snap => {
@@ -2962,7 +2894,7 @@ function orderViaApp() {
 
     }
 
-    function saveAndPushOrder() {
+        function saveAndPushOrder() {
         const totalAmount = document.getElementById('cart-total').innerText;
         const itemNames = cart.map(item => item.name).join(', ');
 
@@ -2989,9 +2921,19 @@ function orderViaApp() {
             localStorage.removeItem('userCart');
             updateTotal();
             showPage('tracking');
-            showAppNotify("Order Placed!", "Your collection order has been sent to the branch.", "var(--green)");
+            showAppNotify("Order Placed!", "Your order has been successfully submitted.", "var(--green)");
+
+            // 📱 OPTIONAL: Prompt customer to send WhatsApp alert to Admin instantly
+            const adminWhatsApp = "27632010938";
+            const alertMessage = encodeURIComponent(`🚨 *NEW CUSTOMER ORDER!*\n\nName: ${customerName}\nPhone: ${customerPhone}\nItems: ${itemNames}\nTotal: ${totalAmount}\nAddress/Branch: ${fullAddressString}`);
+            
+            // This opens WhatsApp in the background or prompts sending to admin
+            setTimeout(() => {
+                window.open(`https://wa.me/${adminWhatsApp}?text=${alertMessage}`, '_blank');
+            }, 1000);
         });
     }
+
 }
 
     function collectData() {
